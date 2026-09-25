@@ -1,0 +1,33 @@
+{
+  "font": {
+    "family": {
+      "$type": "fontFamily",
+      "ui-ar": { "$value": ["IBM Plex Sans Arabic", "system-ui", "sans-serif"] },
+      "ui-en": { "$value": ["IBM Plex Sans", "system-ui", "sans-serif"] },
+      "display": { "$value": ["Rubik", "IBM Plex Sans Arabic", "system-ui", "sans-serif"] }
+    },
+    "scale": {
+      "$type": "typography",
+      "display": { "$value": { "fontSize": 36, "lineHeight": 44, "fontWeight": 600 } },
+      "h1": { "$value": { "fontSize": 30, "lineHeight": 38, "fontWeight": 600 } },
+      "h2": { "$value": { "fontSize": 24, "lineHeight": 32, "fontWeight": 600 } },
+      "price": {
+        "$value": { "fontSize": 20, "lineHeight": 28, "fontWeight": 600, "fontVariantNumeric": "tabular-nums" }
+      },
+      "body": {
+        "$value": { "fontSize": 16, "lineHeight": 24, "fontWeight": 400 },
+        "$extensions": { "agarha": { "arLineHeight": 26 } }
+      },
+      "caption": { "$value": { "fontSize": 13, "lineHeight": 18, "fontWeight": 400 } },
+      "label": {
+        "$value": {
+          "fontSize": 12,
+          "lineHeight": 16,
+          "fontWeight": 500,
+          "letterSpacing": "0.06em",
+          "textTransform": "uppercase"
+        }
+      }
+    }
+  }
+}

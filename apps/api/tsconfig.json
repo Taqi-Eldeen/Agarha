@@ -1,0 +1,8 @@
+{
+  "extends": "@agarha/config/tsconfig/nest.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "types": ["node", "jest"]
+  },
+  "include": ["src", "test", "scripts", "drizzle.config.ts"]
+}

@@ -1,0 +1,28 @@
+{
+  "name": "@agarha/tokens",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Design tokens: CSS variables, Tailwind preset, React Native theme",
+  "main": "./build/tailwind-preset.js",
+  "exports": {
+    "./css": "./build/css/tokens.css",
+    "./css/native": "./build/css/tokens.native.css",
+    "./tailwind-preset": {
+      "types": "./types/tailwind-preset.d.ts",
+      "default": "./build/tailwind-preset.js"
+    },
+    "./native": {
+      "types": "./types/native.d.ts",
+      "default": "./build/native/theme.js"
+    },
+    "./tokens.json": "./build/tokens.json"
+  },
+  "files": ["build", "types"],
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "devDependencies": {
+    "style-dictionary": "^5.1.1"
+  }
+}
