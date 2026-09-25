@@ -1,6 +1,6 @@
 import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { Global, Inject, Injectable, Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join, normalize } from 'node:path';
 import { ENV, type Env } from '../../config/env';

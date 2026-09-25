@@ -1,12 +1,14 @@
 'use client';
-import { useApi, type ApiRequestError } from '@agarha/api-client';
+import { useApi } from '@agarha/api-client';
 import { DELIVERY_OPTIONS, FUELS, REQUIRED_DOCS, listingFactsSchema, type DRIVER_OPTIONS, type Listing } from '@agarha/schemas';
 import { Button, ChipGroup, Combobox, InlineAlert, PhotoUploader, Select, TextField, useToast, Wizard, type UploadItem } from '@agarha/ui-web';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { useRouter } from '@/i18n/routing';
 import { track } from '@/lib/analytics';
+import { applyServerErrors, schemaResolver, useFieldError } from '@/lib/forms';
 import { uploadPhoto } from './upload';
 import { useDealerMe } from './use-dealer';
 
@@ -41,12 +43,33 @@ const STEP_FIELDS: (keyof Form | 'carModelId')[][] = [
 
 const num = (s: string) => (s.trim() === '' ? undefined : Number(s.replace(/[,\s]/g, '')));
 
+const toPayload = (f: Form) => ({
+  carModelId: f.carModelId,
+  branchId: f.branchId,
+  year: num(f.year),
+  color: f.color,
+  transmission: f.transmission,
+  fuel: f.fuel,
+  seats: num(f.seats),
+  driverOption: f.driverOption,
+  priceDayEgp: num(f.priceDayEgp),
+  priceWeekEgp: num(f.priceWeekEgp) ?? null,
+  priceMonthEgp: num(f.priceMonthEgp) ?? null,
+  depositEgp: num(f.depositEgp),
+  minAge: num(f.minAge),
+  requiredDocs: f.requiredDocs,
+  kmLimitPerDay: num(f.kmLimitPerDay) ?? null,
+  deliveryOptions: f.deliveryOptions,
+  airportPickup: f.airportPickup,
+  ...(f.descriptionAr ? { descriptionAr: f.descriptionAr } : {}),
+});
+
+
 /** Add / edit a car in four short steps. Photos upload in the background with progress and retry. */
 export function CarWizard({ listing }: { listing?: Listing & { model?: { makeId: string } | null } }) {
   const t = useTranslations('dealer.wizard');
   const tu = useTranslations('ui');
   const tl = useTranslations('web.listing');
-  const te = useTranslations('errors');
   const tf = useTranslations('dealer.fleet');
   const locale = useLocale();
   const api = useApi();
@@ -56,10 +79,10 @@ export function CarWizard({ listing }: { listing?: Listing & { model?: { makeId:
   const me = useDealerMe();
   const [step, setStep] = useState(0);
   const [id, setId] = useState(listing?.id);
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [uploads, setUploads] = useState<(UploadItem & { file?: File })[]>([]);
-  const [f, setF] = useState<Form>(() => ({
+  const { text, known } = useFieldError();
+  const defaults: Form = {
     makeId: listing?.model?.makeId,
     carModelId: listing?.carModelId,
     branchId: listing?.branchId,
@@ -79,48 +102,26 @@ export function CarWizard({ listing }: { listing?: Listing & { model?: { makeId:
     deliveryOptions: listing?.deliveryOptions ?? ['branch_pickup'],
     airportPickup: listing?.airportPickup ?? false,
     descriptionAr: listing?.descriptionAr ?? '',
-  }));
+  };
+  // One shared schema (listingFactsSchema) validates this form and the API body.
+  const form = useForm<Form>({ defaultValues: defaults, resolver: schemaResolver(listingFactsSchema, toPayload, known) });
+  const f = form.watch();
 
   const makes = useQuery({ queryKey: ['makes'], queryFn: async () => (await api.GET('/v1/catalog/makes')).data!.items, staleTime: 3_600_000 });
   const models = useQuery({ queryKey: ['models', f.makeId], enabled: !!f.makeId, queryFn: async () => (await api.GET('/v1/catalog/makes/{id}/models', { params: { path: { id: f.makeId! } } })).data!.items });
   const branches = useQuery({ queryKey: ['branches'], queryFn: async () => (await api.GET('/v1/dealer/branches')).data as unknown as { items: { id: string; nameAr: string; nameEn: string; isPrimary: boolean }[] } });
   useEffect(() => {
     const primary = branches.data?.items.find((b) => b.isPrimary) ?? branches.data?.items[0];
-    if (!f.branchId && primary) setF((x) => ({ ...x, branchId: primary.id }));
-  }, [branches.data, f.branchId]);
+    if (!f.branchId && primary) form.setValue('branchId', primary.id);
+  }, [branches.data, f.branchId, form]);
   useEffect(() => {
     if (listing?.photos) setUploads(listing.photos.filter((p) => p.status !== 'rejected').map((p) => ({ id: p.id, previewUrl: p.urls?.webp?.['320'] ?? '', status: p.status === 'ready' ? 'ready' : 'processing' })));
   }, [listing?.photos]);
 
-  const set = <K extends keyof Form>(k: K, v: Form[K]) => setF((x) => ({ ...x, [k]: v }));
-  const payload = () => ({
-    carModelId: f.carModelId,
-    branchId: f.branchId,
-    year: num(f.year),
-    color: f.color,
-    transmission: f.transmission,
-    fuel: f.fuel,
-    seats: num(f.seats),
-    driverOption: f.driverOption,
-    priceDayEgp: num(f.priceDayEgp),
-    priceWeekEgp: num(f.priceWeekEgp) ?? null,
-    priceMonthEgp: num(f.priceMonthEgp) ?? null,
-    depositEgp: num(f.depositEgp),
-    minAge: num(f.minAge),
-    requiredDocs: f.requiredDocs,
-    kmLimitPerDay: num(f.kmLimitPerDay) ?? null,
-    deliveryOptions: f.deliveryOptions,
-    airportPickup: f.airportPickup,
-    ...(f.descriptionAr ? { descriptionAr: f.descriptionAr } : {}),
-  });
+  const set = <K extends keyof Form>(k: K, v: Form[K]) => form.setValue(k, v as never, { shouldDirty: true, shouldValidate: form.formState.isSubmitted });
+  const payload = () => toPayload(form.getValues());
 
-  const validateStep = (s: number) => {
-    const r = listingFactsSchema.safeParse(payload());
-    const errs: Record<string, string> = {};
-    if (!r.success) for (const i of r.error.issues) if (STEP_FIELDS[s]!.includes(i.path[0] as keyof Form)) errs[String(i.path[0])] = te.has(i.message) ? te(i.message) : te('validation_failed');
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
-  };
+  const validateStep = (s: number) => form.trigger(STEP_FIELDS[s] as (keyof Form)[]);
 
   const save = async () => {
     setBusy(true);
@@ -134,8 +135,7 @@ export function CarWizard({ listing }: { listing?: Listing & { model?: { makeId:
       toast({ tone: 'success', text: t('saved') });
       return true;
     } catch (e) {
-      const fe = ((e as ApiRequestError).details as { fieldErrors?: Record<string, string[]> })?.fieldErrors ?? {};
-      setErrors(Object.fromEntries(Object.entries(fe).map(([k, v]) => [k, te.has(v[0] ?? '') ? te(v[0]!) : te('validation_failed')])));
+      applyServerErrors(form, e);
       return false;
     } finally {
       setBusy(false);
@@ -170,7 +170,7 @@ export function CarWizard({ listing }: { listing?: Listing & { model?: { makeId:
   const steps = [t('steps.car'), t('steps.prices'), t('steps.rules'), t('steps.photos')];
   const isLast = step === steps.length - 1;
   const verified = me.data?.dealer.status === 'verified';
-  const e = (k: string) => errors[k];
+  const e = (k: keyof Form) => text(form.formState.errors[k]?.message);
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -184,7 +184,7 @@ export function CarWizard({ listing }: { listing?: Listing & { model?: { makeId:
         nextDisabled={isLast && !uploads.some((u) => u.status === 'ready')}
         onNext={async () => {
           if (!isLast) {
-            if (!validateStep(step)) return;
+            if (!(await validateStep(step))) return;
             if (step === 2 && !(await save())) return;
             setStep(step + 1);
             return;
@@ -202,7 +202,7 @@ export function CarWizard({ listing }: { listing?: Listing & { model?: { makeId:
       >
         {step === 0 ? (
           <div className="flex flex-col gap-4">
-            <Combobox label={t('make')} value={f.makeId} onValueChange={(v) => setF((x) => ({ ...x, makeId: v, carModelId: undefined }))} options={(makes.data ?? []).map((m) => ({ value: m.id, label: locale === 'ar' ? m.nameAr : m.nameEn, hint: locale === 'ar' ? m.nameEn : m.nameAr }))} />
+            <Combobox label={t('make')} value={f.makeId} onValueChange={(v) => { set('makeId', v); set('carModelId', undefined); }} options={(makes.data ?? []).map((m) => ({ value: m.id, label: locale === 'ar' ? m.nameAr : m.nameEn, hint: locale === 'ar' ? m.nameEn : m.nameAr }))} />
             <Combobox label={t('model')} value={f.carModelId} onValueChange={(v) => set('carModelId', v)} error={e('carModelId')} disabled={!f.makeId} options={(models.data ?? []).map((m) => ({ value: m.id, label: locale === 'ar' ? m.nameAr : m.nameEn, hint: tu(`bodyTypes.${m.bodyType}`) }))} />
             <div className="grid grid-cols-2 gap-3">
               <TextField label={t('year')} inputMode="numeric" value={f.year} onChange={(ev) => set('year', ev.target.value)} error={e('year')} dir="ltr" />

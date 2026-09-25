@@ -1,13 +1,16 @@
 'use client';
-import { useApi, useCities, type ApiRequestError } from '@agarha/api-client';
+import { useApi, useCities } from '@agarha/api-client';
+import { branchInputSchema, businessSchema } from '@agarha/schemas';
 import { Button, InlineAlert, PhoneField, Select, Stepper, TextField, useToast } from '@agarha/ui-web';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { CheckCircle2, FileUp } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { uploadDocument } from '@/components/dealer/upload';
 import { useDealerMe } from '@/components/dealer/use-dealer';
 import { Link } from '@/i18n/routing';
+import { applyServerErrors, schemaResolver, useFieldError } from '@/lib/forms';
 
 const REQUIRED = ['commercial_registration', 'tax_card', 'owner_national_id'] as const;
 
@@ -38,77 +41,90 @@ export default function Onboarding() {
   );
 }
 
+type BusinessForm = { legalName: string; displayNameAr: string; displayNameEn: string; commercialRegistrationNo: string; taxCardNo: string; phone: string; whatsapp: string; descriptionAr: string };
+const businessInput = (v: BusinessForm) => ({ ...v, descriptionAr: v.descriptionAr.trim() || undefined });
+
 function BusinessStep({ onDone }: { onDone: () => void }) {
   const t = useTranslations('dealer.onboarding');
-  const te = useTranslations('errors');
   const api = useApi();
-  const [f, setF] = useState({ legalName: '', displayNameAr: '', displayNameEn: '', commercialRegistrationNo: '', taxCardNo: '', phone: '', whatsapp: '', descriptionAr: '' });
-  const [errors, setErrors] = useState<Record<string, string[]>>({});
-  const [busy, setBusy] = useState(false);
-  const field = (k: keyof typeof f) => ({ value: f[k], onChange: (e: { target: { value: string } }) => setF({ ...f, [k]: e.target.value }), error: errors[k]?.[0] ? (te.has(errors[k][0]) ? te(errors[k][0]) : te('validation_failed')) : undefined });
+  const { text, known } = useFieldError();
+  const form = useForm<BusinessForm>({
+    defaultValues: { legalName: '', displayNameAr: '', displayNameEn: '', commercialRegistrationNo: '', taxCardNo: '', phone: '', whatsapp: '', descriptionAr: '' },
+    resolver: schemaResolver(businessSchema, businessInput, known),
+  });
+  const err = (k: keyof BusinessForm) => text(form.formState.errors[k]?.message);
   return (
     <form
       className="flex flex-col gap-4"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        setBusy(true);
+      noValidate
+      onSubmit={form.handleSubmit(async (v) => {
         try {
-          await api.POST('/v1/dealer/onboarding/business', { body: { ...f, descriptionAr: f.descriptionAr || undefined, client: 'web' } as never });
+          await api.POST('/v1/dealer/onboarding/business', { body: { ...businessInput(v), client: 'web' } as never });
           onDone();
-        } catch (err) {
-          setErrors(((err as ApiRequestError).details as { fieldErrors?: Record<string, string[]> })?.fieldErrors ?? {});
-        } finally {
-          setBusy(false);
+        } catch (e) {
+          applyServerErrors(form, e);
         }
-      }}
+      })}
     >
-      <TextField label={t('legalName')} {...field('legalName')} required />
-      <TextField label={t('displayNameAr')} {...field('displayNameAr')} required lang="ar" dir="rtl" />
-      <TextField label={t('displayNameEn')} {...field('displayNameEn')} required lang="en" dir="ltr" />
-      <TextField label={t('cr')} {...field('commercialRegistrationNo')} required inputMode="numeric" dir="ltr" />
-      <TextField label={t('taxCard')} {...field('taxCardNo')} required inputMode="numeric" dir="ltr" />
-      <PhoneField label={t('businessPhone')} {...field('phone')} />
-      <PhoneField label={t('whatsapp')} {...field('whatsapp')} />
-      <TextField label={t('description')} {...field('descriptionAr')} optional />
-      <Button type="submit" loading={busy} block>
+      <TextField label={t('legalName')} {...form.register('legalName')} error={err('legalName')} required />
+      <TextField label={t('displayNameAr')} {...form.register('displayNameAr')} error={err('displayNameAr')} required lang="ar" dir="rtl" />
+      <TextField label={t('displayNameEn')} {...form.register('displayNameEn')} error={err('displayNameEn')} required lang="en" dir="ltr" />
+      <TextField label={t('cr')} {...form.register('commercialRegistrationNo')} error={err('commercialRegistrationNo')} required inputMode="numeric" dir="ltr" />
+      <TextField label={t('taxCard')} {...form.register('taxCardNo')} error={err('taxCardNo')} required inputMode="numeric" dir="ltr" />
+      <PhoneField label={t('businessPhone')} {...form.register('phone')} error={err('phone')} />
+      <PhoneField label={t('whatsapp')} {...form.register('whatsapp')} error={err('whatsapp')} />
+      <TextField label={t('description')} {...form.register('descriptionAr')} error={err('descriptionAr')} optional />
+      <Button type="submit" loading={form.formState.isSubmitting} block>
         {t('steps.branches')}
       </Button>
     </form>
   );
 }
 
+type BranchForm = { city: string; areaId: string; nameAr: string; nameEn: string; address: string };
+
 function BranchStep({ onDone }: { onDone: () => void }) {
   const t = useTranslations('dealer.onboarding');
   const locale = useLocale();
   const api = useApi();
   const cities = useCities();
-  const [city, setCity] = useState<string>();
-  const [area, setArea] = useState<string>();
-  const [nameAr, setNameAr] = useState('');
-  const [nameEn, setNameEn] = useState('');
-  const [address, setAddress] = useState('');
-  const [busy, setBusy] = useState(false);
-  const areas = useQuery({ queryKey: ['areas', city], enabled: !!city, queryFn: async () => (await api.GET('/v1/catalog/cities/{slug}', { params: { path: { slug: city! } } })).data!.areas });
+  const { text, known } = useFieldError();
+  const branchInput = (v: BranchForm) => ({ areaId: v.areaId, nameAr: v.nameAr, nameEn: v.nameEn.trim() || v.nameAr, ...(locale === 'ar' ? { addressAr: v.address } : { addressEn: v.address }), isPrimary: true });
+  const form = useForm<BranchForm>({ defaultValues: { city: '', areaId: '', nameAr: '', nameEn: '', address: '' }, resolver: schemaResolver(branchInputSchema, branchInput, known) });
+  const city = form.watch('city');
+  const areas = useQuery({ queryKey: ['areas', city], enabled: !!city, queryFn: async () => (await api.GET('/v1/catalog/cities/{slug}', { params: { path: { slug: city } } })).data!.areas });
+  const err = (k: keyof BranchForm) => text(form.formState.errors[k]?.message);
   return (
     <form
       className="flex flex-col gap-4"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        setBusy(true);
+      noValidate
+      onSubmit={form.handleSubmit(async (v) => {
         try {
-          await api.POST('/v1/dealer/branches', { body: { areaId: area!, nameAr, nameEn: nameEn || nameAr, ...(locale === 'ar' ? { addressAr: address } : { addressEn: address }), isPrimary: true } as never });
+          await api.POST('/v1/dealer/branches', { body: branchInput(v) as never });
           onDone();
-        } finally {
-          setBusy(false);
+        } catch (e) {
+          applyServerErrors(form, e);
         }
-      }}
+      })}
     >
-      <Select label={t('city')} value={city} onValueChange={(v) => { setCity(v); setArea(undefined); }} options={(cities.data ?? []).map((c) => ({ value: c.slug, label: locale === 'ar' ? c.nameAr : c.nameEn }))} />
-      <Select label={t('area')} value={area} onValueChange={setArea} disabled={!areas.data} options={(areas.data ?? []).map((a) => ({ value: a.id, label: locale === 'ar' ? a.nameAr : a.nameEn }))} />
-      <TextField label={t('branchName')} value={nameAr} onChange={(e) => setNameAr(e.target.value)} required />
-      <TextField label={t('branchNameEn')} value={nameEn} onChange={(e) => setNameEn(e.target.value)} optional dir="ltr" />
-      <TextField label={t('address')} hint={t('pinHint')} value={address} onChange={(e) => setAddress(e.target.value)} required />
-      <Button type="submit" loading={busy} disabled={!area} block>
+      <Controller
+        control={form.control}
+        name="city"
+        render={({ field }) => (
+          <Select label={t('city')} value={field.value || undefined} onValueChange={(v) => { field.onChange(v); form.setValue('areaId', ''); }} options={(cities.data ?? []).map((c) => ({ value: c.slug, label: locale === 'ar' ? c.nameAr : c.nameEn }))} />
+        )}
+      />
+      <Controller
+        control={form.control}
+        name="areaId"
+        render={({ field }) => (
+          <Select label={t('area')} value={field.value || undefined} onValueChange={field.onChange} disabled={!areas.data} error={err('areaId')} options={(areas.data ?? []).map((a) => ({ value: a.id, label: locale === 'ar' ? a.nameAr : a.nameEn }))} />
+        )}
+      />
+      <TextField label={t('branchName')} {...form.register('nameAr')} error={err('nameAr')} required />
+      <TextField label={t('branchNameEn')} {...form.register('nameEn')} error={err('nameEn')} optional dir="ltr" />
+      <TextField label={t('address')} hint={t('pinHint')} {...form.register('address')} required />
+      <Button type="submit" loading={form.formState.isSubmitting} block>
         {t('steps.documents')}
       </Button>
     </form>

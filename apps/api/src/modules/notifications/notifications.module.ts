@@ -12,7 +12,7 @@ import { OtpDeliveryService } from './otp-delivery.service';
 import { PreferencesController } from './preferences.controller';
 import { DeliveryWebhooksController } from './webhooks.controller';
 
-/* eslint-disable @typescript-eslint/no-non-null-assertion -- env validation guarantees these keys when the provider is selected */
+ 
 @Global()
 @Module({
   controllers: [DeliveryWebhooksController, PreferencesController],

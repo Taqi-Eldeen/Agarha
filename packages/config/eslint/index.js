@@ -2,6 +2,7 @@ import js from '@eslint/js';
 import prettier from 'eslint-config-prettier';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
+import reactHooks from 'eslint-plugin-react-hooks';
 import agarha from './plugin.js';
 
 /**
@@ -42,10 +43,12 @@ export const base = tseslint.config(
 export const ui = tseslint.config(...base, {
   files: ['**/*.tsx', '**/*.jsx'],
   languageOptions: { globals: { ...globals.browser } },
-  plugins: { agarha },
+  plugins: { agarha, 'react-hooks': reactHooks },
   rules: {
     'agarha/no-physical-direction': 'error',
     'agarha/no-jsx-literal': 'error',
+    'react-hooks/rules-of-hooks': 'error',
+    'react-hooks/exhaustive-deps': 'error',
   },
 });
 
@@ -53,7 +56,11 @@ export const ui = tseslint.config(...base, {
  * NestJS API: modules talk through each other's public index (service interface + events),
  * never through another module's tables, repositories or internals.
  */
-export const api = tseslint.config(...base, {
+export const api = tseslint.config(
+  ...base,
+  // Nest DI reads constructor parameter types from decorator metadata: keep those imports as values.
+  { languageOptions: { parserOptions: { emitDecoratorMetadata: true, experimentalDecorators: true } } },
+  {
   files: ['src/modules/**/*.ts'],
   rules: {
     'no-restricted-imports': [
@@ -69,6 +76,10 @@ export const api = tseslint.config(...base, {
       },
     ],
   },
-});
+  },
+);
 
 export default base;
+
+/** For service workers (e.g. apps/web/public/sw.js). */
+export const serviceWorkerGlobals = { languageOptions: { globals: globals.serviceworker } };

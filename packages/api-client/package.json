@@ -39,9 +39,11 @@
   },
   "devDependencies": {
     "@agarha/config": "workspace:*",
+    "@agarha/test-utils": "workspace:*",
     "@tanstack/react-query": "^5.90.2",
     "@types/react": "^19.1.13",
     "eslint": "^9.37.0",
+    "msw": "^2.15.0",
     "openapi-typescript": "^7.9.1",
     "react": "19.1.0",
     "tsup": "^8.5.0",

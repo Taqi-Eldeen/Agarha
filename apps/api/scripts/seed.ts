@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 // Local/staging seed: catalog + plans + synthetic dealers and cars (never real people or documents).
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';

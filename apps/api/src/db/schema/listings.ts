@@ -11,7 +11,6 @@ import {
   primaryKey,
   smallint,
   text,
-  uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
 import { createdAt, id, tstz, updatedAt } from './_columns';

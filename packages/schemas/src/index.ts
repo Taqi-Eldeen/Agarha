@@ -5,5 +5,7 @@ export * from './auth.js';
 export * from './listing.js';
 export * from './freshness.js';
 export * from './price.js';
+export * from './dealer.js';
+export * from './requests.js';
 export * from './arabic.js';
 export * from './api.js';

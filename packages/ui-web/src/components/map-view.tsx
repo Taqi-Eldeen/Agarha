@@ -1,4 +1,5 @@
 'use client';
+import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl';
 import type { FeatureCollection, Point } from 'geojson';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useEffect, useRef } from 'react';
@@ -32,7 +33,7 @@ export interface MapViewProps {
  */
 export default function MapView({ pins, styleUrl, center = { lat: 30.0444, lng: 31.2357 }, zoom = 11, selectedId, onSelect, onMoveEnd, className }: MapViewProps) {
   const el = useRef<HTMLDivElement>(null);
-  const map = useRef<import('maplibre-gl').Map | null>(null);
+  const map = useRef<MapLibreMap | null>(null);
   const { t, locale } = useUi();
 
   useEffect(() => {
@@ -51,7 +52,7 @@ export default function MapView({ pins, styleUrl, center = { lat: 30.0444, lng: 
         m.addLayer({ id: 'pin-label', type: 'symbol', source: 'pins', filter: ['!', ['has', 'point_count']], layout: { 'text-field': ['get', 'label'], 'text-offset': [0, 1.4], 'text-size': 12 }, paint: { 'text-color': '#16202B', 'text-halo-color': '#ffffff', 'text-halo-width': 1.5 } });
         m.on('click', 'clusters', async (e) => {
           const f = e.features?.[0];
-          const src = m.getSource('pins') as import('maplibre-gl').GeoJSONSource;
+          const src = m.getSource('pins') as GeoJSONSource;
           if (!f) return;
           const z = await src.getClusterExpansionZoom(f.properties.cluster_id as number);
           m.easeTo({ center: (f.geometry as Point).coordinates as [number, number], zoom: z });
@@ -76,11 +77,11 @@ export default function MapView({ pins, styleUrl, center = { lat: 30.0444, lng: 
       map.current = null;
     };
     // Recreate only when the style changes; pins update below.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- pins/selection update in the effect below
   }, [styleUrl]);
 
   useEffect(() => {
-    const src = map.current?.getSource('pins') as import('maplibre-gl').GeoJSONSource | undefined;
+    const src = map.current?.getSource('pins') as GeoJSONSource | undefined;
     src?.setData(toGeoJson(pins, selectedId));
   }, [pins, selectedId]);
 

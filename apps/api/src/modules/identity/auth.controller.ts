@@ -1,7 +1,6 @@
 import {
   ERROR_CODES,
   authResponseSchema,
-  egyptMobileSchema,
   localeSchema,
   otpRequestResponseSchema,
   otpRequestSchema,

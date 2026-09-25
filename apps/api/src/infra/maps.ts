@@ -57,7 +57,7 @@ export class MapsService {
     @Inject(ENV) env: Env,
     @Inject(REDIS) private readonly redis: Redis,
   ) {
-    /* eslint-disable @typescript-eslint/no-non-null-assertion -- env validation requires the key for the chosen provider */
+     
     this.provider = env.MAPS_PROVIDER === 'google' ? new GoogleMaps(env.GOOGLE_MAPS_API_KEY!) : env.MAPS_PROVIDER === 'mapbox' ? new Mapbox(env.MAPBOX_ACCESS_TOKEN!) : new MockMaps();
   }
 

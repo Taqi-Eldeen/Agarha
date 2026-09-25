@@ -1,4 +1,4 @@
-import { REPORT_REASONS } from '@agarha/schemas';
+import { reportInputSchema } from '@agarha/schemas';
 import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
@@ -8,7 +8,7 @@ import { Idempotent } from '../../common/idempotency';
 import { ZodBody, ZodPipe } from '../../common/zod';
 import { ModerationService } from './moderation.service';
 
-const reportSchema = z.object({ listingId: z.uuid(), reason: z.enum(REPORT_REASONS), details: z.string().trim().max(1000).optional() });
+const reportSchema = reportInputSchema;
 const resolveSchema = z.object({ action: z.enum(['dismiss', 'hide_listing', 'suspend_dealer']), note: z.string().trim().min(3).max(500) });
 
 @ApiTags('reports')

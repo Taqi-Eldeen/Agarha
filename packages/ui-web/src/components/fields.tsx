@@ -1,4 +1,5 @@
 'use client';
+import { AlertTriangle } from 'lucide-react';
 import { toWesternDigits } from '@agarha/schemas/phone';
 import { forwardRef, useId, useRef, type InputHTMLAttributes, type ReactNode } from 'react';
 import { cn } from '../lib/cn';
@@ -30,7 +31,7 @@ export function FieldShell({ id, label, hint, error, optional, children }: Field
       ) : null}
       {error ? (
         <p id={`${id}-error`} role="alert" className="flex items-center gap-1 text-caption text-danger">
-          <span aria-hidden>⚠</span>
+          <AlertTriangle aria-hidden className="size-4 shrink-0" strokeWidth={1.75} />
           {error}
         </p>
       ) : null}
@@ -137,8 +138,8 @@ export function OTPField({ length = 6, value, onChange, onComplete, label, error
         ))}
       </div>
       {error ? (
-        <p id={`${id}-error`} role="alert" className="text-caption text-danger">
-          <span aria-hidden>⚠ </span>
+        <p id={`${id}-error`} role="alert" className="flex items-center gap-1 text-caption text-danger">
+          <AlertTriangle aria-hidden className="size-4 shrink-0" strokeWidth={1.75} />
           {error}
         </p>
       ) : null}

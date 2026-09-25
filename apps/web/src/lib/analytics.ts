@@ -28,6 +28,7 @@ export type AnalyticsEvent =
   | 'favorite_removed'
   | 'saved_search_created'
   | 'report_submitted'
+  | 'availability_requested'
   | 'review_submitted'
   | 'sign_in_started'
   | 'sign_in_completed'

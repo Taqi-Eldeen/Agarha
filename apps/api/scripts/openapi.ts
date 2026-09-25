@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 // Writes docs/api/openapi.json from the code (no server needed). CI diffs it against main (contract test).
 import 'reflect-metadata';
 import { writeFileSync } from 'node:fs';

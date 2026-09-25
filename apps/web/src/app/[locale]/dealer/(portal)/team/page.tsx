@@ -1,10 +1,12 @@
 'use client';
-import { useApi, type ApiRequestError } from '@agarha/api-client';
+import { ApiRequestError, useApi } from '@agarha/api-client';
 import { formatPhone } from '@agarha/i18n';
+import { inviteSchema } from '@agarha/schemas';
 import { Button, InlineAlert, PhoneField, useToast } from '@agarha/ui-web';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { applyServerErrors, schemaResolver, useFieldError } from '@/lib/forms';
 
 type Member = { userId: string; role: 'dealer_owner' | 'dealer_staff'; phone: string | null; displayName: string | null };
 
@@ -13,8 +15,8 @@ export default function Team() {
   const api = useApi();
   const qc = useQueryClient();
   const toast = useToast();
-  const [phone, setPhone] = useState('');
-  const [error, setError] = useState<string>();
+  const { text, known } = useFieldError();
+  const form = useForm<{ phone: string }>({ defaultValues: { phone: '' }, resolver: schemaResolver(inviteSchema, (v) => ({ ...v, role: 'dealer_staff' }), known) });
   const q = useQuery({ queryKey: ['team'], queryFn: async () => (await api.GET('/v1/dealer/team')).data as unknown as { items: Member[]; limits: { maxTeamMembers: number } } });
   return (
     <div className="flex flex-col gap-4">
@@ -38,22 +40,21 @@ export default function Team() {
       </ul>
       <form
         className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4"
-        onSubmit={async (e) => {
-          e.preventDefault();
-          setError(undefined);
+        noValidate
+        onSubmit={form.handleSubmit(async ({ phone }) => {
           try {
             await api.POST('/v1/dealer/team', { body: { phone, role: 'dealer_staff' } as never });
             toast({ tone: 'success', text: t('invited') });
-            setPhone('');
+            form.reset();
             await qc.invalidateQueries({ queryKey: ['team'] });
           } catch (err) {
-            setError((err as ApiRequestError).message);
+            if (!applyServerErrors(form, err)) form.setError('phone', { type: 'server', message: err instanceof ApiRequestError ? err.code : 'internal_error' });
           }
-        }}
+        })}
       >
         <h2 className="text-h2">{t('invite')}</h2>
-        <PhoneField label={t('phone')} value={phone} onChange={(e) => setPhone(e.target.value)} error={error} />
-        <Button type="submit" className="self-start">
+        <PhoneField label={t('phone')} {...form.register('phone')} error={text(form.formState.errors.phone?.message)} />
+        <Button type="submit" className="self-start" loading={form.formState.isSubmitting}>
           {t('invite')}
         </Button>
       </form>

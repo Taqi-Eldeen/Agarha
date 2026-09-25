@@ -1,4 +1,4 @@
-import { LEAD_CHANNELS, leadResponseSchema } from '@agarha/schemas';
+import { availabilityRequestInputSchema, LEAD_CHANNELS, leadResponseSchema } from '@agarha/schemas';
 import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
@@ -16,8 +16,7 @@ type Dealer = { dealerId: string; userId: string; role: 'dealer_owner' | 'dealer
 const leadSchema = z.object({ listingId: z.uuid(), channel: z.enum(LEAD_CHANNELS), locale: z.enum(['ar', 'en']).default('ar') });
 const outcomeSchema = z.object({ outcome: z.enum(['from_agarha', 'rented', 'not_rented', 'no_reply']) });
 const pageSchema = z.object({ cursor: z.string().max(300).optional(), limit: z.coerce.number().int().min(1).max(100).default(30) });
-const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
-const availabilitySchema = z.object({ listingId: z.uuid(), startDate: date, endDate: date, note: z.string().trim().max(300).optional(), locale: z.enum(['ar', 'en']).default('ar') });
+const availabilitySchema = availabilityRequestInputSchema;
 const answerSchema = z.object({ available: z.boolean() });
 
 @ApiTags('leads')

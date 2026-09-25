@@ -32,10 +32,9 @@ test.describe('dealer: onboarding → verification → add car', () => {
     await page.getByLabel('WhatsApp number customers will message').fill(phone.national);
     await page.getByRole('button', { name: 'Branches' }).click();
     // Branch
-    await page.getByRole('combobox', { name: 'City' }).click();
-    await page.getByRole('option', { name: 'Cairo' }).click();
-    await page.getByRole('combobox', { name: 'Area' }).click();
-    await page.getByRole('option', { name: 'Nasr City' }).click();
+    await page.getByRole('combobox', { name: 'City' }).selectOption({ label: 'Cairo' });
+    await expect(page.getByRole('combobox', { name: 'Area' })).toBeEnabled();
+    await page.getByRole('combobox', { name: 'Area' }).selectOption({ label: 'Nasr City' });
     await page.getByLabel('Branch name', { exact: true }).fill('Main');
     await page.getByLabel('Address').fill('Abbas El Akkad St');
     await page.getByRole('button', { name: 'Documents' }).click();
