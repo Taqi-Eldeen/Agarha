@@ -26,7 +26,7 @@ jobs:
           cp docs/api/openapi.json .zap/openapi.json
           docker run --rm -v "$PWD/.zap:/zap/wrk:rw" zaproxy/zap-stable zap-api-scan.py \
             -t openapi.json -f openapi -O "${{ vars.STAGING_API_URL }}" -c rules.tsv -r zap-api.html -I
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: zap-reports
