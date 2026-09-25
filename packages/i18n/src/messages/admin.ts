@@ -1,0 +1,36 @@
+// Internal admin console copy (ops, moderators, support).
+type DeepString<T> = { [K in keyof T]: T[K] extends string ? string : DeepString<T[K]> };
+
+const ar = {
+  title: 'لوحة تشغيل أجّرها',
+  nav: { dashboard: 'الملخص', dealers: 'المكاتب', listings: 'الإعلانات', reports: 'البلاغات', reviews: 'التقييمات', catalog: 'الكتالوج', users: 'المستخدمين', plans: 'الباقات', audit: 'سجل العمليات' },
+  auth: { title: 'دخول فريق التشغيل', google: 'ادخل بحساب Google الخاص بالشركة', dev: 'دخول تطوير (محلي فقط)', email: 'البريد', totp: 'كود تطبيق التحقق', setup: 'فعّل التحقق بخطوتين', signOut: 'خروج' },
+  dashboard: { live: 'إعلانات منشورة', fresh: 'متأكدة خلال 7 أيام', pending: 'في انتظار المراجعة', stale: 'مخفية لعدم التأكيد', dealersPending: 'مكاتب تحت المراجعة', verified: 'مكاتب موثّقة', leads: 'استفسارات يومياً', otp: 'فشل إرسال الأكواد (24 ساعة)', queues: 'طوابير المهام', maps: 'طلبات الخرائط الشهر ده' },
+  dealers: { queue: 'قائمة المراجعة', all: 'كل المكاتب', search: 'دوّر بالاسم أو الرقم', verify: 'وثّق', reject: 'ارفض', suspend: 'أوقف (مفتاح الطوارئ)', unsuspend: 'رجّع', reason: 'السبب', docs: 'المستندات', view: 'اعرض (رابط 5 دقايق)', approve: 'اقبل', rejectDoc: 'ارفض المستند', team: 'الفريق', status: 'الحالة', suspendedBadge: 'موقوف', cr: 'سجل تجاري {value}', tax: 'بطاقة ضريبية {value}', statuses: { onboarding: 'بيسجّل', pending_review: 'تحت المراجعة', verified: 'موثّق', rejected: 'مرفوض', suspended: 'موقوف' } },
+  listings: { pending: 'قبل النشر', unreviewed: 'منشورة ولسه متراجعتش', hidden: 'مخفية', approve: 'اقبل', reject: 'ارفض', hide: 'اخفي', empty: 'مفيش إعلانات هنا.', km: '{value} كم' },
+  reports: { title: 'البلاغات', dismiss: 'تجاهل', hideListing: 'اخفي الإعلان', suspendDealer: 'أوقف المكتب', note: 'ملاحظة', empty: 'مفيش بلاغات مفتوحة.' },
+  reviews: { title: 'تقييمات في انتظار المراجعة', approve: 'انشر', reject: 'ارفض', empty: 'مفيش تقييمات مستنية.' },
+  catalog: { cities: 'المدن', areas: 'المناطق', makes: 'الماركات', models: 'الموديلات', trims: 'الفئات', types: 'أنواع العربيات', add: 'ضيف', save: 'احفظ', active: 'متاحة للعملاء', slug: 'الرابط', nameAr: 'الاسم بالعربي', nameEn: 'الاسم بالإنجليزي', bodyType: 'النوع', lat: 'خط العرض', lng: 'خط الطول' },
+  users: { lookup: 'دوّر برقم الموبايل', block: 'احظر', unblock: 'فك الحظر', export: 'صدّر البيانات', delete: 'امسح الحساب', notFound: 'مفيش مستخدم بالرقم ده.', roles: 'الصلاحيات', memberships: 'المكاتب', staff: 'ضيف موظف تشغيل' },
+  plans: { title: 'الباقات', price: 'السعر الشهري', live: 'حد الإعلانات', team: 'حد الفريق', credits: 'تمييز شهرياً', invoices: 'الفواتير' },
+  audit: { title: 'سجل العمليات', actor: 'المنفّذ', action: 'العملية', target: 'على', time: 'الوقت', filter: 'فلتر' },
+  common: { confirm: 'تأكيد', cancel: 'إلغاء', loading: 'جاري التحميل…', saved: 'اتحفظ', error: 'حصلت مشكلة', empty: 'فاضي', next: 'التالي' },
+};
+
+const en: DeepString<typeof ar> = {
+  title: 'Agarha operations',
+  nav: { dashboard: 'Overview', dealers: 'Dealers', listings: 'Listings', reports: 'Reports', reviews: 'Reviews', catalog: 'Catalog', users: 'Users', plans: 'Plans', audit: 'Audit log' },
+  auth: { title: 'Operations sign-in', google: 'Sign in with your company Google account', dev: 'Development sign-in (local only)', email: 'Email', totp: 'Authenticator code', setup: 'Set up two-step verification', signOut: 'Sign out' },
+  dashboard: { live: 'Live listings', fresh: 'Confirmed within 7 days', pending: 'Waiting for moderation', stale: 'Hidden as stale', dealersPending: 'Dealers in review', verified: 'Verified dealers', leads: 'Leads per day', otp: 'OTP delivery failures (24h)', queues: 'Job queues', maps: 'Maps calls this month' },
+  dealers: { queue: 'Verification queue', all: 'All dealers', search: 'Search by name or number', verify: 'Verify', reject: 'Reject', suspend: 'Suspend (kill switch)', unsuspend: 'Reinstate', reason: 'Reason', docs: 'Documents', view: 'View (5-minute link)', approve: 'Approve', rejectDoc: 'Reject document', team: 'Team', status: 'Status', suspendedBadge: 'Suspended', cr: 'CR {value}', tax: 'Tax card {value}', statuses: { onboarding: 'Onboarding', pending_review: 'In review', verified: 'Verified', rejected: 'Rejected', suspended: 'Suspended' } },
+  listings: { pending: 'Pre-moderation', unreviewed: 'Live, not yet reviewed', hidden: 'Hidden', approve: 'Approve', reject: 'Reject', hide: 'Hide', empty: 'No listings here.', km: '{value} km' },
+  reports: { title: 'Reports', dismiss: 'Dismiss', hideListing: 'Hide listing', suspendDealer: 'Suspend dealer', note: 'Note', empty: 'No open reports.' },
+  reviews: { title: 'Reviews waiting for moderation', approve: 'Publish', reject: 'Reject', empty: 'No reviews waiting.' },
+  catalog: { cities: 'Cities', areas: 'Areas', makes: 'Makes', models: 'Models', trims: 'Trims', types: 'Car types', add: 'Add', save: 'Save', active: 'Visible to customers', slug: 'Slug', nameAr: 'Name (Arabic)', nameEn: 'Name (English)', bodyType: 'Type', lat: 'Latitude', lng: 'Longitude' },
+  users: { lookup: 'Look up by mobile number', block: 'Block', unblock: 'Unblock', export: 'Export data', delete: 'Delete account', notFound: 'No user with this number.', roles: 'Roles', memberships: 'Dealers', staff: 'Add ops staff' },
+  plans: { title: 'Plans', price: 'Monthly price', live: 'Live listing limit', team: 'Team limit', credits: 'Featured per month', invoices: 'Invoices' },
+  audit: { title: 'Audit log', actor: 'Actor', action: 'Action', target: 'Target', time: 'Time', filter: 'Filter' },
+  common: { confirm: 'Confirm', cancel: 'Cancel', loading: 'Loading…', saved: 'Saved', error: 'Something went wrong', empty: 'Empty', next: 'Next' },
+};
+
+export const admin = { ar, en };

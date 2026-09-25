@@ -1,3 +1,4 @@
+'use client';
 import type { RequiredDoc } from '@agarha/schemas';
 import { CalendarClock, FileText, Gauge, Plane, ShieldCheck } from 'lucide-react';
 import { useUi } from '../lib/ui-context';

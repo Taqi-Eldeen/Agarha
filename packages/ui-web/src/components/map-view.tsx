@@ -1,4 +1,6 @@
+'use client';
 import type { FeatureCollection, Point } from 'geojson';
+import 'maplibre-gl/dist/maplibre-gl.css';
 import { useEffect, useRef } from 'react';
 import { useUi } from '../lib/ui-context';
 

@@ -1,10 +1,10 @@
 import type { Locale } from '@agarha/schemas';
-import { render } from '@testing-library/react';
+import { render, type RenderResult } from '@testing-library/react';
 import axe from 'axe-core';
 import type { ReactElement } from 'react';
 import { UiProvider } from '../lib/ui-context';
 
-export function renderUi(ui: ReactElement, locale: Locale = 'ar') {
+export function renderUi(ui: ReactElement, locale: Locale = 'ar'): RenderResult {
   document.documentElement.lang = locale;
   document.documentElement.dir = locale === 'ar' ? 'rtl' : 'ltr';
   return render(ui, { wrapper: ({ children }) => <UiProvider locale={locale}>{children}</UiProvider> });

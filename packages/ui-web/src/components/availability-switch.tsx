@@ -1,3 +1,4 @@
+'use client';
 import * as Switch from '@radix-ui/react-switch';
 import { useState } from 'react';
 import { cn } from '../lib/cn';

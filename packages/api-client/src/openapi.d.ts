@@ -2074,9 +2074,7 @@ export interface paths {
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: {
-        output: Record<string, never>;
-    };
+    schemas: never;
     responses: never;
     parameters: never;
     requestBodies: never;
@@ -2347,7 +2345,14 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["output"];
+                "application/json": {
+                    refreshToken?: string;
+                    /**
+                     * @default web
+                     * @enum {string}
+                     */
+                    client?: "web" | "mobile";
+                };
             };
         };
         responses: {
@@ -2434,7 +2439,17 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        phone: string;
+                        roles: string[];
+                        /** @enum {string} */
+                        locale: "ar" | "en";
+                        displayName: string | null;
+                    };
+                };
             };
         };
     };

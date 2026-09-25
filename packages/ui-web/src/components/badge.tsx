@@ -1,4 +1,5 @@
-import { freshnessOf } from '@agarha/schemas';
+'use client';
+import { freshnessOf } from '@agarha/schemas/freshness';
 import { BadgeCheck, Clock, Sparkles, UserRound, Zap } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { cn } from '../lib/cn';
@@ -26,7 +27,7 @@ export function Badge({ kind, children, className }: { kind: Kind; children?: Re
   const { t } = useUi();
   const text = children ?? { verified: t.verified, featured: t.featured, fresh: t.fresh, stale: t.stale, driver: t.withDriver }[kind];
   return (
-    <span className={cn('inline-flex min-h-7 max-w-full items-center gap-1 rounded-2xl px-2 py-0.5 text-label font-medium', STYLES[kind], className)}>
+    <span className={cn('inline-flex min-h-7 max-w-full items-center gap-1 rounded-2xl px-2 py-0.5 text-caption font-medium', STYLES[kind], className)}>
       {ICONS[kind]}
       {text}
     </span>

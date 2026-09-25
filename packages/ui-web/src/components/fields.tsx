@@ -1,4 +1,5 @@
-import { toWesternDigits } from '@agarha/schemas';
+'use client';
+import { toWesternDigits } from '@agarha/schemas/phone';
 import { forwardRef, useId, useRef, type InputHTMLAttributes, type ReactNode } from 'react';
 import { cn } from '../lib/cn';
 import { useUi } from '../lib/ui-context';

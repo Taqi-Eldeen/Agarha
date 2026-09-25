@@ -1,0 +1,54 @@
+// Customer mobile app copy (tabs, onboarding, permissions, store listing).
+type DeepString<T> = { [K in keyof T]: T[K] extends string ? string : DeepString<T[K]> };
+
+const ar = {
+  tabs: { explore: 'استكشف', map: 'الخريطة', saved: 'المحفوظات', account: 'حسابي' },
+  onboarding: {
+    languageTitle: 'اختار اللغة',
+    arabic: 'العربية',
+    english: 'English',
+    locationTitle: 'نوريك العربيات القريبة منك؟',
+    locationBody: 'بنستخدم موقعك بس لما تدوّر على عربيات قريبة. تقدر تغيّر ده في أي وقت.',
+    allow: 'اسمح',
+    notNow: 'مش دلوقتي',
+  },
+  explore: { recent: 'آخر بحث', cities: 'المدن', featured: 'مميّزة', clearRecent: 'امسح' },
+  map: { searchHere: 'دوّر في المنطقة دي', locate: 'موقعي', permissionDenied: 'مش قادرين نوصل لموقعك. فعّله من الإعدادات أو دوّر بالمدينة.' },
+  account: { notifications: 'الإشعارات', pushTopics: { reviews: 'تذكير التقييم', saved_searches: 'تنبيهات البحث المحفوظ', availability: 'ردود المواعيد' }, legal: 'الشروط والخصوصية', version: 'الإصدار {version}', rate: 'قيّم التطبيق' },
+  share: { message: '{car} للإيجار على أجّرها: {url}' },
+  offline: 'إنت مش متصل. بنعرضلك آخر نتايج اتحفظت.',
+  update: 'في تحديث جديد',
+  store: {
+    name: 'أجّرها - إيجار عربيات',
+    subtitle: 'مكاتب موثّقة والأسعار واضحة',
+    description: 'أجّرها بيساعدك تلاقي عربية للإيجار في مصر من مكاتب تأجير موثّقة. شوف السعر باليوم والأسبوع والشهر، التأمين، المستندات المطلوبة، وآخر مرة المكتب أكّد إن العربية متاحة. بعدها كلّم المكتب على واتساب أو اتصل بيه بضغطة، من غير تسجيل.',
+    keywords: 'إيجار عربيات,تأجير سيارات,القاهرة,الجيزة,ليموزين,سواق',
+  },
+};
+
+const en: DeepString<typeof ar> = {
+  tabs: { explore: 'Explore', map: 'Map', saved: 'Saved', account: 'Account' },
+  onboarding: {
+    languageTitle: 'Choose your language',
+    arabic: 'العربية',
+    english: 'English',
+    locationTitle: 'Show cars near you?',
+    locationBody: 'We only use your location when you search for nearby cars. You can change this any time.',
+    allow: 'Allow',
+    notNow: 'Not now',
+  },
+  explore: { recent: 'Recent searches', cities: 'Cities', featured: 'Featured', clearRecent: 'Clear' },
+  map: { searchHere: 'Search this area', locate: 'My location', permissionDenied: 'We cannot access your location. Turn it on in Settings or search by city.' },
+  account: { notifications: 'Notifications', pushTopics: { reviews: 'Review reminders', saved_searches: 'Saved search alerts', availability: 'Date request replies' }, legal: 'Terms and privacy', version: 'Version {version}', rate: 'Rate the app' },
+  share: { message: '{car} for rent on Agarha: {url}' },
+  offline: 'You are offline. Showing the last saved results.',
+  update: 'Update available',
+  store: {
+    name: 'Agarha - Car Rental Egypt',
+    subtitle: 'Verified companies, clear prices',
+    description: 'Agarha helps you find a rental car in Egypt from verified rental companies. See the daily, weekly and monthly price, the deposit, the documents you need, and when the company last confirmed the car is available. Then WhatsApp or call the company in one tap, no sign-up needed.',
+    keywords: 'car rental,rent a car,Cairo,Giza,limousine,driver',
+  },
+};
+
+export const app = { ar, en };

@@ -9,6 +9,7 @@ import { Errors } from '../../common/errors';
 import { Idempotent } from '../../common/idempotency';
 import { ZodBody, ZodPipe, ZodQuery, ZodResponse } from '../../common/zod';
 import { FLAGS, FlagsService } from '../../infra/flags';
+import { CatalogService } from '../catalog';
 import { ImportService } from './import.service';
 import { adminListingQuerySchema, availabilitySchema, createListingSchema, fleetQuerySchema, moderationSchema, photoUploadSchema, reorderSchema, updateListingSchema, type CreateListing } from './listings.schemas';
 import { ListingsService } from './listings.service';
@@ -24,6 +25,7 @@ export class DealerListingsController {
     private readonly listings: ListingsService,
     private readonly imports: ImportService,
     private readonly flags: FlagsService,
+    private readonly catalog: CatalogService,
   ) {}
 
   @Get()
@@ -75,7 +77,7 @@ export class DealerListingsController {
   async get(@CurrentDealer() d: Dealer, @Param('id', ParseUUIDPipe) id: string) {
     const l = await this.listings.one(id);
     if (l.dealerId !== d.dealerId) throw Errors.notFound('Listing');
-    return { ...l, photos: await this.listings.photos(d.dealerId, id) };
+    return { ...l, photos: await this.listings.photos(d.dealerId, id), model: await this.catalog.model(l.carModelId) };
   }
 
   @Put(':id')

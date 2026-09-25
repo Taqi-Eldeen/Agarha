@@ -15,6 +15,7 @@ import { DealersService } from '../src/modules/dealers';
 import { UsersService } from '../src/modules/identity';
 import { ListingsService } from '../src/modules/listings';
 import { SearchService } from '../src/modules/search';
+import { encryptSecret } from '../src/modules/identity/totp';
 import { seedCatalog } from './seed-catalog';
 
 const DEMO_DEALERS = [
@@ -42,7 +43,7 @@ async function photo(color: string, label: string): Promise<Buffer> {
 
 async function main() {
   const env = loadEnv();
-  if (env.APP_ENV === 'production') throw new Error('Refusing to seed production');
+  if (env.APP_ENV === 'production' || env.APP_ENV === 'staging') throw new Error('Refusing to seed demo data outside local/preview');
   const app = await NestFactory.createApplicationContext(AppModule.forRoot(env), { logger: ['error', 'warn'] });
   const db = app.get<Database>(DB);
   await seedCatalog(db);
@@ -59,6 +60,9 @@ async function main() {
   const admin = await users.findOrCreateByPhone('+201000000001', 'en');
   await users.grantRoles(admin.id, ['admin']);
   await users.linkIdentity(admin.id, 'google_workspace', 'dev:admin@agarha.com', 'admin@agarha.com');
+  // Known TOTP secret for the local/CI admin only (E2E signs in with it). Never used in staging/production.
+  const devSecret = process.env.SEED_ADMIN_TOTP_SECRET ?? 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP';
+  await users.upsertCredentials(admin.id, { totpSecretEnc: encryptSecret(devSecret, env.TOTP_ENCRYPTION_KEY), totpEnabledAt: new Date(), totpLastStep: null });
 
   const makes = await catalog.makes();
   for (const [i, spec] of DEMO_DEALERS.entries()) {

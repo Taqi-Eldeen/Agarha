@@ -1,8 +1,9 @@
+'use client';
 import * as Popover from '@radix-ui/react-popover';
 import * as RSelect from '@radix-ui/react-select';
 import { Check, ChevronDown } from 'lucide-react';
 import { useId, useMemo, useState } from 'react';
-import { normalizeArabic } from '@agarha/schemas';
+import { normalizeArabic } from '@agarha/schemas/arabic';
 import { cn } from '../lib/cn';
 import { useUi } from '../lib/ui-context';
 import { FieldShell } from './fields';

@@ -7,6 +7,7 @@ import {
   otpRequestSchema,
   otpVerifySchema,
   refreshSchema,
+  sessionUserSchema,
   type OtpRequest,
 } from '@agarha/schemas';
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Patch, Post, Req, Res } from '@nestjs/common';
@@ -121,6 +122,7 @@ export class AuthController {
 
   @Post('auth/sign-out')
   @HttpCode(204)
+  @ZodBody(refreshSchema)
   async signOut(@Req() req: Request, @Body(new ZodPipe(refreshSchema)) body: z.output<typeof refreshSchema>, @Res({ passthrough: true }) res: Response) {
     const token = body.refreshToken ?? (req.cookies as Record<string, string> | undefined)?.[cookieNames('customer').refresh];
     if (token) await this.tokens.revokeByToken(token);
@@ -160,6 +162,7 @@ export class AuthController {
 
   @Get('me')
   @Auth('customer')
+  @ZodResponse(200, sessionUserSchema.extend({ displayName: z.string().nullable() }))
   async me(@CurrentAuth() auth: AuthContext) {
     const u = await this.users.findById(auth.userId);
     if (!u) throw Errors.unauthorized();

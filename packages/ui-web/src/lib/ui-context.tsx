@@ -1,4 +1,5 @@
-import { dir as dirOf, formatEgp, formatRelative, interpolate, messages, type Messages } from '@agarha/i18n';
+'use client';
+import { dir as dirOf, formatEgp, formatRelative, interpolate, uiMessages, type Messages } from '@agarha/i18n';
 import type { Locale } from '@agarha/schemas';
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 
@@ -17,7 +18,7 @@ const UiContext = createContext<Ui | null>(null);
 /** Apps wrap the tree once; components read strings and formatters from here (never hardcoded). */
 export function UiProvider({ locale, children }: { locale: Locale; children: ReactNode }) {
   const value = useMemo<Ui>(() => {
-    const t = messages[locale].ui;
+    const t = uiMessages[locale];
     return {
       locale,
       dir: dirOf(locale),

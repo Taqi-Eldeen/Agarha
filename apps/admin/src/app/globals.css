@@ -1,0 +1,23 @@
+@import '@agarha/tokens/css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: var(--ag-font-ui);
+  }
+  body {
+    @apply bg-page text-body text-fg;
+  }
+  :focus-visible {
+    outline: 3px solid rgb(var(--ag-color-brand-primary));
+    outline-offset: 2px;
+  }
+  [dir='rtl'] .ag-mirror {
+    transform: scaleX(-1);
+  }
+  .ag-tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}

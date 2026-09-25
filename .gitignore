@@ -16,3 +16,8 @@ apps/mobile/ios/
 apps/mobile/android/
 .storage/
 storybook-static/
+playwright-report/
+test-results/
+apps/*/shot.mjs
+apps/*/console.mjs
+.env.local

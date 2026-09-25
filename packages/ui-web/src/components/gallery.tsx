@@ -1,3 +1,4 @@
+'use client';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { useUi } from '../lib/ui-context';
@@ -33,9 +34,9 @@ export function Gallery({ photos, alt }: { photos: GalleryPhoto[]; alt: string }
       <BlurImage key={p.id} src={p.src} srcSet={p.srcSet} sizes="(min-width: 1024px) 60vw, 100vw" blurhash={p.blurhash} alt={`${alt} — ${f('photoOf', { index: i + 1, total: photos.length })}`} priority={i === 0} />
       {photos.length > 1 ? (
         <>
-          <IconButton label={t.previousPhoto} onClick={() => go(-1)} variant="secondary" className="absolute start-2 top-1/2 -translate-y-1/2 rounded-full" icon={<ChevronLeft aria-hidden className="ag-mirror size-5" strokeWidth={1.75} />} />
-          <IconButton label={t.nextPhoto} onClick={() => go(1)} variant="secondary" className="absolute end-2 top-1/2 -translate-y-1/2 rounded-full" icon={<ChevronRight aria-hidden className="ag-mirror size-5" strokeWidth={1.75} />} />
-          <p aria-live="polite" className="ag-tabular absolute bottom-2 end-2 rounded-full bg-fg/70 px-2 text-caption text-white">{`${i + 1} / ${photos.length}`}</p>
+          <IconButton label={t.previousPhoto} onClick={() => go(-1)} variant="secondary" shape="round" className="absolute start-2 top-1/2 -translate-y-1/2" icon={<ChevronLeft aria-hidden className="ag-mirror size-5" strokeWidth={1.75} />} />
+          <IconButton label={t.nextPhoto} onClick={() => go(1)} variant="secondary" shape="round" className="absolute end-2 top-1/2 -translate-y-1/2" icon={<ChevronRight aria-hidden className="ag-mirror size-5" strokeWidth={1.75} />} />
+          <p aria-live="polite" dir="ltr" className="ag-tabular absolute bottom-2 end-2 rounded-full bg-fg/70 px-2 text-caption text-white">{`${i + 1} / ${photos.length}`}</p>
         </>
       ) : null}
     </div>

@@ -1,38 +1,19 @@
+'use client';
 import { Slot } from '@radix-ui/react-slot';
-import { cva, type VariantProps } from 'class-variance-authority';
+import type { VariantProps } from 'class-variance-authority';
+import { buttonVariants } from './button-variants';
 import { Loader2 } from 'lucide-react';
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { cn } from '../lib/cn';
 import { useUi } from '../lib/ui-context';
-
-export const buttonVariants = cva(
-  'inline-flex select-none items-center justify-center gap-2 rounded-md font-medium transition-colors duration-fast ease-out disabled:cursor-not-allowed disabled:opacity-50 min-h-touch',
-  {
-    variants: {
-      variant: {
-        primary: 'bg-brand text-white hover:bg-brand-pressed dark:text-page',
-        secondary: 'border border-border bg-card text-fg hover:bg-brand-subtle',
-        ghost: 'text-brand hover:bg-brand-subtle',
-        danger: 'bg-danger text-white hover:opacity-90 dark:text-page',
-        // WhatsApp green is a brand colour of WhatsApp, used only on the WhatsApp action.
-        whatsapp: 'bg-[#1F7A4D] text-white hover:bg-[#17603C]',
-      },
-      size: {
-        sm: 'h-9 px-3 text-caption min-h-0',
-        md: 'h-12 px-4 text-body',
-        lg: 'h-14 px-6 text-body',
-      },
-      block: { true: 'w-full' },
-    },
-    defaultVariants: { variant: 'primary', size: 'md' },
-  },
-);
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
   loading?: boolean;
   asChild?: boolean;
   icon?: ReactNode;
 }
+
+export { buttonVariants };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button({ className, variant, size, block, loading, asChild, icon, children, disabled, ...props }, ref) {
   const { t } = useUi();
@@ -51,11 +32,25 @@ export interface IconButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonEle
   label: string;
   icon: ReactNode;
   variant?: 'ghost' | 'secondary' | 'primary';
+  shape?: 'square' | 'round';
 }
 
-export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton({ label, icon, variant = 'ghost', className, ...props }, ref) {
+const ICON_VARIANT = {
+  ghost: 'text-brand hover:bg-brand-subtle',
+  secondary: 'border border-border bg-card text-fg hover:bg-brand-subtle',
+  primary: 'bg-brand text-white hover:bg-brand-pressed dark:text-page',
+} as const;
+
+export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton({ label, icon, variant = 'ghost', shape = 'square', className, ...props }, ref) {
   return (
-    <button ref={ref} type="button" aria-label={label} title={label} className={cn(buttonVariants({ variant, size: 'md' }), 'size-12 px-0', className)} {...props}>
+    <button
+      ref={ref}
+      type="button"
+      aria-label={label}
+      title={label}
+      className={cn('inline-flex size-12 shrink-0 items-center justify-center transition-colors duration-fast disabled:cursor-not-allowed disabled:opacity-50', shape === 'round' ? 'rounded-full' : 'rounded-md', ICON_VARIANT[variant], className)}
+      {...props}
+    >
       {icon}
     </button>
   );

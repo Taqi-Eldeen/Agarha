@@ -1,3 +1,4 @@
+'use client';
 import { ArrowDown, ArrowUp, Camera, RotateCcw, Star, Trash2 } from 'lucide-react';
 import { useRef } from 'react';
 import { cn } from '../lib/cn';

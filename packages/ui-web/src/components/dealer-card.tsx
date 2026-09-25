@@ -1,3 +1,4 @@
+'use client';
 import { BadgeCheck, MessageCircleReply } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useUi } from '../lib/ui-context';

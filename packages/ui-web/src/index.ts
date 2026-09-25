@@ -1,12 +1,14 @@
 // Web design system v1 (section 9). Names, props and states match @agarha/ui-native and the Figma library.
 export { UiProvider, useUi } from './lib/ui-context';
 export { cn } from './lib/cn';
-export { Button, IconButton, buttonVariants, type ButtonProps } from './components/button';
+export { Button, IconButton, type ButtonProps } from './components/button';
+export { buttonVariants } from './components/button-variants';
 export { TextField, PhoneField, OTPField, FieldShell } from './components/fields';
 export { Select, Combobox, type Option } from './components/select';
 export { FilterChip, ChipGroup } from './components/chips';
 export { Badge, FreshnessChip } from './components/badge';
-export { PriceTag, priceFor, type Prices } from './components/price-tag';
+export { PriceTag } from './components/price-tag';
+export { priceFor, type Prices } from './components/price';
 export { ListingCard, ListingCardSkeleton } from './components/listing-card';
 export { DealerCard } from './components/dealer-card';
 export { RequirementList } from './components/requirement-list';

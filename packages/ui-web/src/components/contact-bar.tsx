@@ -1,3 +1,4 @@
+'use client';
 import type { PricePeriod } from '@agarha/schemas';
 import { Phone } from 'lucide-react';
 import type { ReactNode } from 'react';

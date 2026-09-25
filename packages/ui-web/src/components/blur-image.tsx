@@ -1,4 +1,4 @@
-import { decode } from 'blurhash';
+'use client';
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '../lib/cn';
 
@@ -8,16 +8,24 @@ export function BlurImage({ src, srcSet, sizes, blurhash, alt, priority, classNa
   const [loaded, setLoaded] = useState(false);
   useEffect(() => {
     if (!blurhash || !canvas.current) return;
-    try {
-      const pixels = decode(blurhash, 32, 24);
-      const ctx = canvas.current.getContext('2d');
-      if (!ctx) return;
-      const img = ctx.createImageData(32, 24);
-      img.data.set(pixels);
-      ctx.putImageData(img, 0, 0);
-    } catch {
-      /* invalid hash: keep the flat background */
-    }
+    let alive = true;
+    // The decoder is loaded after hydration so it never counts against first-load JS.
+    void import('blurhash').then(({ decode }) => {
+      if (!alive || !canvas.current) return;
+      try {
+        const pixels = decode(blurhash, 32, 24);
+        const ctx = canvas.current.getContext('2d');
+        if (!ctx) return;
+        const img = ctx.createImageData(32, 24);
+        img.data.set(pixels);
+        ctx.putImageData(img, 0, 0);
+      } catch {
+        /* invalid hash: keep the flat background */
+      }
+    });
+    return () => {
+      alive = false;
+    };
   }, [blurhash]);
   return (
     <>

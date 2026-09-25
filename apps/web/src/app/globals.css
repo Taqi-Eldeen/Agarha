@@ -1,0 +1,43 @@
+@import '@agarha/tokens/css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: var(--ag-font-ui);
+    -webkit-text-size-adjust: 100%;
+  }
+  html:lang(ar) {
+    --ag-font-ui: var(--font-plex-arabic), var(--ag-font-family-ui-ar);
+  }
+  html:lang(en) {
+    --ag-font-ui: var(--font-plex), var(--ag-font-family-ui-en);
+  }
+  body {
+    @apply bg-page text-body text-fg antialiased;
+  }
+  h1,
+  h2 {
+    font-family: var(--font-rubik), var(--ag-font-ui);
+  }
+  :focus-visible {
+    outline: 3px solid rgb(var(--ag-color-brand-primary));
+    outline-offset: 2px;
+  }
+  [dir='rtl'] .ag-mirror {
+    transform: scaleX(-1);
+  }
+  .ag-tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

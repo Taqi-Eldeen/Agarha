@@ -1,3 +1,4 @@
+'use client';
 import type { ListingCard as Card, PricePeriod } from '@agarha/schemas';
 import { BadgeCheck, MapPin, Phone } from 'lucide-react';
 import type { ReactNode } from 'react';

@@ -1,6 +1,6 @@
-import * as T from '@radix-ui/react-toast';
-import { AlertTriangle, CheckCircle2, Info, SearchX, XCircle } from 'lucide-react';
-import { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
+'use client';
+import { AlertTriangle, CheckCircle2, Info, SearchX, X, XCircle } from 'lucide-react';
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { cn } from '../lib/cn';
 import { useUi } from '../lib/ui-context';
 import { Button } from './button';
@@ -64,34 +64,64 @@ interface ToastMsg {
   action?: { label: string; onClick: () => void };
 }
 const ToastCtx = createContext<(t: Omit<ToastMsg, 'id'>) => void>(() => undefined);
+const TOAST_MS = 6000;
 
+/**
+ * Lightweight toasts: a polite live region (assertive for errors), auto-dismiss after 6s,
+ * paused while hovered or focused so the Undo action stays reachable. No dependency.
+ */
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<ToastMsg[]>([]);
-  const push = useCallback((m: Omit<ToastMsg, 'id'>) => setItems((x) => [...x, { ...m, id: Date.now() + Math.random() }]), []);
-  const { dir, t } = useUi();
+  const remove = useCallback((id: number) => setItems((x) => x.filter((i) => i.id !== id)), []);
+  const push = useCallback((m: Omit<ToastMsg, 'id'>) => setItems((x) => [...x.slice(-2), { ...m, id: Date.now() + Math.random() }]), []);
   return (
     <ToastCtx.Provider value={push}>
-      <T.Provider swipeDirection={dir === 'rtl' ? 'left' : 'right'} duration={6000} label={t.close}>
-        {children}
-        {items.map((m) => {
-          const { cls, Icon } = TONE[m.tone];
-          return (
-            <T.Root key={m.id} onOpenChange={(o) => !o && setItems((x) => x.filter((i) => i.id !== m.id))} className={cn('flex items-center gap-3 rounded-md border bg-card p-3 shadow-2', cls)}>
-              <Icon aria-hidden className="size-5 shrink-0" strokeWidth={1.75} />
-              <T.Description className="flex-1">{m.text}</T.Description>
-              {m.action ? (
-                <T.Action altText={m.action.label} asChild>
-                  <Button size="sm" variant="ghost" onClick={m.action.onClick}>
-                    {m.action.label}
-                  </Button>
-                </T.Action>
-              ) : null}
-            </T.Root>
-          );
-        })}
-        <T.Viewport className="fixed bottom-4 start-1/2 z-toast flex w-[min(100vw-2rem,28rem)] -translate-x-1/2 flex-col gap-2 rtl:translate-x-1/2" />
-      </T.Provider>
+      {children}
+      <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-4 z-toast flex flex-col items-center gap-2 px-4 pb-[env(safe-area-inset-bottom)]">
+        {items.map((m) => (
+          <ToastItem key={m.id} msg={m} onDone={() => remove(m.id)} />
+        ))}
+      </div>
     </ToastCtx.Provider>
+  );
+}
+
+function ToastItem({ msg, onDone }: { msg: ToastMsg; onDone: () => void }) {
+  const { t } = useUi();
+  const [paused, setPaused] = useState(false);
+  useEffect(() => {
+    if (paused) return;
+    const timer = setTimeout(onDone, TOAST_MS);
+    return () => clearTimeout(timer);
+  }, [paused, onDone]);
+  const { cls, Icon } = TONE[msg.tone];
+  return (
+    <div
+      role={msg.tone === 'danger' ? 'alert' : 'status'}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={() => setPaused(false)}
+      className={cn('pointer-events-auto flex w-full max-w-md items-center gap-3 rounded-md border bg-card p-3 shadow-2', cls)}
+    >
+      <Icon aria-hidden className="size-5 shrink-0" strokeWidth={1.75} />
+      <p className="flex-1">{msg.text}</p>
+      {msg.action ? (
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => {
+            msg.action!.onClick();
+            onDone();
+          }}
+        >
+          {msg.action.label}
+        </Button>
+      ) : null}
+      <button type="button" onClick={onDone} aria-label={t.close} className="inline-flex size-10 items-center justify-center rounded-md hover:bg-brand-subtle">
+        <X aria-hidden className="size-4" strokeWidth={1.75} />
+      </button>
+    </div>
   );
 }
 
