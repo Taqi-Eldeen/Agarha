@@ -35,10 +35,11 @@ resource "aws_security_group" "alb" {
     cidr_blocks = data.cloudflare_ip_ranges.cf.ipv4_cidrs
   }
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    description = "Only to targets inside the VPC"
+    from_port   = 3000
+    to_port     = 4000
+    protocol    = "tcp"
+    cidr_blocks = [module.vpc.vpc_cidr_block]
   }
 }
 
@@ -52,7 +53,11 @@ resource "aws_security_group" "tasks" {
     protocol        = "tcp"
     security_groups = [aws_security_group.alb.id]
   }
+  # Tasks call third-party APIs whose IPs change (SMS, WhatsApp, Expo, Resend, R2, Paymob, PostHog,
+  # Sentry) through the NAT gateway; there is no stable allowlist to pin.
+  #trivy:ignore:AWS-0104
   egress {
+    description = "Outbound through NAT (third-party APIs) and to the data tier"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"

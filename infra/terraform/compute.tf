@@ -132,6 +132,8 @@ resource "aws_ecs_task_definition" "app" {
 }
 
 # --- Load balancer (Cloudflare → ALB → tasks) ------------------------------------------------------
+# Public by design: it is the origin behind Cloudflare, and its security group accepts only Cloudflare IPs.
+#trivy:ignore:AWS-0053
 resource "aws_lb" "main" {
   name                       = local.name
   load_balancer_type         = "application"

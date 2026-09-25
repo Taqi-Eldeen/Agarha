@@ -1,7 +1,23 @@
 # Alerts (section 10): 5xx > 1%, p95 latency > 800 ms, queue backlog > 5 min, OTP failures > 10%,
 # spend. Queue/OTP metrics come from the worker's EMF log lines (apps/api/src/worker/metrics.ts).
+resource "aws_kms_key" "alerts" {
+  description         = "${local.name} alert topic"
+  enable_key_rotation = true
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      { Sid = "Account", Effect = "Allow", Principal = { AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root" }, Action = "kms:*", Resource = "*" },
+      { Sid = "CloudWatchAlarms", Effect = "Allow", Principal = { Service = "cloudwatch.amazonaws.com" }, Action = ["kms:Decrypt", "kms:GenerateDataKey*"], Resource = "*" },
+      { Sid = "Budgets", Effect = "Allow", Principal = { Service = "budgets.amazonaws.com" }, Action = ["kms:Decrypt", "kms:GenerateDataKey*"], Resource = "*" },
+    ]
+  })
+}
+
+data "aws_caller_identity" "current" {}
+
 resource "aws_sns_topic" "alerts" {
-  name = "${local.name}-alerts"
+  name              = "${local.name}-alerts"
+  kms_master_key_id = aws_kms_key.alerts.arn
 }
 
 resource "aws_sns_topic_subscription" "email" {

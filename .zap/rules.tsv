@@ -1,0 +1,13 @@
+10010	IGNORE	NEXT_LOCALE is a non-sensitive language preference read by next-intl middleware (auth cookies are HttpOnly)
+10019	IGNORE	Flagged only on 307 locale redirects, which have no body
+10031	IGNORE	Search params echo into React-rendered attributes, which React escapes (no raw HTML sinks)
+10055	WARN	script/style-src 'unsafe-inline' kept so pages stay statically cacheable (ADR-0017); other directives are strict
+10020	FAIL	Anti-clickjacking header (frame-ancestors / X-Frame-Options) must be present
+10021	FAIL	X-Content-Type-Options: nosniff must be present
+10038	FAIL	Content-Security-Policy must be present
+10054	FAIL	Cookies must set SameSite
+10036	FAIL	No server version disclosure
+10037	FAIL	No X-Powered-By disclosure
+10062	FAIL	No PII in responses
+90022	FAIL	No application error disclosure
+10098	FAIL	No wildcard CORS on the web origin

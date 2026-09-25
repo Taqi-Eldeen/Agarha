@@ -7,6 +7,12 @@ mock_provider "aws" {
   mock_data "aws_iam_policy_document" {
     defaults = { json = "{\"Version\":\"2012-10-17\",\"Statement\":[]}" }
   }
+  mock_data "aws_caller_identity" {
+    defaults = { account_id = "123456789012" }
+  }
+  mock_resource "aws_kms_key" {
+    defaults = { arn = "arn:aws:kms:eu-central-1:123456789012:key/test" }
+  }
   mock_resource "aws_acm_certificate" {
     defaults = { arn = "arn:aws:acm:eu-central-1:123456789012:certificate/test" }
   }
