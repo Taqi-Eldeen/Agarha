@@ -11,3 +11,6 @@ export function paramsFrom(sp: URLSearchParams): SearchParams {
   }
   return p as SearchParams;
 }
+
+/** Results per page. The server render and the client query must use the same value (same cache key). */
+export const SEARCH_PAGE_SIZE = 12;

@@ -54,6 +54,31 @@ export class OtpService {
     );
 
     // 3. Create the challenge, then send.
+    const { challengeId, channel, expiresAt } = await this.issue(input, this.ipHash(ip) ?? null);
+    return {
+      challengeId,
+      channel,
+      expiresAt: expiresAt.toISOString(),
+      resendAfterSeconds: this.env.OTP_RESEND_AFTER_SECONDS,
+    };
+  }
+
+  /**
+   * Synthetic uptime check (section 10 monitoring): the real pipeline end to end — challenge, provider
+   * send with failover, code verification — for the ops-owned SYNTHETIC_OTP_PHONE. Server-originated,
+   * so Turnstile and the IP limits don't apply. Throws on any failure.
+   */
+  async synthetic(phone: string): Promise<{ channel: string; ms: number }> {
+    const started = Date.now();
+    const { challengeId, channel, code } = await this.issue(
+      { phone, purpose: 'customer_sign_in', channel: 'sms', locale: 'ar', turnstileToken: '' },
+      null,
+    );
+    await this.verify(challengeId, phone, code, 'synthetic-check', ['customer_sign_in']);
+    return { channel, ms: Date.now() - started };
+  }
+
+  private async issue(input: OtpRequest, ipHash: string | null) {
     const code = randomDigits(OTP_CODE_LENGTH);
     const expiresAt = new Date(Date.now() + this.env.OTP_TTL_SECONDS * 1000);
     const [row] = await this.db
@@ -65,7 +90,7 @@ export class OtpService {
         channel: input.channel,
         maxAttempts: this.env.OTP_MAX_ATTEMPTS,
         expiresAt,
-        ipHash: this.ipHash(ip) ?? null,
+        ipHash,
       })
       .returning({ id: otpChallenges.id });
     const challengeId = row!.id;
@@ -88,12 +113,7 @@ export class OtpService {
           .update(otpChallenges)
           .set({ channel: sent.channel })
           .where(eq(otpChallenges.id, challengeId));
-      return {
-        challengeId,
-        channel: sent.channel,
-        expiresAt: expiresAt.toISOString(),
-        resendAfterSeconds: this.env.OTP_RESEND_AFTER_SECONDS,
-      };
+      return { challengeId, channel: sent.channel, expiresAt, code };
     } catch (err) {
       if (err instanceof OtpDeliveryFailed) {
         await this.db

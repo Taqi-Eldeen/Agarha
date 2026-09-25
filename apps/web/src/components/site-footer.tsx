@@ -13,22 +13,22 @@ export async function SiteFooter() {
           </p>
         </div>
         <nav aria-label={t('nav.help')} className="flex flex-wrap gap-4 text-caption">
-          <Link href="/dealers" className="hover:underline">
+          <Link prefetch={false} href="/dealers" className="hover:underline">
             {t('nav.dealers')}
           </Link>
-          <Link href="/for-dealers" className="hover:underline">
+          <Link prefetch={false} href="/for-dealers" className="hover:underline">
             {t('nav.forDealers')}
           </Link>
-          <Link href="/help" className="hover:underline">
+          <Link prefetch={false} href="/help" className="hover:underline">
             {t('nav.help')}
           </Link>
-          <Link href="/legal/terms" className="hover:underline">
+          <Link prefetch={false} href="/legal/terms" className="hover:underline">
             {t('footer.terms')}
           </Link>
-          <Link href="/legal/privacy" className="hover:underline">
+          <Link prefetch={false} href="/legal/privacy" className="hover:underline">
             {t('footer.privacy')}
           </Link>
-          <Link href="/legal/dealer-terms" className="hover:underline">
+          <Link prefetch={false} href="/legal/dealer-terms" className="hover:underline">
             {t('footer.dealerTerms')}
           </Link>
         </nav>

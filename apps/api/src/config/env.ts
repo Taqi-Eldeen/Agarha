@@ -46,6 +46,10 @@ export const envSchema = z
     OTP_TTL_SECONDS: z.coerce.number().int().default(300),
     OTP_MAX_ATTEMPTS: z.coerce.number().int().default(5),
     OTP_RESEND_AFTER_SECONDS: z.coerce.number().int().default(60),
+    /** Ops-owned Egyptian mobile (E.164) for the hourly synthetic OTP check. Empty = check disabled. */
+    SYNTHETIC_OTP_PHONE: z
+      .union([z.literal(''), z.string().regex(/^\+201[0125]\d{8}$/, 'Egyptian mobile in E.164')])
+      .optional(),
     /** Ordered failover list for SMS OTP. `console` logs the code and is local/test only. */
     SMS_PROVIDERS: csv
       .pipe(z.array(z.enum(['twilio', 'vonage', 'console'])).min(1))

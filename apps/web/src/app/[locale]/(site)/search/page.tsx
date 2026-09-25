@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Suspense } from 'react';
 import { SearchView } from '@/components/search-view';
 import { apiInternal } from '@/lib/env';
-import { paramsFrom } from '@/lib/search-params';
+import { paramsFrom, SEARCH_PAGE_SIZE } from '@/lib/search-params';
 import { serverApi } from '@/lib/server-api';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -27,7 +27,7 @@ export default async function SearchPage({
   const [citiesRes, initial] = await Promise.all([
     serverApi.cities(),
     serverApi
-      .search({ ...(query as Record<string, string | number | undefined>), limit: 20 })
+      .search({ ...(query as Record<string, string | number | undefined>), limit: SEARCH_PAGE_SIZE })
       .catch(() => null),
   ]);
   const cities = citiesRes?.items ?? [];

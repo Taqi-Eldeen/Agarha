@@ -27,6 +27,7 @@ import { AnalyticsService } from '../analytics';
 import { DealersService } from '../dealers';
 import { UsersService } from '../identity';
 import { AccountService } from '../identity';
+import { LeadsService } from '../leads';
 import { ListingsService } from '../listings';
 import { NotificationsService } from '../notifications';
 import { AuditService } from './audit.service';
@@ -62,6 +63,7 @@ export class AdminConsoleController {
     private readonly notifications: NotificationsService,
     private readonly queues: Queues,
     private readonly maps: MapsService,
+    private readonly leads: LeadsService,
   ) {}
 
   private role(a: AuthContext): Role {
@@ -264,6 +266,8 @@ export class AdminConsoleController {
       },
       queues: backlog,
       mapsCallsThisMonth: await this.maps.monthlyCalls(),
+      /** Platform-wide, same definition as the dealer profile (ADR-0018); null below 5 samples. */
+      responseRate: await this.leads.responseRate(),
       roles: ROLES,
     };
   }

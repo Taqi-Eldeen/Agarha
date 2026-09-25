@@ -39,7 +39,7 @@
       },
       "on-featured": {
         "$value": "#16202B",
-        "$description": "Text on accent/featured. Stays dark in both themes (ADR-012).",
+        "$description": "Text on accent/featured. Stays dark in both themes (ADR-0012).",
         "$extensions": {
           "agarha": {
             "dark": "#16202B"

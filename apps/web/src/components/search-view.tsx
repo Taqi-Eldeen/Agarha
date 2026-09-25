@@ -20,7 +20,7 @@ import { List, Map as MapIcon, SlidersHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
-import { paramsFrom } from '@/lib/search-params';
+import { paramsFrom, SEARCH_PAGE_SIZE } from '@/lib/search-params';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useApi, useMe } from '@agarha/api-client';
 import { usePathname, useRouter } from '@/i18n/routing';
@@ -64,7 +64,7 @@ export function SearchView({
   // The server-rendered page only seeds the query for the params it was rendered with.
   const [initialKey] = useState(() => JSON.stringify(params));
   const q = useSearch(
-    { ...params, limit: 20 },
+    { ...params, limit: SEARCH_PAGE_SIZE },
     true,
     initial && JSON.stringify(params) === initialKey ? initial : undefined,
   );

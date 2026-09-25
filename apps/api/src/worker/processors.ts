@@ -8,19 +8,25 @@ import {
 import { Worker, type Job } from 'bullmq';
 import { lt, sql } from 'drizzle-orm';
 import type Redis from 'ioredis';
+import { ENV, type Env } from '../config/env';
 import { DB, type Database } from '../db/db';
+import { auditLog } from '../db/schema/admin';
+import { otpChallenges, refreshTokens } from '../db/schema/identity';
+import { reports } from '../db/schema/moderation';
 import { notificationDeliveries } from '../db/schema/notifications';
 import { FlagsService } from '../infra/flags';
 import { QUEUE, Queues, type JobPayloads } from '../infra/queue/queues';
 import { REDIS } from '../infra/redis/redis';
 import { captureException } from '../infra/observability';
 import { BillingService } from '../modules/billing';
+import { OtpService } from '../modules/identity';
 import { AvailabilityService, LeadsService } from '../modules/leads';
 import { ListingsService } from '../modules/listings';
 import { NotificationsService } from '../modules/notifications';
 import { SearchService } from '../modules/search';
 import { VerificationService } from '../modules/verification';
 import { SCHEDULES } from './jobs';
+import { emf } from './metrics';
 
 @Injectable()
 export class Processors implements OnApplicationBootstrap, OnApplicationShutdown {
@@ -39,9 +45,11 @@ export class Processors implements OnApplicationBootstrap, OnApplicationShutdown
     private readonly availability: AvailabilityService,
     private readonly billing: BillingService,
     private readonly flags: FlagsService,
+    private readonly otp: OtpService,
+    @Inject(ENV) private readonly env: Env,
   ) {}
 
-  /** One scheduled job, callable directly (tests, runbooks: `pnpm worker:run freshness`). */
+  /** One scheduled job, callable directly (tests, runbooks: `pnpm --filter @agarha/api worker:run freshness`). */
   async runScheduled(job: JobPayloads['scheduled']['job']): Promise<unknown> {
     switch (job) {
       case 'freshness':
@@ -62,10 +70,53 @@ export class Processors implements OnApplicationBootstrap, OnApplicationShutdown
           .delete(notificationDeliveries)
           .where(lt(notificationDeliveries.createdAt, sql`now() - interval '90 days'`))
           .returning({ id: notificationDeliveries.id });
-        return { leads, docs, deliveries: deliveries.length };
+        const purge = async (q: PromiseLike<unknown[]>) => (await q).length;
+        return {
+          leads,
+          docs,
+          deliveries: deliveries.length,
+          otpChallenges: await purge(
+            this.db
+              .delete(otpChallenges)
+              .where(lt(otpChallenges.createdAt, sql`now() - interval '1 day'`))
+              .returning({ id: otpChallenges.id }),
+          ),
+          refreshTokens: await purge(
+            this.db
+              .delete(refreshTokens)
+              .where(lt(refreshTokens.expiresAt, sql`now() - interval '7 days'`))
+              .returning({ id: refreshTokens.id }),
+          ),
+          reports: await purge(
+            this.db
+              .delete(reports)
+              .where(lt(reports.createdAt, sql`now() - interval '24 months'`))
+              .returning({ id: reports.id }),
+          ),
+          auditLog: await purge(
+            this.db
+              .delete(auditLog)
+              .where(lt(auditLog.createdAt, sql`now() - interval '24 months'`))
+              .returning({ id: auditLog.id }),
+          ),
+        };
       }
       case 'subscription_renewals':
         return this.billing.runRenewals();
+      case 'otp_synthetic': {
+        if (!this.env.SYNTHETIC_OTP_PHONE) return { skipped: 'SYNTHETIC_OTP_PHONE not set' };
+        let ok = 0;
+        let result: Record<string, unknown>;
+        try {
+          result = { ok: true, ...(await this.otp.synthetic(this.env.SYNTHETIC_OTP_PHONE)) };
+          ok = 1;
+        } catch (err) {
+          result = { ok: false, error: (err as Error).message };
+        }
+        // Alarm source: Agarha/OtpSyntheticOk (infra/terraform/observability.tf).
+        this.logger.log(emf(this.env.APP_ENV, { OtpSyntheticOk: ok }), 'metrics');
+        return result;
+      }
       case 'featured_expiry':
         return { expiredRequests: await this.availability.expireOld() };
     }

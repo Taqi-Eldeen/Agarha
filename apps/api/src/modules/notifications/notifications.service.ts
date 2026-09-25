@@ -40,6 +40,8 @@ export interface NotifyRequest {
 }
 
 /** Queued, retried, preference- and quiet-hours-aware notifications. The worker calls deliver(). */
+const OPT_IN_TOPICS = new Set(['marketing']);
+
 @Injectable()
 export class NotificationsService {
   private readonly logger = new Logger('Notifications');
@@ -64,7 +66,9 @@ export class NotificationsService {
           eq(notificationPreferences.channel, channel),
         ),
       );
-    return pref ? !pref.enabled : false;
+    // Transactional topics are on until the user turns them off; marketing needs an explicit opt-in
+    // (PDPL: direct marketing requires consent).
+    return pref ? !pref.enabled : OPT_IN_TOPICS.has(topic);
   }
 
   /** Resolves channel + recipient, records a queued delivery and enqueues it. Returns delivery ids. */

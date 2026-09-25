@@ -85,3 +85,21 @@ variable "admin_ip_allowlist" {
   description = "CIDRs allowed to reach the admin console and admin API (office / VPN egress)."
   type        = list(string)
 }
+
+variable "synthetic_otp_phone" {
+  description = "Ops-owned Egyptian mobile (E.164) that receives the hourly synthetic OTP. Empty disables the check."
+  type        = string
+  default     = ""
+}
+
+variable "otp_sends_alert_per_15min" {
+  description = "SMS spend guard: alert when more OTPs than this are sent in 15 minutes (pumping or a bot wave)."
+  type        = number
+  default     = 500
+}
+
+variable "maps_monthly_calls_alert" {
+  description = "Maps spend guard: alert when billable geocoding calls this month exceed this."
+  type        = number
+  default     = 20000
+}

@@ -36,6 +36,7 @@ locals {
     ADMIN_IP_ALLOWLIST          = join(",", var.admin_ip_allowlist)
     ADMIN_DEV_LOGIN             = "false"
     OTEL_EXPORTER_OTLP_ENDPOINT = ""
+    SYNTHETIC_OTP_PHONE         = var.synthetic_otp_phone
   }
 }
 

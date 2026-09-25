@@ -274,7 +274,8 @@ export class LeadsService implements OnModuleInit {
    * Response rate over the last 90 days: share of leads the dealer acted on (marked any outcome)
    * plus availability requests answered within 24h. Shown on the dealer profile (trust).
    */
-  async responseRate(dealerId: string): Promise<number | null> {
+  /** Omit dealerId for the platform-wide rate (admin business dashboard). */
+  async responseRate(dealerId?: string): Promise<number | null> {
     const since = new Date(Date.now() - 90 * 86_400_000);
     const [l] = await this.db
       .select({
@@ -282,7 +283,7 @@ export class LeadsService implements OnModuleInit {
         acted: sql<number>`count(*) FILTER (WHERE ${leads.outcome} <> 'unknown')::int`,
       })
       .from(leads)
-      .where(and(eq(leads.dealerId, dealerId), gt(leads.createdAt, since)));
+      .where(and(dealerId ? eq(leads.dealerId, dealerId) : undefined, gt(leads.createdAt, since)));
     const [a] = await this.db
       .select({
         total: sql<number>`count(*)::int`,
@@ -290,7 +291,10 @@ export class LeadsService implements OnModuleInit {
       })
       .from(availabilityRequests)
       .where(
-        and(eq(availabilityRequests.dealerId, dealerId), gt(availabilityRequests.createdAt, since)),
+        and(
+          dealerId ? eq(availabilityRequests.dealerId, dealerId) : undefined,
+          gt(availabilityRequests.createdAt, since),
+        ),
       );
     const total = (l?.total ?? 0) + (a?.total ?? 0);
     if (total < 5) return null; // not enough data to show a rate

@@ -7,6 +7,7 @@ import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { Providers } from '@/components/providers';
 import { routing } from '@/i18n/routing';
+import { PUBLIC_NAMESPACES, pickMessages } from '@/lib/messages';
 import { alternates, siteUrl } from '@/lib/seo';
 import '../globals.css';
 
@@ -15,12 +16,16 @@ const plexArabic = IBM_Plex_Sans_Arabic({
   weight: ['400', '500', '600'],
   variable: '--font-plex-arabic',
   display: 'swap',
+  // Body text paints immediately in the metric-matched fallback and swaps without layout shift, so
+  // preloading would only compete with the HTML, CSS and heading font for the first round trips.
+  preload: false,
 });
 const plex = IBM_Plex_Sans({
   subsets: ['latin'],
   weight: ['400', '500', '600'],
   variable: '--font-plex',
   display: 'swap',
+  preload: false,
 });
 // Headings are usually the LCP element: 'optional' uses Rubik only if it arrives within the first
 // ~100 ms (it is preloaded), so there is never a late swap that repaints the heading.
@@ -71,7 +76,9 @@ export default async function LocaleLayout({
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
-  const messages = await getMessages();
+  // Client components on the public site only need these namespaces; the dealer portal layout adds
+  // its own. Keeps the admin/app/notification catalogues out of every page's RSC payload.
+  const messages = pickMessages(await getMessages(), PUBLIC_NAMESPACES);
   return (
     <html
       lang={locale}

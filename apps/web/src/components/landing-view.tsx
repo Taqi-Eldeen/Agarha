@@ -66,6 +66,7 @@ export async function LandingView({ locale, data }: { locale: 'ar' | 'en'; data:
             {data.areas.map((a) => (
               <li key={a.slug}>
                 <Link
+                  prefetch={false}
                   href={`/${data.city.slug}/${a.slug}`}
                   className="inline-flex min-h-touch items-center gap-2 rounded-full border border-border bg-card px-4 hover:bg-brand-subtle"
                 >
@@ -82,6 +83,7 @@ export async function LandingView({ locale, data }: { locale: 'ar' | 'en'; data:
             {data.types.map((ty) => (
               <li key={ty.type}>
                 <Link
+                  prefetch={false}
                   href={`/${data.city.slug}/${ty.type}`}
                   className="inline-flex min-h-touch items-center gap-2 rounded-full border border-border bg-card px-4 hover:bg-brand-subtle"
                 >

@@ -44,6 +44,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           {cityList.map((c) => (
             <li key={c.slug}>
               <Link
+                prefetch={false}
                 href={`/${c.slug}`}
                 className="inline-flex min-h-touch items-center rounded-full border border-border bg-card px-5 hover:bg-brand-subtle"
               >
@@ -62,6 +63,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           {CAR_BODY_TYPES.map((b) => (
             <li key={b}>
               <Link
+                prefetch={false}
                 href={`/${cityList[0]?.slug ?? 'cairo'}/${b}`}
                 className="flex min-h-16 items-center justify-center rounded-lg border border-border bg-card p-3 text-center hover:bg-brand-subtle"
               >

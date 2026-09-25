@@ -9,6 +9,7 @@
     "dev:worker": "node --env-file-if-exists=.env --watch -r @swc-node/register src/worker/main.ts",
     "start": "node dist/main.js",
     "start:worker": "node dist/worker/main.js",
+    "worker:run": "node --env-file-if-exists=.env dist/worker/main.js run",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings=0",
     "test": "jest --config jest.config.js",

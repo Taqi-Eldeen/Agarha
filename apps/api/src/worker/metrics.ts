@@ -6,6 +6,7 @@ import {
   type OnApplicationShutdown,
 } from '@nestjs/common';
 import { ENV, type Env } from '../config/env';
+import { MapsService } from '../infra/maps';
 import { QUEUE, Queues } from '../infra/queue/queues';
 import { NotificationsService } from '../modules/notifications';
 
@@ -38,7 +39,8 @@ export function emf<V extends Record<string, number>>(env: string, values: V, no
 
 /**
  * Operational metrics for alarms (section 10): oldest waiting job per queue (backlog > 5 min) and
- * the OTP delivery failure rate over 15 minutes (> 10%). One log line per minute.
+ * the OTP delivery failure rate over 15 minutes (> 10%), OTP send volume (SMS spend) and billable maps
+ * calls this month (maps spend). One log line per minute.
  */
 @Injectable()
 export class MetricsReporter implements OnApplicationBootstrap, OnApplicationShutdown {
@@ -49,6 +51,7 @@ export class MetricsReporter implements OnApplicationBootstrap, OnApplicationShu
     @Inject(ENV) private readonly env: Env,
     private readonly queues: Queues,
     private readonly notifications: NotificationsService,
+    private readonly maps: MapsService,
   ) {}
 
   onApplicationBootstrap() {
@@ -78,6 +81,7 @@ export class MetricsReporter implements OnApplicationBootstrap, OnApplicationShu
       QueueOldestWaitSeconds: oldest,
       OtpSendAttempts: otp.total,
       OtpFailurePercent: otp.total ? Math.round((otp.failed / otp.total) * 1000) / 10 : 0,
+      MapsCallsThisMonth: await this.maps.monthlyCalls(),
     };
     this.logger.log(emf(this.env.APP_ENV, values, now), 'metrics');
     return values;

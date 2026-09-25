@@ -2,7 +2,7 @@
 
 The background worker is the API codebase started with a different entrypoint
 (`apps/api/src/worker/main.ts` → `dist/worker/main.js`), so jobs share modules, schemas and the DB
-layer with the HTTP API (ADR-001: modular monolith). It runs as its own process and container so it
+layer with the HTTP API (ADR-0001: modular monolith). It runs as its own process and container so it
 scales and restarts independently of the API.
 
 | Queue           | Jobs                                                                                           |

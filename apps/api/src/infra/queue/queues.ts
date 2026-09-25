@@ -22,7 +22,8 @@ export interface JobPayloads {
     | { job: 'sitemap' }
     | { job: 'retention' }
     | { job: 'featured_expiry' }
-    | { job: 'subscription_renewals' };
+    | { job: 'subscription_renewals' }
+    | { job: 'otp_synthetic' };
   events: { name: string; payload: Record<string, unknown>; occurredAt: string };
 }
 

@@ -17,6 +17,7 @@ type Metrics = {
   otp24h: { sent: number; failed: number; failureRate: number };
   queues: Record<string, number>;
   mapsCallsThisMonth: number;
+  responseRate: number | null;
 };
 
 /** Business dashboard: live listings, freshness %, leads per day, dealers, ops health (section 10). */
@@ -42,6 +43,10 @@ export default function Dashboard() {
         <StatTile label={t('dashboard.dealersPending')} value={n(m?.dealers.pendingReview)} />
         <StatTile label={t('dashboard.verified')} value={n(m?.dealers.verified)} />
         <StatTile label={t('dashboard.leads')} value={n(leadsToday)} />
+        <StatTile
+          label={t('dashboard.responseRate')}
+          value={n(m?.responseRate == null ? null : Math.round(m.responseRate * 100), '%')}
+        />
         <StatTile
           label={t('dashboard.otp')}
           value={n(m?.otp24h.failureRate, '%')}

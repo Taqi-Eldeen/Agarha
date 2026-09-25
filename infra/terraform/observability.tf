@@ -116,6 +116,53 @@ resource "aws_cloudwatch_metric_alarm" "otp_failures" {
   treat_missing_data  = "notBreaching"
 }
 
+resource "aws_cloudwatch_metric_alarm" "otp_synthetic" {
+  count               = var.synthetic_otp_phone == "" ? 0 : 1
+  alarm_name          = "${local.name}-otp-synthetic"
+  alarm_description   = "The hourly synthetic OTP (send + verify) failed twice in a row (docs/runbooks/otp-outage.md)"
+  namespace           = "Agarha"
+  metric_name         = "OtpSyntheticOk"
+  dimensions          = { Environment = var.environment }
+  statistic           = "Minimum"
+  period              = 3600
+  evaluation_periods  = 2
+  threshold           = 1
+  comparison_operator = "LessThanThreshold"
+  alarm_actions       = [aws_sns_topic.alerts.arn]
+  ok_actions          = [aws_sns_topic.alerts.arn]
+  treat_missing_data  = "breaching"
+}
+
+resource "aws_cloudwatch_metric_alarm" "sms_spend" {
+  alarm_name          = "${local.name}-sms-spend"
+  alarm_description   = "OTP sends in 15 minutes above var.otp_sends_alert_per_15min: SMS spend spike or pumping (docs/runbooks/otp-outage.md step 5)"
+  namespace           = "Agarha"
+  metric_name         = "OtpSendAttempts"
+  dimensions          = { Environment = var.environment }
+  statistic           = "Maximum"
+  period              = 300
+  evaluation_periods  = 1
+  threshold           = var.otp_sends_alert_per_15min
+  comparison_operator = "GreaterThanThreshold"
+  alarm_actions       = [aws_sns_topic.alerts.arn]
+  treat_missing_data  = "notBreaching"
+}
+
+resource "aws_cloudwatch_metric_alarm" "maps_spend" {
+  alarm_name          = "${local.name}-maps-spend"
+  alarm_description   = "Billable maps calls this month above var.maps_monthly_calls_alert (check geocode caching)"
+  namespace           = "Agarha"
+  metric_name         = "MapsCallsThisMonth"
+  dimensions          = { Environment = var.environment }
+  statistic           = "Maximum"
+  period              = 3600
+  evaluation_periods  = 1
+  threshold           = var.maps_monthly_calls_alert
+  comparison_operator = "GreaterThanThreshold"
+  alarm_actions       = [aws_sns_topic.alerts.arn]
+  treat_missing_data  = "notBreaching"
+}
+
 resource "aws_cloudwatch_metric_alarm" "db_storage" {
   alarm_name          = "${local.name}-db-free-storage"
   namespace           = "AWS/RDS"
