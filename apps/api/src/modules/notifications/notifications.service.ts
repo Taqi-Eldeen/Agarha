@@ -1,6 +1,6 @@
 import type { Locale } from '@agarha/schemas';
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, gte, sql } from 'drizzle-orm';
 import { DB, type Database } from '../../db/db';
 import { notificationDeliveries, notificationPreferences, pushTokens } from '../../db/schema/notifications';
 import { Queues } from '../../infra/queue/queues';
@@ -131,6 +131,15 @@ export class NotificationsService {
         await this.db.delete(pushTokens).where(eq(pushTokens.token, d.recipient));
       if (retryable) throw err;
     }
+  }
+
+  /** OTP send attempts in the last `minutes` (alarm: failures > 10%, docs/runbooks/otp-outage.md). */
+  async otpDeliveryStats(minutes = 15): Promise<{ total: number; failed: number }> {
+    const [r] = await this.db
+      .select({ total: sql<number>`count(*)::int`, failed: sql<number>`count(*) filter (where ${notificationDeliveries.status} = 'failed')::int` })
+      .from(notificationDeliveries)
+      .where(and(eq(notificationDeliveries.template, 'otp'), gte(notificationDeliveries.createdAt, sql`now() - make_interval(mins => ${minutes})`)));
+    return { total: r?.total ?? 0, failed: r?.failed ?? 0 };
   }
 
   async markFinalFailure(deliveryId: string, attempt: number, error: string): Promise<void> {

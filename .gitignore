@@ -23,3 +23,10 @@ apps/*/console.mjs
 .env.local
 dump.rdb
 apps/*/test-results
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
