@@ -1,3 +1,4 @@
+import { listingSchema, modelSchema } from '@agarha/schemas';
 import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post, Put, Query, Req } from '@nestjs/common';
 import { ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
@@ -6,7 +7,7 @@ import type { AuthContext } from '../../common/auth/auth-context';
 import { AdminAuth, Auth, CurrentAuth, CurrentDealer } from '../../common/auth/guards';
 import { Errors } from '../../common/errors';
 import { Idempotent } from '../../common/idempotency';
-import { ZodBody, ZodPipe, ZodQuery } from '../../common/zod';
+import { ZodBody, ZodPipe, ZodQuery, ZodResponse } from '../../common/zod';
 import { FLAGS, FlagsService } from '../../infra/flags';
 import { ImportService } from './import.service';
 import { adminListingQuerySchema, availabilitySchema, createListingSchema, fleetQuerySchema, moderationSchema, photoUploadSchema, reorderSchema, updateListingSchema, type CreateListing } from './listings.schemas';
@@ -28,6 +29,7 @@ export class DealerListingsController {
   @Get()
   @Auth('dealer', 'dealer_owner', 'dealer_staff')
   @ZodQuery(fleetQuerySchema)
+  @ZodResponse(200, z.object({ items: z.array(listingSchema.extend({ model: modelSchema.extend({ makeSlug: z.string(), makeNameAr: z.string(), makeNameEn: z.string() }).nullable() })), nextCursor: z.string().nullable(), counts: z.record(z.string(), z.number()) }))
   fleet(@CurrentDealer() d: Dealer, @Query(new ZodPipe(fleetQuerySchema)) q: z.output<typeof fleetQuerySchema>) {
     return this.listings.fleet(d.dealerId, q);
   }
@@ -36,6 +38,7 @@ export class DealerListingsController {
   @Auth('dealer', 'dealer_owner', 'dealer_staff')
   @Idempotent()
   @ZodBody(createListingSchema)
+  @ZodResponse(201, listingSchema)
   create(@CurrentDealer() d: Dealer, @Body(new ZodPipe(createListingSchema)) b: CreateListing) {
     return this.listings.create(d.dealerId, b, actor(d));
   }

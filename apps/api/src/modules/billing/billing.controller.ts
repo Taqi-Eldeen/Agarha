@@ -1,3 +1,4 @@
+import { planSchema as planOut } from '@agarha/schemas';
 import { Body, Controller, Get, HttpCode, Inject, Param, ParseUUIDPipe, Post, Put, Query, Req } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
@@ -7,7 +8,7 @@ import { AdminAuth, Auth, CurrentDealer } from '../../common/auth/guards';
 import { PublicCache, UseCacheControl } from '../../common/cache';
 import { Errors } from '../../common/errors';
 import { Idempotent } from '../../common/idempotency';
-import { ZodBody, ZodPipe } from '../../common/zod';
+import { ZodBody, ZodPipe, ZodResponse } from '../../common/zod';
 import { ENV, type Env } from '../../config/env';
 import { FLAGS, FlagsService } from '../../infra/flags';
 import { BillingService } from './billing.service';
@@ -34,6 +35,7 @@ export class BillingController {
 
   @Get('plans')
   @PublicCache(300)
+  @ZodResponse(200, z.object({ items: z.array(planOut) }))
   async plans() {
     return { items: await this.billing.listPlans() };
   }

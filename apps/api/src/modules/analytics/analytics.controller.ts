@@ -1,8 +1,9 @@
+import { dealerStatsSchema } from '@agarha/schemas';
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
 import { Auth, CurrentDealer } from '../../common/auth/guards';
-import { ZodPipe, ZodQuery } from '../../common/zod';
+import { ZodPipe, ZodQuery, ZodResponse } from '../../common/zod';
 import { AnalyticsService } from './analytics.service';
 
 type Dealer = { dealerId: string; userId: string; role: 'dealer_owner' | 'dealer_staff' };
@@ -16,6 +17,7 @@ export class DealerStatsController {
   @Get()
   @Auth('dealer', 'dealer_owner', 'dealer_staff')
   @ZodQuery(statsQuery)
+  @ZodResponse(200, dealerStatsSchema)
   stats(@CurrentDealer() d: Dealer, @Query(new ZodPipe(statsQuery)) q: z.output<typeof statsQuery>) {
     return this.analytics.dealerStats(d.dealerId, q.days);
   }

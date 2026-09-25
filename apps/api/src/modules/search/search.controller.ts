@@ -1,3 +1,5 @@
+import { dealerDirectorySchema, dealerProfileSchema, landingSchema, listingDetailSchema, mapPinsSchema, reviewSchema, searchResultSchema, sitemapSchema } from '@agarha/schemas';
+import { z as zod } from 'zod';
 import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Query, UseInterceptors } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
@@ -5,7 +7,7 @@ import type { AuthContext } from '../../common/auth/auth-context';
 import { Auth, CurrentAuth } from '../../common/auth/guards';
 import { CacheControlInterceptor, PublicCache } from '../../common/cache';
 import { Client, type ClientInfo } from '../../common/request';
-import { ZodBody, ZodPipe, ZodQuery } from '../../common/zod';
+import { ZodBody, ZodPipe, ZodQuery, ZodResponse } from '../../common/zod';
 import { DealersService } from '../dealers';
 import { ReviewsService } from '../reviews';
 import { savedSearchPatchSchema, savedSearchSchema, searchQuerySchema, type SearchQuery } from './search.schemas';
@@ -29,6 +31,7 @@ export class PublicController {
   @Get('search')
   @PublicCache(60)
   @ApiOperation({ summary: 'Search live listings. Cursor-paginated, max 50 per page.' })
+  @ZodResponse(200, searchResultSchema)
   @ZodQuery(searchQuerySchema)
   find(@Query(new ZodPipe(searchQuerySchema)) q: SearchQuery) {
     return this.search.search(q);
@@ -37,6 +40,7 @@ export class PublicController {
   @Get('search/map')
   @PublicCache(60)
   @ApiOperation({ summary: 'Map pins (max 500) for a bounding box; the client clusters them.' })
+  @ZodResponse(200, mapPinsSchema)
   @ZodQuery(searchQuerySchema)
   map(@Query(new ZodPipe(searchQuerySchema)) q: SearchQuery) {
     return this.search.pins(q);
@@ -44,12 +48,14 @@ export class PublicController {
 
   @Get('listings/:id')
   @PublicCache(60)
+  @ZodResponse(200, listingDetailSchema)
   detail(@Param('id', ParseUUIDPipe) id: string, @Client() c: ClientInfo) {
     return this.search.listingDetail(id, `${c.ip ?? ''}|${c.userAgent ?? ''}`);
   }
 
   @Get('dealers')
   @PublicCache(60)
+  @ZodResponse(200, dealerDirectorySchema)
   @ZodQuery(directoryQuery)
   async directory(@Query(new ZodPipe(directoryQuery)) q: z.output<typeof directoryQuery>) {
     const page = await this.dealers.directory(q);
@@ -62,12 +68,14 @@ export class PublicController {
 
   @Get('dealers/:slug')
   @PublicCache(60)
+  @ZodResponse(200, dealerProfileSchema)
   profile(@Param('slug') slug: string) {
     return this.search.dealerProfile(slug);
   }
 
   @Get('dealers/:slug/reviews')
   @PublicCache(60)
+  @ZodResponse(200, zod.object({ items: zod.array(reviewSchema), nextCursor: zod.string().nullable() }))
   @ZodQuery(pageQuery)
   async dealerReviews(@Param('slug') slug: string, @Query(new ZodPipe(pageQuery)) q: z.output<typeof pageQuery>) {
     const profile = await this.search.dealerProfile(slug);
@@ -76,6 +84,7 @@ export class PublicController {
 
   @Get('landing/:city')
   @PublicCache(300)
+  @ZodResponse(200, landingSchema)
   @ZodQuery(landingQuery)
   landing(@Param('city') city: string, @Query(new ZodPipe(landingQuery)) q: z.output<typeof landingQuery>) {
     return this.search.landing(city, { ...(q.area ? { area: q.area } : {}), ...(q.type ? { type: q.type } : {}) });
@@ -83,6 +92,7 @@ export class PublicController {
 
   @Get('seo/sitemap')
   @PublicCache(600)
+  @ZodResponse(200, sitemapSchema)
   sitemap() {
     return this.search.sitemap();
   }

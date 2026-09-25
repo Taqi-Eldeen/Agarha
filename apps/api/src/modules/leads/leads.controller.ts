@@ -1,4 +1,4 @@
-import { LEAD_CHANNELS } from '@agarha/schemas';
+import { LEAD_CHANNELS, leadResponseSchema } from '@agarha/schemas';
 import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
@@ -7,14 +7,13 @@ import { Auth, CurrentAuth, CurrentDealer, MaybeAuth, OptionalAuth } from '../..
 import { Errors } from '../../common/errors';
 import { Idempotent } from '../../common/idempotency';
 import { Client, type ClientInfo } from '../../common/request';
-import { ZodBody, ZodPipe, ZodQuery } from '../../common/zod';
+import { ZodBody, ZodPipe, ZodQuery, ZodResponse } from '../../common/zod';
 import { FLAGS, FlagsService } from '../../infra/flags';
 import { AvailabilityService } from './availability.service';
 import { LeadsService } from './leads.service';
 
 type Dealer = { dealerId: string; userId: string; role: 'dealer_owner' | 'dealer_staff' };
 const leadSchema = z.object({ listingId: z.uuid(), channel: z.enum(LEAD_CHANNELS), locale: z.enum(['ar', 'en']).default('ar') });
-const leadResponseSchema = z.object({ leadId: z.uuid(), refCode: z.string(), channel: z.enum(LEAD_CHANNELS), url: z.string() });
 const outcomeSchema = z.object({ outcome: z.enum(['from_agarha', 'rented', 'not_rented', 'no_reply']) });
 const pageSchema = z.object({ cursor: z.string().max(300).optional(), limit: z.coerce.number().int().min(1).max(100).default(30) });
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
@@ -35,6 +34,7 @@ export class LeadsController {
   @OptionalAuth('customer')
   @Idempotent()
   @ZodBody(leadSchema)
+  @ZodResponse(201, leadResponseSchema)
   create(@Body(new ZodPipe(leadSchema)) b: z.output<typeof leadSchema>, @MaybeAuth() auth: AuthContext | undefined, @Client() c: ClientInfo): Promise<z.infer<typeof leadResponseSchema>> {
     return this.leads.create(b, { userId: auth?.userId ?? null, ip: c.ip });
   }

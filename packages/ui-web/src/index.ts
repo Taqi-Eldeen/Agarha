@@ -1,0 +1,24 @@
+// Web design system v1 (section 9). Names, props and states match @agarha/ui-native and the Figma library.
+export { UiProvider, useUi } from './lib/ui-context';
+export { cn } from './lib/cn';
+export { Button, IconButton, buttonVariants, type ButtonProps } from './components/button';
+export { TextField, PhoneField, OTPField, FieldShell } from './components/fields';
+export { Select, Combobox, type Option } from './components/select';
+export { FilterChip, ChipGroup } from './components/chips';
+export { Badge, FreshnessChip } from './components/badge';
+export { PriceTag, priceFor, type Prices } from './components/price-tag';
+export { ListingCard, ListingCardSkeleton } from './components/listing-card';
+export { DealerCard } from './components/dealer-card';
+export { RequirementList } from './components/requirement-list';
+export { Gallery, type GalleryPhoto } from './components/gallery';
+export { ContactBar } from './components/contact-bar';
+export { Drawer, Modal } from './components/drawer';
+export { AvailabilitySwitch } from './components/availability-switch';
+export { Stepper, Wizard } from './components/stepper';
+export { PhotoUploader, resizeImage, type UploadItem } from './components/photo-uploader';
+export { InlineAlert, EmptyState, ErrorState, ToastProvider, useToast } from './components/feedback';
+export { RatingStars, ReviewItem } from './components/rating';
+export { DataTable, StatTile, type Column } from './components/data';
+export { BlurImage } from './components/blur-image';
+export { WhatsAppIcon } from './components/whatsapp-icon';
+export type { MapPinData, MapViewProps } from './components/map-view';

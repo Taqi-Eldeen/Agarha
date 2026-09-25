@@ -77,9 +77,15 @@ ${colorVars(all, 'dark').replace(/^/gm, '  ')}
     color-scheme: dark;
   }
 }
-:root[data-theme='dark'] {
+/* Explicit theme: on <html> or scoped to any subtree (Storybook matrix, previews). */
+:root[data-theme='dark'],
+[data-theme='dark'] {
 ${colorVars(all, 'dark')}
   color-scheme: dark;
+}
+[data-theme='light'] {
+${colorVars(all, 'light')}
+  color-scheme: light;
 }
 @media (prefers-reduced-motion: reduce) {
   :root {

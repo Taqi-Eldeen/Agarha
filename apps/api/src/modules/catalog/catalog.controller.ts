@@ -1,11 +1,11 @@
-import { CAR_BODY_TYPES } from '@agarha/schemas';
+import { CAR_BODY_TYPES, areaSchema as areaOut, citySchema as cityOut, makeSchema as makeOut, modelSchema as modelOut } from '@agarha/schemas';
 import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Put, Query, UseInterceptors } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
 import { CacheControlInterceptor, PublicCache } from '../../common/cache';
 import { AdminAuth, CurrentAuth } from '../../common/auth/guards';
 import type { AuthContext } from '../../common/auth/auth-context';
-import { ZodBody, ZodPipe } from '../../common/zod';
+import { ZodBody, ZodPipe, ZodResponse } from '../../common/zod';
 import { AuditService } from '../admin';
 import { CatalogService } from './catalog.service';
 
@@ -26,12 +26,14 @@ export class CatalogController {
 
   @Get('cities')
   @PublicCache(300)
+  @ZodResponse(200, z.object({ items: z.array(cityOut) }))
   async cities() {
     return { items: await this.catalog.cities() };
   }
 
   @Get('cities/:slug')
   @PublicCache(300)
+  @ZodResponse(200, cityOut.extend({ areas: z.array(areaOut) }))
   async city(@Param('slug') slugParam: string) {
     const city = await this.catalog.cityBySlug(slugParam);
     return { ...city, areas: await this.catalog.areas(city.id) };
@@ -39,12 +41,14 @@ export class CatalogController {
 
   @Get('makes')
   @PublicCache(300)
+  @ZodResponse(200, z.object({ items: z.array(makeOut) }))
   async makes() {
     return { items: await this.catalog.makes() };
   }
 
   @Get('makes/:id/models')
   @PublicCache(300)
+  @ZodResponse(200, z.object({ items: z.array(modelOut) }))
   async models(@Param('id', ParseUUIDPipe) id: string) {
     return { items: await this.catalog.models(id) };
   }

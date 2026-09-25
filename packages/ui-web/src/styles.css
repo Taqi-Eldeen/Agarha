@@ -1,0 +1,34 @@
+@import '@agarha/tokens/css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: var(--ag-font-ui);
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-page text-fg text-body;
+  }
+  :focus-visible {
+    outline: 3px solid rgb(var(--ag-color-brand-primary));
+    outline-offset: 2px;
+  }
+  /* Directional icons flip in RTL; logos, media controls and phone numbers never do. */
+  [dir='rtl'] .ag-mirror {
+    transform: scaleX(-1);
+  }
+  .ag-tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
