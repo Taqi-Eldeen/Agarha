@@ -87,11 +87,11 @@ run "production_guarantees" {
     error_message = "Only Cloudflare may reach the load balancer, on 443."
   }
   assert {
-    condition     = strcontains(cloudflare_ruleset.firewall.rules[0].expression, "198.51.100.10/32")
+    condition     = strcontains(cloudflare_ruleset.firewall[0].rules[0].expression, "198.51.100.10/32") && strcontains(cloudflare_ruleset.firewall[0].rules[0].expression, "staging-admin.agarha.com")
     error_message = "The admin allowlist must be enforced at the edge."
   }
   assert {
-    condition     = cloudflare_zone_setting.min_tls.value == "1.2"
+    condition     = cloudflare_zone_setting.min_tls[0].value == "1.2"
     error_message = "TLS 1.2+ only."
   }
   assert {
@@ -107,12 +107,16 @@ run "staging_is_cheaper_but_still_two_api_instances" {
     db_multi_az = false
   }
   assert {
-    condition     = !aws_db_instance.main.deletion_protection && local.hosts.api == "api.staging.agarha.com"
+    condition     = !aws_db_instance.main.deletion_protection && local.hosts.api == "staging-api.agarha.com" && contains(keys(local.cert_names), "previews")
     error_message = "Staging settings."
   }
   assert {
     condition     = aws_ecs_service.app["api"].desired_count >= 2
     error_message = "Staging also runs 2 API instances (production-like)."
+  }
+  assert {
+    condition     = length(cloudflare_ruleset.firewall) == 0 && length(cloudflare_zone_setting.min_tls) == 0
+    error_message = "Zone-wide Cloudflare config is owned by the production state only."
   }
 }
 

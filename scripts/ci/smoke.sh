@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Post-deploy smoke test (staging after every merge, production after every release).
-#   scripts/ci/smoke.sh https://staging.agarha.com https://api.staging.agarha.com
+#   scripts/ci/smoke.sh https://staging.agarha.com https://staging-api.agarha.com
 set -euo pipefail
 WEB="${1:?web base url}"
 API="${2:?api base url}"

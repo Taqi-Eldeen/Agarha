@@ -145,7 +145,7 @@ resource "aws_lb" "main" {
 
 resource "aws_acm_certificate" "main" {
   domain_name               = local.hosts.web
-  subject_alternative_names = [local.hosts.api, local.hosts.admin]
+  subject_alternative_names = [for k, v in local.cert_names : v if k != "web"]
   validation_method         = "DNS"
   lifecycle { create_before_destroy = true }
 }

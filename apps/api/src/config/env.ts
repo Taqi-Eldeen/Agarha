@@ -235,6 +235,14 @@ export type Env = z.infer<typeof envSchema>;
 
 /** Validates process.env at boot. Fails fast with every problem listed, never printing values. */
 export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
+  // Preview environments share the staging secret but use their own database (DATABASE_NAME).
+  if (source.DATABASE_NAME && source.DATABASE_URL) {
+    if (!/^agarha(_pr_\d{1,7})?$/.test(source.DATABASE_NAME))
+      throw new Error('Invalid DATABASE_NAME');
+    const u = new URL(source.DATABASE_URL);
+    u.pathname = `/${source.DATABASE_NAME}`;
+    source = { ...source, DATABASE_URL: u.toString() };
+  }
   const result = envSchema.safeParse(source);
   if (!result.success) {
     const lines = result.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`);

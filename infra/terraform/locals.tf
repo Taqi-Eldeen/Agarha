@@ -2,12 +2,24 @@ locals {
   name = "agarha-${var.environment}"
   prod = var.environment == "production"
 
+  # Single-level subdomains only: Cloudflare Universal SSL covers *.agarha.com, not *.staging.agarha.com.
+  # PR previews (staging only) get pr-<n>.agarha.com and pr-<n>-api.agarha.com (scripts/ci/preview.sh).
   hosts = {
     web   = local.prod ? var.domain : "staging.${var.domain}"
-    api   = local.prod ? "api.${var.domain}" : "api.staging.${var.domain}"
-    admin = local.prod ? "admin.${var.domain}" : "admin.staging.${var.domain}"
-    media = local.prod ? "media.${var.domain}" : "media.staging.${var.domain}"
+    api   = local.prod ? "api.${var.domain}" : "staging-api.${var.domain}"
+    admin = local.prod ? "admin.${var.domain}" : "staging-admin.${var.domain}"
+    media = local.prod ? "media.${var.domain}" : "staging-media.${var.domain}"
   }
+  # Zone-wide Cloudflare settings and rulesets exist once per zone: production's state owns them and
+  # they cover both environments' hosts.
+  zone_owner  = local.prod
+  api_hosts   = ["api.${var.domain}", "staging-api.${var.domain}"]
+  admin_hosts = ["admin.${var.domain}", "staging-admin.${var.domain}"]
+
+  cert_names = merge(
+    { web = local.hosts.web, api = local.hosts.api, admin = local.hosts.admin },
+    local.prod ? {} : { previews = "*.${var.domain}" },
+  )
 
   # Secrets the API and worker read at boot (values are set out of band in Secrets Manager; see
   # docs/runbooks/secrets.md). Non-secret config is plain environment in the task definitions.

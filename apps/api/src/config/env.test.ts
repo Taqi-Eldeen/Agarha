@@ -83,3 +83,14 @@ describe('environment validation', () => {
     expect(() => loadEnv({ ...local, PAYMENT_GATEWAY: 'paymob' })).toThrow(/PAYMOB_SECRET_KEY/);
   });
 });
+
+describe('preview databases', () => {
+  it('DATABASE_NAME points a preview service at its own database', () => {
+    expect(loadEnv({ ...local, DATABASE_NAME: 'agarha_pr_42' }).DATABASE_URL).toBe(
+      'postgres://a:b@localhost:5432/agarha_pr_42',
+    );
+  });
+  it('rejects anything that is not a preview database name', () => {
+    expect(() => loadEnv({ ...local, DATABASE_NAME: 'postgres' })).toThrow(/DATABASE_NAME/);
+  });
+});

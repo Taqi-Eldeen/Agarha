@@ -30,7 +30,7 @@
       },
       "env": {
         "APP_ENV": "preview",
-        "EXPO_PUBLIC_API_URL": "https://api.staging.agarha.com",
+        "EXPO_PUBLIC_API_URL": "https://staging-api.agarha.com",
         "EXPO_PUBLIC_WEB_HOST": "staging.agarha.com"
       }
     },

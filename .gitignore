@@ -31,3 +31,4 @@ apps/*/test-results
 *.tfplan
 crash.log
 apps/web/public/vendor/
+dist-tools

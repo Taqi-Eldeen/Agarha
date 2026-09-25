@@ -1,5 +1,5 @@
 // k6 load test at 5× the expected launch peak (section 11: ~50 req/s, no code changes).
-//   k6 run -e API=https://api.staging.agarha.com load/k6/browse-and-contact.js
+//   k6 run -e API=https://staging-api.agarha.com load/k6/browse-and-contact.js
 // Mix mirrors real traffic: mostly search and listing reads, a few leads. Thresholds are the API
 // budgets: p95 < 300 ms for reads and < 600 ms for writes, < 1% errors.
 import http from 'k6/http';
