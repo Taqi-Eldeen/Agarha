@@ -78,7 +78,7 @@ export class DealerAuthController {
   @ApiOperation({ summary: 'Step 1: phone + password. Returns which second factor to send next.' })
   @ZodBody(loginSchema)
   async login(@Body(new ZodPipe(loginSchema)) body: z.output<typeof loginSchema>, @Client() info: ClientInfo) {
-    await this.limiter.hit({ name: 'dealer-login:phone', key: body.phone, max: 10, windowSeconds: 900 }, { name: 'dealer-login:ip', key: this.otp.ipHash(info.ip) ?? 'x', max: 30, windowSeconds: 900 });
+    await this.limiter.hit({ name: 'dealer-login:phone', key: body.phone, max: 20, windowSeconds: 900 }, { name: 'dealer-login:ip', key: this.otp.ipHash(info.ip) ?? 'x', max: 30, windowSeconds: 900 });
     const user = await this.users.findByPhone(body.phone);
     const cred = user ? await this.users.credentials(user.id) : null;
     const ok = await verifyPassword(cred?.passwordHash ?? (await dummyHash()), body.password);

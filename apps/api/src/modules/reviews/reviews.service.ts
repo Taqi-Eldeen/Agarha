@@ -1,5 +1,5 @@
 import { Inject, Injectable, type OnModuleInit } from '@nestjs/common';
-import { and, desc, eq, lt, or, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, lt, or, sql } from 'drizzle-orm';
 import { Errors } from '../../common/errors';
 import { decodeCursor, encodeCursor } from '../../common/pagination';
 import { DB, type Database } from '../../db/db';
@@ -76,7 +76,7 @@ export class ReviewsService implements OnModuleInit {
     const rows = await this.db
       .select({ dealerId: reviews.dealerId, count: sql<number>`count(*)::int`, avg: sql<number | null>`round(avg(${reviews.rating})::numeric, 1)::float` })
       .from(reviews)
-      .where(and(sql`${reviews.dealerId} = ANY(${dealerIds}::uuid[])`, eq(reviews.status, 'published')))
+      .where(and(inArray(reviews.dealerId, dealerIds), eq(reviews.status, 'published')))
       .groupBy(reviews.dealerId);
     return new Map(rows.map((r) => [r.dealerId, { count: r.count, average: r.avg }]));
   }

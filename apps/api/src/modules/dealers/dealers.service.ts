@@ -268,10 +268,10 @@ export class DealersService implements MembershipResolver {
   async directory(q: { city?: string | undefined; cursor?: string | undefined; limit: number }): Promise<Page<typeof dealers.$inferSelect & { branchCount: number }>> {
     const c = decodeCursor<{ n: string; id: string }>(q.cursor);
     const cityFilter = q.city
-      ? sql`EXISTS (SELECT 1 FROM branches b JOIN areas a ON a.id = b.area_id JOIN cities ci ON ci.id = a.city_id WHERE b.dealer_id = ${dealers.id} AND ci.slug = ${q.city})`
+      ? sql`EXISTS (SELECT 1 FROM branches b JOIN areas a ON a.id = b.area_id JOIN cities ci ON ci.id = a.city_id WHERE b.dealer_id = "dealers"."id" AND ci.slug = ${q.city})`
       : undefined;
     const rows = await this.db
-      .select({ d: dealers, branchCount: sql<number>`(SELECT count(*)::int FROM branches b WHERE b.dealer_id = ${dealers.id})` })
+      .select({ d: dealers, branchCount: sql<number>`(SELECT count(*)::int FROM branches b WHERE b.dealer_id = "dealers"."id")` })
       .from(dealers)
       .where(and(eq(dealers.status, 'verified'), isNull(dealers.suspendedAt), cityFilter, c ? or(sql`${dealers.displayNameEn} > ${c.n}`, and(eq(dealers.displayNameEn, c.n), sql`${dealers.id} > ${c.id}`)) : undefined))
       .orderBy(asc(dealers.displayNameEn), asc(dealers.id))

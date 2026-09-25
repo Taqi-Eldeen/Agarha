@@ -84,15 +84,15 @@ export class CatalogService {
       .select({ id: carModels.id, slug: carModels.slug, nameAr: carModels.nameAr, nameEn: carModels.nameEn, makeNameAr: carMakes.nameAr, makeNameEn: carMakes.nameEn })
       .from(carModels)
       .innerJoin(carMakes, eq(carMakes.id, carModels.makeId))
-      .where(sql`${carModels.searchText} % ${n} OR ${carModels.searchText} LIKE ${'%' + n + '%'}`)
-      .orderBy(sql`similarity(${carModels.searchText}, ${n}) DESC`)
+      .where(sql`${n} <% ${carModels.searchText} OR ${carModels.searchText} LIKE ${'%' + n + '%'}`)
+      .orderBy(sql`word_similarity(${n}, ${carModels.searchText}) DESC`)
       .limit(limit);
     const areaRows = await this.db
       .select({ id: areas.id, slug: areas.slug, nameAr: areas.nameAr, nameEn: areas.nameEn, citySlug: cities.slug })
       .from(areas)
       .innerJoin(cities, and(eq(cities.id, areas.cityId), eq(cities.isActive, true)))
-      .where(sql`${areas.searchText} % ${n} OR ${areas.searchText} LIKE ${'%' + n + '%'}`)
-      .orderBy(sql`similarity(${areas.searchText}, ${n}) DESC`)
+      .where(sql`${n} <% ${areas.searchText} OR ${areas.searchText} LIKE ${'%' + n + '%'}`)
+      .orderBy(sql`word_similarity(${n}, ${areas.searchText}) DESC`)
       .limit(limit);
     return { models, areas: areaRows };
   }

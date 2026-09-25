@@ -72,7 +72,8 @@ export class PostgresSearchEngine implements SearchEngine {
     if (q.dealerId) f.push(eq(d.dealerId, q.dealerId));
     if (q.q) {
       const n = normalizeArabic(q.q);
-      f.push(sql`(${d.searchText} % ${n} OR ${d.searchText} LIKE ${'%' + n + '%'})`);
+      // word_similarity (<%): the query is matched against the closest run of words, so short typo'd queries still hit long documents.
+      f.push(sql`(${n} <% ${d.searchText} OR ${d.searchText} LIKE ${'%' + n + '%'})`);
     }
     if (q.bbox) f.push(sql`${d.location} && ST_MakeEnvelope(${q.bbox[0]}, ${q.bbox[1]}, ${q.bbox[2]}, ${q.bbox[3]}, 4326)`);
     if (q.lat !== undefined && q.lng !== undefined)
@@ -88,7 +89,7 @@ export class PostgresSearchEngine implements SearchEngine {
     const nowTs = now.toISOString();
     const fresh = sql`GREATEST(0, 1 - EXTRACT(EPOCH FROM (${nowTs}::timestamptz - ${d.lastConfirmedAt})) / ${FOURTEEN_DAYS_S})`;
     const featured = sql`CASE WHEN ${d.featuredUntil} > ${nowTs}::timestamptz THEN 1 ELSE 0 END`;
-    const text = q.q ? sql`similarity(${d.searchText}, ${normalizeArabic(q.q)})` : sql`0`;
+    const text = q.q ? sql`word_similarity(${normalizeArabic(q.q)}, ${d.searchText})` : sql`0`;
     return sql<number>`round((${featured} * 0.4 + ${fresh} * 0.5 + ${text} * 0.3)::numeric, 6)::float8`;
   }
 

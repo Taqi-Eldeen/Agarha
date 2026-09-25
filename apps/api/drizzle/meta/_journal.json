@@ -36,6 +36,13 @@
       "when": 1790302420339,
       "tag": "0004_constraints_sequences",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790303702984,
+      "tag": "0005_search_projection",
+      "breakpoints": true
     }
   ]
 }
