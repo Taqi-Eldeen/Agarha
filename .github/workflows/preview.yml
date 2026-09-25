@@ -56,7 +56,7 @@ jobs:
           CLOUDFLARE_ZONE_ID: ${{ vars.CLOUDFLARE_ZONE_ID }}
           DOMAIN: ${{ vars.DOMAIN }}
       - name: Post the preview URL
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const url = `https://pr-${process.env.PR}.${{ vars.DOMAIN }}`;
