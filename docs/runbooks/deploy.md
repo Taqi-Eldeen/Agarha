@@ -42,3 +42,8 @@ With the repository variable `PREVIEWS_ENABLED=true`, `.github/workflows/preview
 - [ ] Migrations in this release are expand-only
 - [ ] CHANGELOG entry
 - [ ] Feature flags for risky features default off in PostHog
+- [ ] Manual screen-reader pass on the changed flows: VoiceOver (iOS app + Safari), TalkBack (Android
+      app), NVDA (Chrome, web and dealer PWA), in Arabic and English — reading order, labels, focus
+      after dialogs and sheets, live regions for results and toasts
+- [ ] Mobile: cold start on a mid-range Android (target < 2.5 s), results list scroll at 60 fps
+      (Perf Monitor), store download size < 40 MB
