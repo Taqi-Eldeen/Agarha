@@ -57,6 +57,9 @@ importers:
       '@agarha/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
+      '@axe-core/playwright':
+        specifier: ^4.13.0
+        version: 4.13.0(playwright-core@1.56.1)
       '@playwright/test':
         specifier: 1.56.1
         version: 1.56.1

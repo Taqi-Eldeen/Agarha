@@ -26,6 +26,7 @@
   "devDependencies": {
     "@agarha/config": "workspace:*",
     "@agarha/tokens": "workspace:*",
+    "@axe-core/playwright": "^4.13.0",
     "@playwright/test": "1.56.1",
     "@types/node": "^22.18.10",
     "@types/react": "^19.1.13",
