@@ -1,0 +1,18 @@
+appId: ${APP_ID}
+name: Delete account from the app (store requirement)
+---
+- launchApp
+- tapOn: "حسابي"
+- scrollUntilVisible:
+    element: "امسح الحساب"
+    direction: DOWN
+- tapOn:
+    text: "امسح الحساب"
+    index: 0
+- tapOn:
+    text: "امسح الحساب"
+    index: 1
+- assertVisible:
+    text: "اتمسح حسابك.*"
+    timeout: 10000
+- assertVisible: "تسجيل الدخول"

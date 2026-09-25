@@ -1,16 +1,7 @@
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { migrate } from 'drizzle-orm/node-postgres/migrator';
-import { Pool } from 'pg';
-import { join } from 'node:path';
+// `pnpm db:migrate` in development; the production image runs `node dist/db/migrate.js`.
+import { runMigrations } from '../src/db/migrate';
 
-export async function runMigrations(url: string): Promise<void> {
-  const pool = new Pool({ connectionString: url, max: 1 });
-  try {
-    await migrate(drizzle(pool), { migrationsFolder: join(__dirname, '..', 'drizzle') });
-  } finally {
-    await pool.end();
-  }
-}
+export { runMigrations };
 
 if (require.main === module) {
   const url = process.env.DATABASE_URL;

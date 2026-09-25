@@ -1,0 +1,13 @@
+# Run against a development or preview build on an emulator/simulator with the local API seeded:
+#   maestro test -e APP_ID=com.agarha.app.development -e API_URL=http://10.0.2.2:4000 .maestro
+flows:
+  - "*.yaml"
+executionOrder:
+  continueOnFailure: false
+  flowsOrder:
+    - search-contact
+    - deep-link
+    - sign-in
+    - favorites
+    - language-switch
+    - account-deletion

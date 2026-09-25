@@ -17,4 +17,4 @@ export default function middleware(req: NextRequest) {
   return res;
 }
 
-export const config = { matcher: ['/((?!api|_next|_vercel|sw.js|manifest.webmanifest|robots.txt|sitemap.xml|icons|.*\\..*).*)'] };
+export const config = { matcher: ['/((?!api|_next|.well-known|_vercel|sw.js|manifest.webmanifest|robots.txt|sitemap.xml|icons|.*\\..*).*)'] };

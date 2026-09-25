@@ -1,0 +1,26 @@
+appId: ${APP_ID}
+name: Customer OTP sign-in (Turnstile test key + mock SMS)
+env:
+  PHONE_NATIONAL: "01055501234"
+  PHONE_E164: "+201055501234"
+---
+- launchApp
+- tapOn: "حسابي"
+- tapOn: "تسجيل الدخول"
+- tapOn:
+    id: "phone-input"
+- inputText: ${PHONE_NATIONAL}
+- hideKeyboard
+- extendedWaitUntil:
+    visible: "ابعت الكود"
+    timeout: 20000
+- tapOn: "ابعت الكود"
+- runScript:
+    file: scripts/otp.js
+    env: { API_URL: "${API_URL}", PHONE_E164: "${PHONE_E164}" }
+- tapOn:
+    id: "otp-input"
+- inputText: ${output.code}
+- assertVisible:
+    text: ".*1055501234.*"
+    timeout: 15000

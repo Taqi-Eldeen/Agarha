@@ -4,5 +4,6 @@ export * from './common.js';
 export * from './auth.js';
 export * from './listing.js';
 export * from './freshness.js';
+export * from './price.js';
 export * from './arabic.js';
 export * from './api.js';

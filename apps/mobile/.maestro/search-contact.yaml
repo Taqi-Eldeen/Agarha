@@ -1,0 +1,29 @@
+appId: ${APP_ID}
+name: Search → listing → WhatsApp contact (Arabic, no account)
+---
+- runScript:
+    file: scripts/reset-limits.js
+    env: { API_URL: "${API_URL}" }
+- launchApp:
+    clearState: true
+- assertVisible: "استكشف"
+- tapOn: "دوّر"
+- assertVisible:
+    text: ".*عربية.*"
+    timeout: 15000
+- tapOn:
+    text: "واتساب"
+    index: 0
+# Opening WhatsApp leaves the app; come back and check the facts on the listing itself.
+- launchApp
+- tapOn: "استكشف"
+- tapOn: "دوّر"
+- tapOn:
+    text: ".* 20[0-9]{2}"
+    index: 0
+- assertVisible: "المطلوب منك"
+- assertVisible: "متدفعش أي تأمين قبل ما تشوف العربية"
+- scrollUntilVisible:
+    element: "بلّغ عن الإعلان"
+    direction: DOWN
+- assertVisible: "واتساب"

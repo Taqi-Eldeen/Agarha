@@ -1,7 +1,11 @@
-import createClient, { type Middleware } from 'openapi-fetch';
+import openapiFetch, { type Middleware } from 'openapi-fetch';
 import type { paths } from './openapi';
 
 export type ApiPaths = paths;
+
+// In the CommonJS build (Jest, Node require) esbuild's node-mode interop hands us the module object,
+// whose `default` is the function; the ESM build gets the function directly.
+const createClient = ((openapiFetch as unknown as { default?: typeof openapiFetch }).default ?? openapiFetch) as typeof openapiFetch;
 export type SessionScope = 'customer' | 'dealer' | 'admin';
 
 /** Where mobile keeps its tokens (SecureStore). Web leaves this undefined and relies on httpOnly cookies. */

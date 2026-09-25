@@ -1,0 +1,12 @@
+appId: ${APP_ID}
+name: Deep links open the right screen
+---
+- launchApp
+- openLink: "agarha://search?city=cairo&type=suv"
+- assertVisible:
+    text: ".*عربية.*"
+    timeout: 15000
+- openLink: "https://agarha.com/ar/cairo"
+- assertVisible:
+    text: ".*عربية.*"
+    timeout: 15000

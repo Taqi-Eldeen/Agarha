@@ -8,3 +8,9 @@ onlyBuiltDependencies:
   - argon2
   - esbuild
   - sharp
+# Expo SDK 57 pins safe-area-context 5.7 / React 19.2; RN Storybook and @types/react-dom ask for newer
+# patch/minor releases that are API-compatible.
+peerDependencyRules:
+  allowedVersions:
+    react-native-safe-area-context: '5.7'
+    '@types/react': '19.2'

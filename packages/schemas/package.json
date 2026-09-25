@@ -57,6 +57,16 @@
         "types": "./dist/freshness.d.cts",
         "default": "./dist/freshness.cjs"
       }
+    },
+    "./price": {
+      "import": {
+        "types": "./dist/price.d.ts",
+        "default": "./dist/price.js"
+      },
+      "require": {
+        "types": "./dist/price.d.cts",
+        "default": "./dist/price.cjs"
+      }
     }
   },
   "files": [

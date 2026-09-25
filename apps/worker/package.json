@@ -1,0 +1,14 @@
+{
+  "name": "@agarha/worker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "BullMQ worker (notifications, media processing, freshness sweeps, search indexing). Same codebase as @agarha/api, separate process and image.",
+  "scripts": {
+    "dev": "pnpm --filter @agarha/api dev:worker",
+    "start": "pnpm --filter @agarha/api start:worker",
+    "docker:build": "docker build -f ../api/Dockerfile --target worker -t agarha-worker ../.."
+  },
+  "dependencies": {
+    "@agarha/api": "workspace:*"
+  }
+}
