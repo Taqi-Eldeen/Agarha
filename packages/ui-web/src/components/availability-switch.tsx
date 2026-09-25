@@ -14,7 +14,12 @@ export interface AvailabilitySwitchProps {
 }
 
 /** One-tap availability with optimistic update, rollback on failure and undo. */
-export function AvailabilitySwitch({ available, onChange, onChanged, label }: AvailabilitySwitchProps) {
+export function AvailabilitySwitch({
+  available,
+  onChange,
+  onChanged,
+  label,
+}: AvailabilitySwitchProps) {
   const { t } = useUi();
   const [value, setValue] = useState(available);
   const [busy, setBusy] = useState(false);
@@ -38,11 +43,18 @@ export function AvailabilitySwitch({ available, onChange, onChanged, label }: Av
         disabled={busy}
         onCheckedChange={(v) => void apply(v, true)}
         aria-label={label}
-        className={cn('relative h-8 w-14 shrink-0 rounded-full border-2 border-transparent transition-colors duration-fast', value ? 'bg-available' : 'bg-border')}
+        className={cn(
+          'relative h-8 w-14 shrink-0 rounded-full border-2 border-transparent transition-colors duration-fast',
+          value ? 'bg-available' : 'bg-border',
+        )}
       >
         <Switch.Thumb className="block size-7 rounded-full bg-white shadow-1 transition-transform duration-fast data-[state=checked]:translate-x-6 rtl:data-[state=checked]:-translate-x-6" />
       </Switch.Root>
-      <span className={cn('text-caption font-medium', value ? 'text-available' : 'text-fg-secondary')}>{value ? t.available : t.unavailable}</span>
+      <span
+        className={cn('text-caption font-medium', value ? 'text-available' : 'text-fg-secondary')}
+      >
+        {value ? t.available : t.unavailable}
+      </span>
     </label>
   );
 }

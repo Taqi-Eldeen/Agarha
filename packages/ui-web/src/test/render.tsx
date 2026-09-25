@@ -7,12 +7,17 @@ import { UiProvider } from '../lib/ui-context';
 export function renderUi(ui: ReactElement, locale: Locale = 'ar'): RenderResult {
   document.documentElement.lang = locale;
   document.documentElement.dir = locale === 'ar' ? 'rtl' : 'ltr';
-  return render(ui, { wrapper: ({ children }) => <UiProvider locale={locale}>{children}</UiProvider> });
+  return render(ui, {
+    wrapper: ({ children }) => <UiProvider locale={locale}>{children}</UiProvider>,
+  });
 }
 
 /** Runs axe on a container (WCAG 2.2 A/AA rules; colour contrast is covered by the token tests). */
 export async function axeViolations(container: Element) {
-  const r = await axe.run(container, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] }, rules: { 'color-contrast': { enabled: false }, region: { enabled: false } } });
+  const r = await axe.run(container, {
+    runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] },
+    rules: { 'color-contrast': { enabled: false }, region: { enabled: false } },
+  });
   return r.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`);
 }
 
@@ -36,7 +41,15 @@ export const CARD = {
   lastConfirmedAt: new Date(Date.now() - 3 * 3_600_000).toISOString(),
   available: true,
   featured: true,
-  dealer: { id: '1b6c7f6e-8f3a-4a57-9a2f-5d7c1c9f2b11', slug: 'nile', nameAr: 'النيل', nameEn: 'Nile Rentals', verified: true, whatsapp: '+201012345678', phone: '+201012345678' },
+  dealer: {
+    id: '1b6c7f6e-8f3a-4a57-9a2f-5d7c1c9f2b11',
+    slug: 'nile',
+    nameAr: 'النيل',
+    nameEn: 'Nile Rentals',
+    verified: true,
+    whatsapp: '+201012345678',
+    phone: '+201012345678',
+  },
   area: { slug: 'nasr-city', ar: 'مدينة نصر', en: 'Nasr City' },
   city: { slug: 'cairo', ar: 'القاهرة', en: 'Cairo' },
   location: { lat: 30.05, lng: 31.33 },

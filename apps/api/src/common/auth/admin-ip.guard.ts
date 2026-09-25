@@ -25,7 +25,8 @@ export class AdminIpGuard implements CanActivate {
   canActivate(ctx: ExecutionContext): boolean {
     if (!this.list) return true;
     const ip = (ctx.switchToHttp().getRequest<Request>().ip ?? '').replace(/^::ffff:/, '');
-    if (!ip || !this.list.check(ip, isIPv6(ip) ? 'ipv6' : 'ipv4')) throw Errors.forbidden('Admin access is restricted by IP');
+    if (!ip || !this.list.check(ip, isIPv6(ip) ? 'ipv6' : 'ipv4'))
+      throw Errors.forbidden('Admin access is restricted by IP');
     return true;
   }
 }

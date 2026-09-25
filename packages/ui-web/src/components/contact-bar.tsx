@@ -17,14 +17,32 @@ export interface ContactBarProps {
 }
 
 /** Sticky bottom bar on phones, side card on desktop (≥ lg). WhatsApp and Call are always visible. */
-export function ContactBar({ prices, period = 'day', onContact, contacting, notice }: ContactBarProps) {
+export function ContactBar({
+  prices,
+  period = 'day',
+  onContact,
+  contacting,
+  notice,
+}: ContactBarProps) {
   const { t } = useUi();
   const buttons = (
     <div className="grid grid-cols-[1fr_auto] gap-2">
-      <Button variant="whatsapp" size="lg" icon={<WhatsAppIcon />} loading={contacting === 'whatsapp'} onClick={() => onContact('whatsapp')}>
+      <Button
+        variant="whatsapp"
+        size="lg"
+        icon={<WhatsAppIcon />}
+        loading={contacting === 'whatsapp'}
+        onClick={() => onContact('whatsapp')}
+      >
         {t.whatsapp}
       </Button>
-      <Button variant="secondary" size="lg" icon={<Phone aria-hidden className="size-5" strokeWidth={1.75} />} loading={contacting === 'call'} onClick={() => onContact('call')}>
+      <Button
+        variant="secondary"
+        size="lg"
+        icon={<Phone aria-hidden className="size-5" strokeWidth={1.75} />}
+        loading={contacting === 'call'}
+        onClick={() => onContact('call')}
+      >
         {t.call}
       </Button>
     </div>

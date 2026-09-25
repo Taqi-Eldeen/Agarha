@@ -11,7 +11,10 @@ for (const locale of ['ar', 'en']) {
         await page.goto(`/${locale}${path === '/' ? '' : path}`);
         await page.locator('main').first().waitFor();
         await page.waitForTimeout(800);
-        await expect(page).toHaveScreenshot(`${locale}-${scheme}-${path === '/' ? 'home' : path.slice(1)}.png`, { fullPage: false, mask: [page.getByRole('article'), page.locator('img')] });
+        await expect(page).toHaveScreenshot(
+          `${locale}-${scheme}-${path === '/' ? 'home' : path.slice(1)}.png`,
+          { fullPage: false, mask: [page.getByRole('article'), page.locator('img')] },
+        );
       });
     }
   }

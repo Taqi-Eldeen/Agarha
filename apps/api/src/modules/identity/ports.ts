@@ -3,7 +3,13 @@ import type { Role } from '@agarha/schemas';
 /** Implemented by the dealers module; lets identity build dealer sessions without reading dealer tables. */
 export interface MembershipResolver {
   /** Memberships for a user, owner first. */
-  memberships(userId: string): Promise<{ dealerId: string; role: Extract<Role, 'dealer_owner' | 'dealer_staff'>; dealerActive: boolean }[]>;
+  memberships(userId: string): Promise<
+    {
+      dealerId: string;
+      role: Extract<Role, 'dealer_owner' | 'dealer_staff'>;
+      dealerActive: boolean;
+    }[]
+  >;
 }
 export const MEMBERSHIP_RESOLVER = Symbol('MEMBERSHIP_RESOLVER');
 

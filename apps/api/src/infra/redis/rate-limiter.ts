@@ -25,7 +25,12 @@ export class RateLimiter {
   /** Counts a hit against every limit; throws 429 with Retry-After if any is exceeded. */
   async hit(...limits: Limit[]): Promise<void> {
     for (const l of limits) {
-      const [count, ttl] = (await this.redis.eval(SCRIPT, 1, `rl:${l.name}:${l.key}`, l.windowSeconds * 1000)) as [number, number];
+      const [count, ttl] = (await this.redis.eval(
+        SCRIPT,
+        1,
+        `rl:${l.name}:${l.key}`,
+        l.windowSeconds * 1000,
+      )) as [number, number];
       if (count > l.max) throw Errors.rateLimited(Math.max(1, Math.ceil(ttl / 1000)));
     }
   }

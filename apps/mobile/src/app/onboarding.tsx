@@ -24,17 +24,29 @@ export default function Onboarding() {
     <Screen edges={['top', 'bottom']} contentContainerClassName="flex-1 justify-center gap-6 px-4">
       {step === 'language' ? (
         <View className="gap-4">
-          <Text variant="h1" accessibilityRole="header">{t('languageTitle')}</Text>
-          <Button size="lg" variant={locale === 'ar' ? 'primary' : 'secondary'} onPress={() => void setLocale('ar').then(() => setStep('location'))}>
+          <Text variant="h1" accessibilityRole="header">
+            {t('languageTitle')}
+          </Text>
+          <Button
+            size="lg"
+            variant={locale === 'ar' ? 'primary' : 'secondary'}
+            onPress={() => void setLocale('ar').then(() => setStep('location'))}
+          >
             {t('arabic')}
           </Button>
-          <Button size="lg" variant={locale === 'en' ? 'primary' : 'secondary'} onPress={() => void setLocale('en').then(() => setStep('location'))}>
+          <Button
+            size="lg"
+            variant={locale === 'en' ? 'primary' : 'secondary'}
+            onPress={() => void setLocale('en').then(() => setStep('location'))}
+          >
             {t('english')}
           </Button>
         </View>
       ) : (
         <View className="gap-4">
-          <Text variant="h1" accessibilityRole="header">{t('locationTitle')}</Text>
+          <Text variant="h1" accessibilityRole="header">
+            {t('locationTitle')}
+          </Text>
           <Text tone="secondary">{t('locationBody')}</Text>
           <Button
             size="lg"

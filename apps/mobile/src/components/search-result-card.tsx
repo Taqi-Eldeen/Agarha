@@ -5,7 +5,19 @@ import type { ReactNode } from 'react';
 import { useContact } from '@/lib/contact';
 
 /** A listing card wired to navigation and the contact flow (lead + WhatsApp / dialer). */
-export function SearchResultCard({ card, period, source, favorite, variant }: { card: Card; period?: PricePeriod; source: string; favorite?: ReactNode; variant?: 'list' | 'map-mini' }) {
+export function SearchResultCard({
+  card,
+  period,
+  source,
+  favorite,
+  variant,
+}: {
+  card: Card;
+  period?: PricePeriod;
+  source: string;
+  favorite?: ReactNode;
+  variant?: 'list' | 'map-mini';
+}) {
   const router = useRouter();
   const { contact, busy } = useContact(card.id, source);
   return (
@@ -15,7 +27,9 @@ export function SearchResultCard({ card, period, source, favorite, variant }: { 
       {...(variant ? { variant } : {})}
       favorite={favorite}
       onPress={() => router.push(`/cars/${card.id}`)}
-      {...(variant === 'map-mini' ? {} : { onContact: (c: 'whatsapp' | 'call') => void contact(c), contacting: busy })}
+      {...(variant === 'map-mini'
+        ? {}
+        : { onContact: (c: 'whatsapp' | 'call') => void contact(c), contacting: busy })}
     />
   );
 }

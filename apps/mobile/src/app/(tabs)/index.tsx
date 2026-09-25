@@ -1,6 +1,13 @@
 import { useCities, useSearch } from '@agarha/api-client';
 import { CAR_BODY_TYPES } from '@agarha/schemas/enums';
-import { Button, ChipGroup, InlineAlert, ListingCardSkeleton, Text, useUi } from '@agarha/ui-native';
+import {
+  Button,
+  ChipGroup,
+  InlineAlert,
+  ListingCardSkeleton,
+  Text,
+  useUi,
+} from '@agarha/ui-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -32,20 +39,44 @@ export default function Explore() {
   const go = async (r: RecentSearch) => {
     track('search_submitted', { city: r.city, type: r.type ?? null, source: 'explore' });
     setRecent(await addRecent(r));
-    router.push({ pathname: '/search', params: { city: r.city, ...(r.type ? { type: r.type } : {}) } });
+    router.push({
+      pathname: '/search',
+      params: { city: r.city, ...(r.type ? { type: r.type } : {}) },
+    });
   };
   const cards = featured.data?.pages[0]?.items ?? [];
   return (
     <Screen>
       <View className="gap-2">
-        <Text variant="h1" accessibilityRole="header">{t('web.home.title')}</Text>
+        <Text variant="h1" accessibilityRole="header">
+          {t('web.home.title')}
+        </Text>
         <Text tone="secondary">{t('web.home.subtitle')}</Text>
       </View>
 
       <View className="gap-4 rounded-lg border border-border bg-card p-4">
-        <ChipGroup label={t('web.home.city')} single value={[city]} onChange={(v) => v[0] && setCity(v[0])} options={(cities.data ?? []).filter((c) => c.isActive).map((c) => ({ value: c.slug, label: locale === 'ar' ? c.nameAr : c.nameEn }))} />
-        <ChipGroup label={t('web.home.type')} single value={type} onChange={setType} options={CAR_BODY_TYPES.map((b) => ({ value: b, label: t(`ui.bodyTypes.${b}`) }))} />
-        <Button block onPress={() => void go({ city, label: cityName(city), ...(type[0] ? { type: type[0] } : {}) })}>
+        <ChipGroup
+          label={t('web.home.city')}
+          single
+          value={[city]}
+          onChange={(v) => v[0] && setCity(v[0])}
+          options={(cities.data ?? [])
+            .filter((c) => c.isActive)
+            .map((c) => ({ value: c.slug, label: locale === 'ar' ? c.nameAr : c.nameEn }))}
+        />
+        <ChipGroup
+          label={t('web.home.type')}
+          single
+          value={type}
+          onChange={setType}
+          options={CAR_BODY_TYPES.map((b) => ({ value: b, label: t(`ui.bodyTypes.${b}`) }))}
+        />
+        <Button
+          block
+          onPress={() =>
+            void go({ city, label: cityName(city), ...(type[0] ? { type: type[0] } : {}) })
+          }
+        >
           {t('web.home.cta')}
         </Button>
       </View>
@@ -66,8 +97,15 @@ export default function Explore() {
             </Button>
           </View>
           {recent.map((r) => (
-            <Pressable key={`${r.city}-${r.type ?? ''}`} accessibilityRole="link" onPress={() => void go(r)} className="min-h-touch justify-center rounded-md border border-border bg-card px-4">
-              <Text>{r.type ? `${cityName(r.city)} · ${t(`ui.bodyTypes.${r.type}`)}` : cityName(r.city)}</Text>
+            <Pressable
+              key={`${r.city}-${r.type ?? ''}`}
+              accessibilityRole="link"
+              onPress={() => void go(r)}
+              className="min-h-touch justify-center rounded-md border border-border bg-card px-4"
+            >
+              <Text>
+                {r.type ? `${cityName(r.city)} · ${t(`ui.bodyTypes.${r.type}`)}` : cityName(r.city)}
+              </Text>
             </Pressable>
           ))}
         </View>
@@ -77,7 +115,12 @@ export default function Explore() {
         <Text variant="h2">{t('app.explore.featured')}</Text>
         {featured.isPending ? <ListingCardSkeleton /> : null}
         {cards.map(({ card }) => (
-          <SearchResultCard key={card.id} card={card} source="explore" favorite={<FavoriteButton listingId={card.id} card={card} />} />
+          <SearchResultCard
+            key={card.id}
+            card={card}
+            source="explore"
+            favorite={<FavoriteButton listingId={card.id} card={card} />}
+          />
         ))}
         <Button variant="secondary" onPress={() => void go({ city, label: cityName(city) })}>
           {t('web.home.browseAll')}

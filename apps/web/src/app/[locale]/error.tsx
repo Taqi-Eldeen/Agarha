@@ -4,7 +4,13 @@ import { reportError } from '@/lib/report-error';
 import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 
-export default function ErrorPage({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+export default function ErrorPage({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
   const t = useTranslations('web.errors');
   useEffect(() => {
     reportError(error);

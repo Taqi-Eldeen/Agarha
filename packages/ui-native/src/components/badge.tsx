@@ -18,15 +18,53 @@ const BOX: Record<Kind, string> = {
 };
 
 /** Status colours always come with an icon and a text label (never colour alone). */
-export function Badge({ kind, children, className }: { kind: Kind; children?: ReactNode; className?: string }) {
+export function Badge({
+  kind,
+  children,
+  className,
+}: {
+  kind: Kind;
+  children?: ReactNode;
+  className?: string;
+}) {
   const { t, colors } = useUi();
-  const text = children ?? { verified: t.verified, featured: t.featured, fresh: t.fresh, stale: t.stale, driver: t.withDriver }[kind];
-  const Icon = { verified: BadgeCheck, featured: Sparkles, fresh: Zap, stale: Clock, driver: UserRound }[kind];
-  const iconColor = { verified: colors.brandPrimary, featured: colors.accentOnFeatured, fresh: colors.statusAvailable, stale: colors.statusStale, driver: colors.statusInfo }[kind];
+  const text =
+    children ??
+    {
+      verified: t.verified,
+      featured: t.featured,
+      fresh: t.fresh,
+      stale: t.stale,
+      driver: t.withDriver,
+    }[kind];
+  const Icon = {
+    verified: BadgeCheck,
+    featured: Sparkles,
+    fresh: Zap,
+    stale: Clock,
+    driver: UserRound,
+  }[kind];
+  const iconColor = {
+    verified: colors.brandPrimary,
+    featured: colors.accentOnFeatured,
+    fresh: colors.statusAvailable,
+    stale: colors.statusStale,
+    driver: colors.statusInfo,
+  }[kind];
   return (
-    <View className={cn('min-h-7 flex-row items-center gap-1 self-start rounded-2xl px-2 py-0.5', BOX[kind], className)}>
+    <View
+      className={cn(
+        'min-h-7 flex-row items-center gap-1 self-start rounded-2xl px-2 py-0.5',
+        BOX[kind],
+        className,
+      )}
+    >
       <Icon size={16} color={iconColor} strokeWidth={1.75} />
-      <Text variant="caption" weight="medium" className={kind === 'featured' ? 'text-featured-fg' : 'text-fg'}>
+      <Text
+        variant="caption"
+        weight="medium"
+        className={kind === 'featured' ? 'text-featured-fg' : 'text-fg'}
+      >
         {text}
       </Text>
     </View>
@@ -37,7 +75,9 @@ export function Badge({ kind, children, className }: { kind: Kind; children?: Re
 export function FreshnessChip({ lastConfirmedAt }: { lastConfirmedAt: string }) {
   const { f, ago } = useUi();
   const state = freshnessOf(new Date(lastConfirmedAt));
-  if (state === 'fresh') return <Badge kind="fresh">{f('confirmedAgo', { ago: ago(lastConfirmedAt) })}</Badge>;
-  if (state === 'aging') return <Badge kind="stale">{f('confirmedAgo', { ago: ago(lastConfirmedAt) })}</Badge>;
+  if (state === 'fresh')
+    return <Badge kind="fresh">{f('confirmedAgo', { ago: ago(lastConfirmedAt) })}</Badge>;
+  if (state === 'aging')
+    return <Badge kind="stale">{f('confirmedAgo', { ago: ago(lastConfirmedAt) })}</Badge>;
   return null;
 }

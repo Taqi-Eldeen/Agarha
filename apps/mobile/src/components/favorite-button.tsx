@@ -22,7 +22,14 @@ export function FavoriteButton({ listingId, card }: { listingId: string; card?: 
       variant="secondary"
       className="rounded-full"
       accessibilityState={{ selected: on }}
-      icon={<Heart size={22} color={on ? colors.statusDanger : colors.textPrimary} fill={on ? colors.statusDanger : 'transparent'} strokeWidth={1.75} />}
+      icon={
+        <Heart
+          size={22}
+          color={on ? colors.statusDanger : colors.textPrimary}
+          fill={on ? colors.statusDanger : 'transparent'}
+          strokeWidth={1.75}
+        />
+      }
       onPress={() => {
         if (!signedIn) return router.push('/sign-in');
         track(on ? 'favorite_removed' : 'favorite_added', { listing_id: listingId });

@@ -15,8 +15,21 @@ const boundaryRules = {
     'error',
     {
       patterns: [
-        { group: ['**/apps/*', '@agarha/web', '@agarha/admin', '@agarha/mobile', '@agarha/api', '@agarha/worker'], message: 'Packages and apps must not import apps.' },
-        { group: ['@agarha/*/src/*'], message: 'Import the package entry point, not its internals.' },
+        {
+          group: [
+            '**/apps/*',
+            '@agarha/web',
+            '@agarha/admin',
+            '@agarha/mobile',
+            '@agarha/api',
+            '@agarha/worker',
+          ],
+          message: 'Packages and apps must not import apps.',
+        },
+        {
+          group: ['@agarha/*/src/*'],
+          message: 'Import the package entry point, not its internals.',
+        },
       ],
     },
   ],
@@ -24,7 +37,16 @@ const boundaryRules = {
 
 /** Base config for every TypeScript workspace. */
 export const base = tseslint.config(
-  { ignores: ['**/dist/**', '**/.next/**', '**/.expo/**', '**/build/**', '**/coverage/**', '**/drizzle/**'] },
+  {
+    ignores: [
+      '**/dist/**',
+      '**/.next/**',
+      '**/.expo/**',
+      '**/build/**',
+      '**/coverage/**',
+      '**/drizzle/**',
+    ],
+  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
@@ -32,7 +54,10 @@ export const base = tseslint.config(
     rules: {
       ...boundaryRules,
       '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
       '@typescript-eslint/consistent-type-imports': ['error', { fixStyle: 'inline-type-imports' }],
     },
   },
@@ -59,23 +84,27 @@ export const ui = tseslint.config(...base, {
 export const api = tseslint.config(
   ...base,
   // Nest DI reads constructor parameter types from decorator metadata: keep those imports as values.
-  { languageOptions: { parserOptions: { emitDecoratorMetadata: true, experimentalDecorators: true } } },
   {
-  files: ['src/modules/**/*.ts'],
-  rules: {
-    'no-restricted-imports': [
-      'error',
-      {
-        patterns: [
-          ...boundaryRules['no-restricted-imports'][1].patterns,
-          {
-            regex: '^\\.\\./(?!\\.)[^/]+/(?!index$).+',
-            message: 'Import another module only through its index.ts public API.',
-          },
-        ],
-      },
-    ],
+    languageOptions: {
+      parserOptions: { emitDecoratorMetadata: true, experimentalDecorators: true },
+    },
   },
+  {
+    files: ['src/modules/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            ...boundaryRules['no-restricted-imports'][1].patterns,
+            {
+              regex: '^\\.\\./(?!\\.)[^/]+/(?!index$).+',
+              message: 'Import another module only through its index.ts public API.',
+            },
+          ],
+        },
+      ],
+    },
   },
 );
 

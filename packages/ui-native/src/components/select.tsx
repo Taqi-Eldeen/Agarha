@@ -24,7 +24,16 @@ export interface SelectProps {
   disabled?: boolean;
 }
 
-function Picker({ searchable, label, options, value, onValueChange, placeholder, error, disabled }: SelectProps & { searchable: boolean }) {
+function Picker({
+  searchable,
+  label,
+  options,
+  value,
+  onValueChange,
+  placeholder,
+  error,
+  disabled,
+}: SelectProps & { searchable: boolean }) {
   const { t, colors, font, dir } = useUi();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState('');
@@ -43,14 +52,25 @@ function Picker({ searchable, label, options, value, onValueChange, placeholder,
         accessibilityState={{ disabled: !!disabled, expanded: open }}
         disabled={disabled}
         onPress={() => setOpen(true)}
-        className={cn('h-12 flex-row items-center justify-between rounded-md border bg-card px-3', error ? 'border-danger' : 'border-border', disabled && 'opacity-50')}
+        className={cn(
+          'h-12 flex-row items-center justify-between rounded-md border bg-card px-3',
+          error ? 'border-danger' : 'border-border',
+          disabled && 'opacity-50',
+        )}
       >
         <Text tone={selected ? 'primary' : 'secondary'} numberOfLines={1}>
           {selected?.label ?? placeholder ?? t.selectPlaceholder}
         </Text>
         <ChevronDown size={20} color={colors.textSecondary} strokeWidth={1.75} />
       </Pressable>
-      <BottomSheet open={open} onOpenChange={(o) => { setOpen(o); if (!o) setQ(''); }} title={label}>
+      <BottomSheet
+        open={open}
+        onOpenChange={(o) => {
+          setOpen(o);
+          if (!o) setQ('');
+        }}
+        title={label}
+      >
         {searchable ? (
           <TextInput
             accessibilityLabel={t.searchPlaceholder}
@@ -59,7 +79,10 @@ function Picker({ searchable, label, options, value, onValueChange, placeholder,
             value={q}
             onChangeText={setQ}
             autoFocus
-            className={cn('h-12 rounded-md border border-border bg-page px-3 text-body text-fg', font())}
+            className={cn(
+              'h-12 rounded-md border border-border bg-page px-3 text-body text-fg',
+              font(),
+            )}
             style={{ textAlign: dir === 'rtl' ? 'right' : 'left' }}
           />
         ) : null}
@@ -78,9 +101,15 @@ function Picker({ searchable, label, options, value, onValueChange, placeholder,
             >
               <View className="shrink">
                 <Text>{o.label}</Text>
-                {o.hint ? <Text variant="caption" tone="secondary">{o.hint}</Text> : null}
+                {o.hint ? (
+                  <Text variant="caption" tone="secondary">
+                    {o.hint}
+                  </Text>
+                ) : null}
               </View>
-              {o.value === value ? <Check size={20} color={colors.brandPrimary} strokeWidth={1.75} /> : null}
+              {o.value === value ? (
+                <Check size={20} color={colors.brandPrimary} strokeWidth={1.75} />
+              ) : null}
             </Pressable>
           ))}
           {!shown.length ? <Text tone="secondary">{t.noResults}</Text> : null}

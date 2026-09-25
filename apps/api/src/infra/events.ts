@@ -5,7 +5,15 @@ import { Global, Injectable, Logger, Module } from '@nestjs/common';
 import { Queues } from './queue/queues';
 
 export interface DomainEvents {
-  'lead.created': { leadId: string; listingId: string; dealerId: string; userId: string | null; channel: 'whatsapp' | 'call'; refCode: string; locale: 'ar' | 'en' };
+  'lead.created': {
+    leadId: string;
+    listingId: string;
+    dealerId: string;
+    userId: string | null;
+    channel: 'whatsapp' | 'call';
+    refCode: string;
+    locale: 'ar' | 'en';
+  };
   'listing.published': { listingId: string; dealerId: string };
   /** Any change that affects what the public sees (facts, price, photos, availability, status). */
   'listing.changed': { listingId: string };
@@ -47,7 +55,11 @@ export class EventBus {
         this.logger.error({ err, event: name }, 'event handler failed');
       }
     }
-    await this.queues.add('events', { name, payload: payload as Record<string, unknown>, occurredAt: new Date().toISOString() });
+    await this.queues.add('events', {
+      name,
+      payload: payload as Record<string, unknown>,
+      occurredAt: new Date().toISOString(),
+    });
   }
 }
 

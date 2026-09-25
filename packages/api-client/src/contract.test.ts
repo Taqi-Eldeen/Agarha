@@ -23,14 +23,27 @@ describe('api client ↔ mock API', () => {
   });
 
   it('creates a lead with an idempotency key and gets a wa.me link with the reference code', async () => {
-    const { data: s } = await api.GET('/v1/search', { params: { query: { city: 'cairo' } as never } });
+    const { data: s } = await api.GET('/v1/search', {
+      params: { query: { city: 'cairo' } as never },
+    });
     const listingId = (s as { items: { card: { id: string } }[] }).items[0]!.card.id;
-    const { data } = await api.POST('/v1/leads', { body: { listingId, channel: 'whatsapp', locale: 'ar' }, headers: { 'idempotency-key': idempotencyKey() } });
+    const { data } = await api.POST('/v1/leads', {
+      body: { listingId, channel: 'whatsapp', locale: 'ar' },
+      headers: { 'idempotency-key': idempotencyKey() },
+    });
     expect(data?.url).toMatch(/^https:\/\/wa\.me\/20\d+\?text=.*AG-7K2Q/);
   });
 
   it('surfaces 404s as ApiRequestError with the API error shape', async () => {
-    await expect(api.GET('/v1/listings/{id}', { params: { path: { id: '00000000-0000-4000-8000-00000000ffff' } } })).rejects.toMatchObject({ status: 404, code: 'not_found', requestId: 'req-test' });
-    await expect(api.GET('/v1/listings/{id}', { params: { path: { id: '00000000-0000-4000-8000-00000000ffff' } } })).rejects.toBeInstanceOf(ApiRequestError);
+    await expect(
+      api.GET('/v1/listings/{id}', {
+        params: { path: { id: '00000000-0000-4000-8000-00000000ffff' } },
+      }),
+    ).rejects.toMatchObject({ status: 404, code: 'not_found', requestId: 'req-test' });
+    await expect(
+      api.GET('/v1/listings/{id}', {
+        params: { path: { id: '00000000-0000-4000-8000-00000000ffff' } },
+      }),
+    ).rejects.toBeInstanceOf(ApiRequestError);
   });
 });

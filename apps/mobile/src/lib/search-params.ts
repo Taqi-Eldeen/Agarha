@@ -10,7 +10,8 @@ export function paramsFrom(p: Record<string, string | string[] | undefined>): Se
   const out: SearchParams = {};
   for (const k of ['city', 'area', 'type', 'make', 'q'] as const) if (s(k)) out[k] = s(k);
   if (s('period') === 'week' || s('period') === 'month') out.period = s('period') as PricePeriod;
-  if (s('transmission') === 'automatic' || s('transmission') === 'manual') out.transmission = s('transmission') as 'automatic' | 'manual';
+  if (s('transmission') === 'automatic' || s('transmission') === 'manual')
+    out.transmission = s('transmission') as 'automatic' | 'manual';
   if (n('priceMax')) out.priceMax = n('priceMax');
   if (n('seatsMin')) out.seatsMin = n('seatsMin');
   if (s('airport') === 'true') out.airport = true;

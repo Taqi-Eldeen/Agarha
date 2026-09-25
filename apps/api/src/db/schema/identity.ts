@@ -1,8 +1,26 @@
 // Owned by the identity module.
 import { sql } from 'drizzle-orm';
-import { check, index, integer, pgTable, primaryKey, smallint, text, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import {
+  check,
+  index,
+  integer,
+  pgTable,
+  primaryKey,
+  smallint,
+  text,
+  uniqueIndex,
+  uuid,
+} from 'drizzle-orm/pg-core';
 import { createdAt, id, tstz, updatedAt } from './_columns';
-import { localeEnum, otpChannelEnum, otpPurposeEnum, roleEnum, sessionScopeEnum, socialProviderEnum, userStatusEnum } from './enums';
+import {
+  localeEnum,
+  otpChannelEnum,
+  otpPurposeEnum,
+  roleEnum,
+  sessionScopeEnum,
+  socialProviderEnum,
+  userStatusEnum,
+} from './enums';
 
 export const users = pgTable(
   'users',
@@ -29,7 +47,9 @@ export const users = pgTable(
 export const userRoles = pgTable(
   'user_roles',
   {
-    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
     role: roleEnum('role').notNull(),
     createdAt: createdAt(),
   },
@@ -63,7 +83,9 @@ export const refreshTokens = pgTable(
   'refresh_tokens',
   {
     id: id(),
-    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
     /** All tokens rotated from one sign-in share a family; reuse of any rotated token revokes it. */
     familyId: uuid('family_id').notNull(),
     /** SHA-256 of the opaque token. */

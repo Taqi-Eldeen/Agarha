@@ -12,7 +12,10 @@ import { ErrorFilter } from './common/error.filter';
 import type { Env } from './config/env';
 
 export async function createApp(env: Env): Promise<NestExpressApplication> {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule.forRoot(env), { bufferLogs: true, rawBody: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule.forRoot(env), {
+    bufferLogs: true,
+    rawBody: true,
+  });
   app.useLogger(app.get(Logger));
   configureApp(app, env);
   return app;
@@ -32,7 +35,12 @@ export function configureApp(app: NestExpressApplication, env: Env): void {
   app.use(cookieParser());
   app.use('/v1/dealer/listings/import', text({ type: 'text/csv', limit: '1mb' }));
   app.useBodyParser('json', { limit: '200kb' });
-  app.enableCors({ origin: env.CORS_ORIGINS, credentials: true, maxAge: 600, exposedHeaders: ['Retry-After', 'Idempotent-Replayed'] });
+  app.enableCors({
+    origin: env.CORS_ORIGINS,
+    credentials: true,
+    maxAge: 600,
+    exposedHeaders: ['Retry-After', 'Idempotent-Replayed'],
+  });
   app.setGlobalPrefix('v1');
   app.useGlobalFilters(new ErrorFilter());
   // Everything is Cache-Control: no-store unless a handler opts into @PublicCache.
@@ -43,7 +51,9 @@ export function configureApp(app: NestExpressApplication, env: Env): void {
 export function openApiDocument(app: INestApplication): OpenAPIObject {
   const config = new DocumentBuilder()
     .setTitle('Agarha API')
-    .setDescription('Car-rental listings platform for Egypt. Errors: { code, message, details, requestId }. Cursor pagination. Idempotency-Key on creates.')
+    .setDescription(
+      'Car-rental listings platform for Egypt. Errors: { code, message, details, requestId }. Cursor pagination. Idempotency-Key on creates.',
+    )
     .setVersion('1.0.0')
     .addServer('/')
     .addBearerAuth()

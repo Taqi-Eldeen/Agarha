@@ -4,7 +4,12 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ENV, type Env } from '../../config/env';
 import { DB, type Database } from '../../db/db';
 import { notificationDeliveries } from '../../db/schema/notifications';
-import { SMS_PROVIDERS, WHATSAPP_PROVIDER, type SmsProvider, type WhatsAppProvider } from './channels';
+import {
+  SMS_PROVIDERS,
+  WHATSAPP_PROVIDER,
+  type SmsProvider,
+  type WhatsAppProvider,
+} from './channels';
 
 export interface OtpSendRequest {
   phone: string;
@@ -34,17 +39,40 @@ export class OtpDeliveryService {
   ) {}
 
   async send(req: OtpSendRequest): Promise<{ channel: OtpChannel; provider: string }> {
-    const body = interpolate(messages[req.locale].otpMessage.body, { code: req.code, minutes: req.ttlMinutes });
-    type Attempt = { channel: OtpChannel; name: string; run: () => Promise<{ provider: string; providerMessageId?: string }> };
-    const smsAttempts: Attempt[] = this.sms.map((p) => ({ channel: 'sms', name: p.name, run: () => p.send(req.phone, body) }));
+    const body = interpolate(messages[req.locale].otpMessage.body, {
+      code: req.code,
+      minutes: req.ttlMinutes,
+    });
+    type Attempt = {
+      channel: OtpChannel;
+      name: string;
+      run: () => Promise<{ provider: string; providerMessageId?: string }>;
+    };
+    const smsAttempts: Attempt[] = this.sms.map((p) => ({
+      channel: 'sms',
+      name: p.name,
+      run: () => p.send(req.phone, body),
+    }));
     const waAttempt: Attempt[] = this.env.WHATSAPP_OTP_ENABLED
-      ? [{
-          channel: 'whatsapp',
-          name: this.whatsapp.name,
-          run: () => this.whatsapp.sendTemplate({ to: req.phone, template: this.env.WHATSAPP_OTP_TEMPLATE, locale: req.locale, params: [req.code], buttonParam: req.code }),
-        }]
+      ? [
+          {
+            channel: 'whatsapp',
+            name: this.whatsapp.name,
+            run: () =>
+              this.whatsapp.sendTemplate({
+                to: req.phone,
+                template: this.env.WHATSAPP_OTP_TEMPLATE,
+                locale: req.locale,
+                params: [req.code],
+                buttonParam: req.code,
+              }),
+          },
+        ]
       : [];
-    const attempts = req.preferred === 'whatsapp' ? [...waAttempt, ...smsAttempts] : [...smsAttempts, ...waAttempt];
+    const attempts =
+      req.preferred === 'whatsapp'
+        ? [...waAttempt, ...smsAttempts]
+        : [...smsAttempts, ...waAttempt];
 
     for (const a of attempts) {
       try {
@@ -52,14 +80,24 @@ export class OtpDeliveryService {
         await this.log(req, a.channel, r.provider, 'sent', r.providerMessageId);
         return { channel: a.channel, provider: r.provider };
       } catch (err) {
-        this.logger.warn({ provider: a.name, err: (err as Error).message }, 'OTP provider failed, trying next');
+        this.logger.warn(
+          { provider: a.name, err: (err as Error).message },
+          'OTP provider failed, trying next',
+        );
         await this.log(req, a.channel, a.name, 'failed', undefined, (err as Error).message);
       }
     }
     throw new OtpDeliveryFailed('all OTP providers failed');
   }
 
-  private async log(req: OtpSendRequest, channel: OtpChannel, provider: string, status: 'sent' | 'failed', providerMessageId?: string, error?: string) {
+  private async log(
+    req: OtpSendRequest,
+    channel: OtpChannel,
+    provider: string,
+    status: 'sent' | 'failed',
+    providerMessageId?: string,
+    error?: string,
+  ) {
     await this.db.insert(notificationDeliveries).values({
       recipient: req.phone,
       channel,

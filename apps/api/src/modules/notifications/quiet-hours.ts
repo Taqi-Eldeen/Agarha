@@ -4,7 +4,13 @@ export const QUIET_START_HOUR = 22;
 export const QUIET_END_HOUR = 9;
 
 function cairoParts(d: Date): { hour: number; minute: number; second: number } {
-  const parts = new Intl.DateTimeFormat('en-GB', { timeZone: TZ, hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }).formatToParts(d);
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: TZ,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(d);
   const get = (t: string) => Number(parts.find((p) => p.type === t)?.value ?? 0);
   return { hour: get('hour'), minute: get('minute'), second: get('second') };
 }

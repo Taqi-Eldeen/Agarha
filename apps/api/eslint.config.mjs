@@ -10,12 +10,27 @@ const ownership = modules.map((m) => ({
       'error',
       {
         patterns: [
-          { regex: '^\\.\\./(?!\\.)[^/]+/(?!index$).+', message: 'Import another module only through its index.ts public API.' },
-          { group: ['**/db/schema/*', `!**/db/schema/${m}`, '!**/db/schema/enums', '!**/db/schema/_columns'], message: `Module "${m}" may only query its own tables.` },
+          {
+            regex: '^\\.\\./(?!\\.)[^/]+/(?!index$).+',
+            message: 'Import another module only through its index.ts public API.',
+          },
+          {
+            group: [
+              '**/db/schema/*',
+              `!**/db/schema/${m}`,
+              '!**/db/schema/enums',
+              '!**/db/schema/_columns',
+            ],
+            message: `Module "${m}" may only query its own tables.`,
+          },
         ],
       },
     ],
   },
 }));
 
-export default [...api, ...ownership, { ignores: ['drizzle/**', 'dist/**', '*.config.js', '*.config.mjs'] }];
+export default [
+  ...api,
+  ...ownership,
+  { ignores: ['drizzle/**', 'dist/**', '*.config.js', '*.config.mjs'] },
+];

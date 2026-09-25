@@ -12,13 +12,22 @@ export interface RequirementListProps {
 }
 
 /** "Facts before contact": deposit, age, documents and mileage in one scannable list. */
-export function RequirementList({ deposit, minAge, requiredDocs, kmLimitPerDay, airportPickup }: RequirementListProps) {
+export function RequirementList({
+  deposit,
+  minAge,
+  requiredDocs,
+  kmLimitPerDay,
+  airportPickup,
+}: RequirementListProps) {
   const { t, f, egp } = useUi();
   const rows = [
     { icon: ShieldCheck, text: deposit > 0 ? `${t.deposit}: ${egp(deposit)}` : t.noDeposit },
     { icon: CalendarClock, text: f('minAge', { age: minAge }) },
     { icon: FileText, text: requiredDocs.map((d) => t.docs[d]).join('، ') },
-    { icon: Gauge, text: kmLimitPerDay === null ? t.unlimitedKm : f('kmPerDay', { km: kmLimitPerDay }) },
+    {
+      icon: Gauge,
+      text: kmLimitPerDay === null ? t.unlimitedKm : f('kmPerDay', { km: kmLimitPerDay }),
+    },
     ...(airportPickup ? [{ icon: Plane, text: t.airportPickup }] : []),
   ];
   return (

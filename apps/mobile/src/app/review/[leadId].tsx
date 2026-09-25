@@ -20,28 +20,50 @@ export default function WriteReview() {
   const [rating, setRating] = useState(0);
   const [body, setBody] = useState('');
   const [busy, setBusy] = useState(false);
-  const dealer = listing.data ? (locale === 'ar' ? listing.data.dealer.nameAr : listing.data.dealer.nameEn) : '';
+  const dealer = listing.data
+    ? locale === 'ar'
+      ? listing.data.dealer.nameAr
+      : listing.data.dealer.nameEn
+    : '';
   const submit = async () => {
     setBusy(true);
     try {
-      await api.POST('/v1/reviews', { body: { leadId, rating, ...(body.trim().length >= 3 ? { body: body.trim() } : {}) } });
+      await api.POST('/v1/reviews', {
+        body: { leadId, rating, ...(body.trim().length >= 3 ? { body: body.trim() } : {}) },
+      });
       track('review_submitted', { rating });
       await qc.invalidateQueries({ queryKey: ['reviewable'] });
       toast({ tone: 'success', text: t('web.review.thanks') });
       router.back();
     } catch (e) {
       const code = e instanceof ApiRequestError ? e.code : 'internal_error';
-      toast({ tone: 'danger', text: t.has(`errors.${code}`) ? t(`errors.${code}` as never) : t('errors.internal_error') });
+      toast({
+        tone: 'danger',
+        text: t.has(`errors.${code}`) ? t(`errors.${code}` as never) : t('errors.internal_error'),
+      });
     } finally {
       setBusy(false);
     }
   };
   return (
     <Screen edges={['bottom']}>
-      {dealer ? <Text variant="h2" accessibilityRole="header">{t('web.review.title', { dealer })}</Text> : null}
+      {dealer ? (
+        <Text variant="h2" accessibilityRole="header">
+          {t('web.review.title', { dealer })}
+        </Text>
+      ) : null}
       <Text weight="medium">{t('web.review.rating')}</Text>
       <RatingStars value={rating} onChange={setRating} />
-      <TextField label={t('web.review.body')} value={body} onChangeText={setBody} multiline maxLength={1000} optional className="h-28 py-2" textAlignVertical="top" />
+      <TextField
+        label={t('web.review.body')}
+        value={body}
+        onChangeText={setBody}
+        multiline
+        maxLength={1000}
+        optional
+        className="h-28 py-2"
+        textAlignVertical="top"
+      />
       <Button block disabled={!rating} loading={busy} onPress={() => void submit()}>
         {t('web.review.submit')}
       </Button>

@@ -1,1 +1,4 @@
-{ "CFBundleDisplayName": "Agarha", "NSLocationWhenInUseUsageDescription": "Agarha uses your location only to show rental cars near you." }
+{
+  "CFBundleDisplayName": "Agarha",
+  "NSLocationWhenInUseUsageDescription": "Agarha uses your location only to show rental cars near you."
+}

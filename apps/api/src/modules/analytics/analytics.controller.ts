@@ -18,7 +18,10 @@ export class DealerStatsController {
   @Auth('dealer', 'dealer_owner', 'dealer_staff')
   @ZodQuery(statsQuery)
   @ZodResponse(200, dealerStatsSchema)
-  stats(@CurrentDealer() d: Dealer, @Query(new ZodPipe(statsQuery)) q: z.output<typeof statsQuery>) {
+  stats(
+    @CurrentDealer() d: Dealer,
+    @Query(new ZodPipe(statsQuery)) q: z.output<typeof statsQuery>,
+  ) {
     return this.analytics.dealerStats(d.dealerId, q.days);
   }
 }

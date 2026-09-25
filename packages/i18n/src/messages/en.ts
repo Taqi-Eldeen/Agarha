@@ -47,7 +47,8 @@ export const en: Messages = {
     leadAlertTitle: 'New enquiry from Agarha',
     leadAlertBody: 'A customer contacted you on {channel} about {car}. Ref {ref}.',
     availabilityNudgeTitle: 'Are your cars still available?',
-    availabilityNudgeBody: '{count} cars need confirming. Confirm them in one tap to stay visible to customers.',
+    availabilityNudgeBody:
+      '{count} cars need confirming. Confirm them in one tap to stay visible to customers.',
     reviewPromptTitle: 'How was {dealer}?',
     reviewPromptBody: 'You contacted {dealer} about {car}. Rate your experience to help others.',
     savedSearchTitle: 'New cars in your search',
@@ -55,14 +56,17 @@ export const en: Messages = {
     dealerVerifiedTitle: 'Your business is verified',
     dealerVerifiedBody: 'Congratulations! Your business is verified and you can publish cars now.',
     dealerRejectedTitle: 'We need different documents',
-    dealerRejectedBody: 'We could not verify your business: {reason}. Upload the documents again from onboarding.',
+    dealerRejectedBody:
+      'We could not verify your business: {reason}. Upload the documents again from onboarding.',
     availabilityRequestTitle: 'Availability request',
     availabilityRequestBody: 'A customer asks if {car} is free from {from} to {to}. Ref {ref}.',
     availabilityAnswerYesTitle: 'The car is available',
     availabilityAnswerNoTitle: 'The car is not available',
-    availabilityAnswerBody: '{dealer} answered your request about {car}. Message them on WhatsApp to arrange it.',
+    availabilityAnswerBody:
+      '{dealer} answered your request about {car}. Message them on WhatsApp to arrange it.',
     listingHiddenTitle: 'Listing hidden',
-    listingHiddenBody: '{car} was hidden because it was not confirmed for 14 days. Confirm it to show it again.',
+    listingHiddenBody:
+      '{car} was hidden because it was not confirmed for 14 days. Confirm it to show it again.',
     invoicePaidTitle: 'Payment received',
     invoicePaidBody: 'We received {amount} for invoice {number}. Thank you.',
   },

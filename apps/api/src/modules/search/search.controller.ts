@@ -1,6 +1,27 @@
-import { dealerDirectorySchema, dealerProfileSchema, landingSchema, listingDetailSchema, mapPinsSchema, reviewSchema, searchResultSchema, sitemapSchema } from '@agarha/schemas';
+import {
+  dealerDirectorySchema,
+  dealerProfileSchema,
+  landingSchema,
+  listingDetailSchema,
+  mapPinsSchema,
+  reviewSchema,
+  searchResultSchema,
+  sitemapSchema,
+} from '@agarha/schemas';
 import { z as zod } from 'zod';
-import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Query, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
 import type { AuthContext } from '../../common/auth/auth-context';
@@ -10,12 +31,27 @@ import { Client, type ClientInfo } from '../../common/request';
 import { ZodBody, ZodPipe, ZodQuery, ZodResponse } from '../../common/zod';
 import { DealersService } from '../dealers';
 import { ReviewsService } from '../reviews';
-import { savedSearchPatchSchema, savedSearchSchema, searchQuerySchema, type SearchQuery } from './search.schemas';
+import {
+  savedSearchPatchSchema,
+  savedSearchSchema,
+  searchQuerySchema,
+  type SearchQuery,
+} from './search.schemas';
 import { SearchService } from './search.service';
 
-const directoryQuery = z.object({ city: z.string().max(60).optional(), cursor: z.string().max(200).optional(), limit: z.coerce.number().int().min(1).max(50).default(20) });
-const pageQuery = z.object({ cursor: z.string().max(300).optional(), limit: z.coerce.number().int().min(1).max(50).default(20) });
-const landingQuery = z.object({ area: z.string().max(60).optional(), type: z.string().max(30).optional() });
+const directoryQuery = z.object({
+  city: z.string().max(60).optional(),
+  cursor: z.string().max(200).optional(),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
+const pageQuery = z.object({
+  cursor: z.string().max(300).optional(),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
+const landingQuery = z.object({
+  area: z.string().max(60).optional(),
+  type: z.string().max(30).optional(),
+});
 
 /** Public read side. Edge-cached for 60s (section 6). No bulk export endpoint exists (risk #9). */
 @ApiTags('public')
@@ -61,7 +97,15 @@ export class PublicController {
     const page = await this.dealers.directory(q);
     const summaries = await this.reviews.summaries(page.items.map((d) => d.id));
     return {
-      items: page.items.map((d) => ({ id: d.id, slug: d.slug, nameAr: d.displayNameAr, nameEn: d.displayNameEn, verified: true, branchCount: d.branchCount, reviews: summaries.get(d.id) ?? { count: 0, average: null } })),
+      items: page.items.map((d) => ({
+        id: d.id,
+        slug: d.slug,
+        nameAr: d.displayNameAr,
+        nameEn: d.displayNameEn,
+        verified: true,
+        branchCount: d.branchCount,
+        reviews: summaries.get(d.id) ?? { count: 0, average: null },
+      })),
       nextCursor: page.nextCursor,
     };
   }
@@ -75,9 +119,15 @@ export class PublicController {
 
   @Get('dealers/:slug/reviews')
   @PublicCache(60)
-  @ZodResponse(200, zod.object({ items: zod.array(reviewSchema), nextCursor: zod.string().nullable() }))
+  @ZodResponse(
+    200,
+    zod.object({ items: zod.array(reviewSchema), nextCursor: zod.string().nullable() }),
+  )
   @ZodQuery(pageQuery)
-  async dealerReviews(@Param('slug') slug: string, @Query(new ZodPipe(pageQuery)) q: z.output<typeof pageQuery>) {
+  async dealerReviews(
+    @Param('slug') slug: string,
+    @Query(new ZodPipe(pageQuery)) q: z.output<typeof pageQuery>,
+  ) {
     const profile = await this.search.dealerProfile(slug);
     return this.reviews.publicForDealer(profile.dealer.id, q);
   }
@@ -86,8 +136,14 @@ export class PublicController {
   @PublicCache(300)
   @ZodResponse(200, landingSchema)
   @ZodQuery(landingQuery)
-  landing(@Param('city') city: string, @Query(new ZodPipe(landingQuery)) q: z.output<typeof landingQuery>) {
-    return this.search.landing(city, { ...(q.area ? { area: q.area } : {}), ...(q.type ? { type: q.type } : {}) });
+  landing(
+    @Param('city') city: string,
+    @Query(new ZodPipe(landingQuery)) q: z.output<typeof landingQuery>,
+  ) {
+    return this.search.landing(city, {
+      ...(q.area ? { area: q.area } : {}),
+      ...(q.type ? { type: q.type } : {}),
+    });
   }
 
   @Get('seo/sitemap')
@@ -118,14 +174,21 @@ export class SavedController {
   @Post('saved-searches')
   @Auth('customer')
   @ZodBody(savedSearchSchema)
-  create(@CurrentAuth() a: AuthContext, @Body(new ZodPipe(savedSearchSchema)) b: z.output<typeof savedSearchSchema>) {
+  create(
+    @CurrentAuth() a: AuthContext,
+    @Body(new ZodPipe(savedSearchSchema)) b: z.output<typeof savedSearchSchema>,
+  ) {
     return this.search.createSaved(a.userId, b);
   }
 
   @Patch('saved-searches/:id')
   @Auth('customer')
   @ZodBody(savedSearchPatchSchema)
-  update(@CurrentAuth() a: AuthContext, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodPipe(savedSearchPatchSchema)) b: z.output<typeof savedSearchPatchSchema>) {
+  update(
+    @CurrentAuth() a: AuthContext,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodPipe(savedSearchPatchSchema)) b: z.output<typeof savedSearchPatchSchema>,
+  ) {
     return this.search.updateSaved(a.userId, id, b);
   }
 

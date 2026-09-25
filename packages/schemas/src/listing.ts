@@ -1,11 +1,5 @@
 import { z } from 'zod';
-import {
-  DELIVERY_OPTIONS,
-  DRIVER_OPTIONS,
-  FUELS,
-  REQUIRED_DOCS,
-  TRANSMISSIONS,
-} from './enums.js';
+import { DELIVERY_OPTIONS, DRIVER_OPTIONS, FUELS, REQUIRED_DOCS, TRANSMISSIONS } from './enums.js';
 import { egpAmountSchema, uuidSchema } from './common.js';
 
 const currentYear = new Date().getFullYear();
@@ -18,7 +12,11 @@ export const listingFactsSchema = z
   .object({
     carModelId: uuidSchema,
     branchId: uuidSchema,
-    year: z.number().int().min(1990).max(currentYear + 1),
+    year: z
+      .number()
+      .int()
+      .min(1990)
+      .max(currentYear + 1),
     color: z.string().trim().min(1).max(40),
     transmission: z.enum(TRANSMISSIONS),
     fuel: z.enum(FUELS),

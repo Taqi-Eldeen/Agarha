@@ -16,17 +16,30 @@ export class AppError extends HttpException {
 
 export const Errors = {
   validation: (details: unknown) =>
-    new AppError(ERROR_CODES.validation, HttpStatus.BAD_REQUEST, 'Request validation failed', details),
+    new AppError(
+      ERROR_CODES.validation,
+      HttpStatus.BAD_REQUEST,
+      'Request validation failed',
+      details,
+    ),
   unauthorized: (message = 'Authentication required') =>
     new AppError(ERROR_CODES.unauthorized, HttpStatus.UNAUTHORIZED, message),
-  forbidden: (message = 'Not allowed') => new AppError(ERROR_CODES.forbidden, HttpStatus.FORBIDDEN, message),
-  notFound: (what = 'Resource') => new AppError(ERROR_CODES.notFound, HttpStatus.NOT_FOUND, `${what} not found`),
+  forbidden: (message = 'Not allowed') =>
+    new AppError(ERROR_CODES.forbidden, HttpStatus.FORBIDDEN, message),
+  notFound: (what = 'Resource') =>
+    new AppError(ERROR_CODES.notFound, HttpStatus.NOT_FOUND, `${what} not found`),
   conflict: (message: string, details?: unknown) =>
     new AppError(ERROR_CODES.conflict, HttpStatus.CONFLICT, message, details),
   rateLimited: (retryAfterSeconds: number) =>
-    new AppError(ERROR_CODES.rateLimited, HttpStatus.TOO_MANY_REQUESTS, 'Too many requests', { retryAfterSeconds }, {
-      'Retry-After': String(retryAfterSeconds),
-    }),
+    new AppError(
+      ERROR_CODES.rateLimited,
+      HttpStatus.TOO_MANY_REQUESTS,
+      'Too many requests',
+      { retryAfterSeconds },
+      {
+        'Retry-After': String(retryAfterSeconds),
+      },
+    ),
   badRequest: (code: string, message: string, details?: unknown) =>
     new AppError(code, HttpStatus.BAD_REQUEST, message, details),
 };

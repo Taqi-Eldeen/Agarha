@@ -7,9 +7,14 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { SearchResultCard } from './search-result-card';
 
 const mockPush = jest.fn();
-const mockMutateAsync = jest.fn(async () => ({ refCode: 'AG-7K2M', url: 'https://wa.me/201000000001?text=Ref%20AG-7K2M' }));
+const mockMutateAsync = jest.fn(async () => ({
+  refCode: 'AG-7K2M',
+  url: 'https://wa.me/201000000001?text=Ref%20AG-7K2M',
+}));
 jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockPush }) }));
-jest.mock('@agarha/api-client', () => ({ useContactDealer: () => ({ mutateAsync: mockMutateAsync }) }));
+jest.mock('@agarha/api-client', () => ({
+  useContactDealer: () => ({ mutateAsync: mockMutateAsync }),
+}));
 jest.mock('@/lib/i18n', () => ({ useLocale: () => ({ locale: 'ar', setLocale: jest.fn() }) }));
 jest.mock('use-intl', () => ({ useTranslations: () => (k: string) => k }));
 
@@ -33,14 +38,27 @@ const CARD = {
   lastConfirmedAt: new Date().toISOString(),
   available: true,
   featured: false,
-  dealer: { id: '00000000-0000-4000-8000-000000000009', slug: 'delta', nameAr: 'دلتا', nameEn: 'Delta', verified: true, whatsapp: '+201000000001', phone: '+201000000001' },
+  dealer: {
+    id: '00000000-0000-4000-8000-000000000009',
+    slug: 'delta',
+    nameAr: 'دلتا',
+    nameEn: 'Delta',
+    verified: true,
+    whatsapp: '+201000000001',
+    phone: '+201000000001',
+  },
   area: { slug: 'nasr-city', ar: 'مدينة نصر', en: 'Nasr City' },
   city: { slug: 'cairo', ar: 'القاهرة', en: 'Cairo' },
   location: null,
 } as ListingCard;
 
 const wrapper = ({ children }: { children: ReactNode }) => (
-  <SafeAreaProvider initialMetrics={{ frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 0, left: 0, right: 0, bottom: 0 } }}>
+  <SafeAreaProvider
+    initialMetrics={{
+      frame: { x: 0, y: 0, width: 390, height: 844 },
+      insets: { top: 0, left: 0, right: 0, bottom: 0 },
+    }}
+  >
     <UiProvider locale="ar">
       <ToastProvider>{children}</ToastProvider>
     </UiProvider>
@@ -51,7 +69,11 @@ it('logs the lead then opens WhatsApp with the reference code; tapping the card 
   const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
   await render(<SearchResultCard card={CARD} source="search" />, { wrapper });
   await fireEvent.press(screen.getByRole('button', { name: 'واتساب' }));
-  expect(mockMutateAsync).toHaveBeenCalledWith({ listingId: CARD.id, channel: 'whatsapp', locale: 'ar' });
+  expect(mockMutateAsync).toHaveBeenCalledWith({
+    listingId: CARD.id,
+    channel: 'whatsapp',
+    locale: 'ar',
+  });
   expect(open).toHaveBeenCalledWith(expect.stringContaining('AG-7K2M'));
   await fireEvent.press(screen.getByRole('link', { name: 'هيونداي إلنترا 2023' }));
   expect(mockPush).toHaveBeenCalledWith(`/cars/${CARD.id}`);

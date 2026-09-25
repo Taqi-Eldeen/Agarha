@@ -2,5 +2,9 @@ import { LOCALES } from '@agarha/schemas/enums';
 import { createNavigation } from 'next-intl/navigation';
 import { defineRouting } from 'next-intl/routing';
 
-export const routing = defineRouting({ locales: [...LOCALES], defaultLocale: 'ar', localePrefix: 'always' });
+export const routing = defineRouting({
+  locales: [...LOCALES],
+  defaultLocale: 'ar',
+  localePrefix: 'always',
+});
 export const { Link, redirect, usePathname, useRouter, getPathname } = createNavigation(routing);

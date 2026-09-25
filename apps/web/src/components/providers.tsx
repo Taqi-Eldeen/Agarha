@@ -7,8 +7,19 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { startAnalytics } from '@/lib/analytics';
 import { makeClient } from '@/lib/client';
 
-export function Providers({ locale, scope = 'customer', children }: { locale: Locale; scope?: 'customer' | 'dealer'; children: ReactNode }) {
-  const [qc] = useState(() => new QueryClient({ defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } } }));
+export function Providers({
+  locale,
+  scope = 'customer',
+  children,
+}: {
+  locale: Locale;
+  scope?: 'customer' | 'dealer';
+  children: ReactNode;
+}) {
+  const [qc] = useState(
+    () =>
+      new QueryClient({ defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } } }),
+  );
   const [client] = useState(() => makeClient(scope, () => locale));
   useEffect(() => startAnalytics(), []);
   return (

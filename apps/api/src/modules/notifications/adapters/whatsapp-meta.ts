@@ -15,7 +15,12 @@ export class MetaWhatsAppProvider implements WhatsAppProvider {
       { type: 'body', parameters: msg.params.map((text) => ({ type: 'text', text })) },
     ];
     if (msg.buttonParam)
-      components.push({ type: 'button', sub_type: 'url', index: '0', parameters: [{ type: 'text', text: msg.buttonParam }] });
+      components.push({
+        type: 'button',
+        sub_type: 'url',
+        index: '0',
+        parameters: [{ type: 'text', text: msg.buttonParam }],
+      });
     const res = (await postJson(
       this.name,
       `https://graph.facebook.com/${this.graphVersion}/${this.phoneNumberId}/messages`,

@@ -29,7 +29,10 @@ export async function fillOtp(page: Page, code: string) {
 
 /** Waits for the Turnstile test widget to issue a token (the submit button enables). */
 export async function waitForCaptcha(page: Page, buttonName: RegExp) {
-  await page.getByRole('button', { name: buttonName }).and(page.locator(':not([disabled])')).waitFor({ timeout: 30_000 });
+  await page
+    .getByRole('button', { name: buttonName })
+    .and(page.locator(':not([disabled])'))
+    .waitFor({ timeout: 30_000 });
 }
 
 /**

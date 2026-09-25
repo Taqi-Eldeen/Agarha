@@ -6,7 +6,11 @@ type N = (typeof messages)['ar']['notifications'];
 /** Template ids -> catalog keys (title/body). Copy lives in packages/i18n, never here. */
 export const TEMPLATES = {
   lead_alert: { title: 'leadAlertTitle', body: 'leadAlertBody', whatsapp: 'lead' },
-  availability_nudge: { title: 'availabilityNudgeTitle', body: 'availabilityNudgeBody', whatsapp: 'nudge' },
+  availability_nudge: {
+    title: 'availabilityNudgeTitle',
+    body: 'availabilityNudgeBody',
+    whatsapp: 'nudge',
+  },
   review_prompt: { title: 'reviewPromptTitle', body: 'reviewPromptBody' },
   saved_search_alert: { title: 'savedSearchTitle', body: 'savedSearchBody' },
   dealer_verified: { title: 'dealerVerifiedTitle', body: 'dealerVerifiedBody' },
@@ -35,7 +39,11 @@ export const TEMPLATE_TOPIC: Record<TemplateId, { topic: string; transactional: 
   invoice_paid: { topic: 'billing', transactional: true },
 };
 
-export function render(id: TemplateId, locale: Locale, vars: Record<string, string | number>): { title: string; body: string } {
+export function render(
+  id: TemplateId,
+  locale: Locale,
+  vars: Record<string, string | number>,
+): { title: string; body: string } {
   const t = TEMPLATES[id];
   const cat = messages[locale].notifications;
   return { title: interpolate(cat[t.title], vars), body: interpolate(cat[t.body], vars) };

@@ -1,9 +1,25 @@
 import { availabilityRequestInputSchema, LEAD_CHANNELS, leadResponseSchema } from '@agarha/schemas';
-import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
 import type { AuthContext } from '../../common/auth/auth-context';
-import { Auth, CurrentAuth, CurrentDealer, MaybeAuth, OptionalAuth } from '../../common/auth/guards';
+import {
+  Auth,
+  CurrentAuth,
+  CurrentDealer,
+  MaybeAuth,
+  OptionalAuth,
+} from '../../common/auth/guards';
 import { Errors } from '../../common/errors';
 import { Idempotent } from '../../common/idempotency';
 import { Client, type ClientInfo } from '../../common/request';
@@ -13,9 +29,18 @@ import { AvailabilityService } from './availability.service';
 import { LeadsService } from './leads.service';
 
 type Dealer = { dealerId: string; userId: string; role: 'dealer_owner' | 'dealer_staff' };
-const leadSchema = z.object({ listingId: z.uuid(), channel: z.enum(LEAD_CHANNELS), locale: z.enum(['ar', 'en']).default('ar') });
-const outcomeSchema = z.object({ outcome: z.enum(['from_agarha', 'rented', 'not_rented', 'no_reply']) });
-const pageSchema = z.object({ cursor: z.string().max(300).optional(), limit: z.coerce.number().int().min(1).max(100).default(30) });
+const leadSchema = z.object({
+  listingId: z.uuid(),
+  channel: z.enum(LEAD_CHANNELS),
+  locale: z.enum(['ar', 'en']).default('ar'),
+});
+const outcomeSchema = z.object({
+  outcome: z.enum(['from_agarha', 'rented', 'not_rented', 'no_reply']),
+});
+const pageSchema = z.object({
+  cursor: z.string().max(300).optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(30),
+});
 const availabilitySchema = availabilityRequestInputSchema;
 const answerSchema = z.object({ available: z.boolean() });
 
@@ -29,12 +54,19 @@ export class LeadsController {
   ) {}
 
   @Post('leads')
-  @ApiOperation({ summary: 'Log a contact (no sign-up needed) and get the WhatsApp / call deep link with a reference code.' })
+  @ApiOperation({
+    summary:
+      'Log a contact (no sign-up needed) and get the WhatsApp / call deep link with a reference code.',
+  })
   @OptionalAuth('customer')
   @Idempotent()
   @ZodBody(leadSchema)
   @ZodResponse(201, leadResponseSchema)
-  create(@Body(new ZodPipe(leadSchema)) b: z.output<typeof leadSchema>, @MaybeAuth() auth: AuthContext | undefined, @Client() c: ClientInfo): Promise<z.infer<typeof leadResponseSchema>> {
+  create(
+    @Body(new ZodPipe(leadSchema)) b: z.output<typeof leadSchema>,
+    @MaybeAuth() auth: AuthContext | undefined,
+    @Client() c: ClientInfo,
+  ): Promise<z.infer<typeof leadResponseSchema>> {
     return this.leads.create(b, { userId: auth?.userId ?? null, ip: c.ip });
   }
 
@@ -54,7 +86,11 @@ export class LeadsController {
   @Put('dealer/leads/:id/outcome')
   @Auth('dealer', 'dealer_owner', 'dealer_staff')
   @ZodBody(outcomeSchema)
-  outcome(@CurrentDealer() d: Dealer, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodPipe(outcomeSchema)) b: z.output<typeof outcomeSchema>) {
+  outcome(
+    @CurrentDealer() d: Dealer,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodPipe(outcomeSchema)) b: z.output<typeof outcomeSchema>,
+  ) {
     return this.leads.setOutcome(d.dealerId, id, b.outcome, d);
   }
 
@@ -67,7 +103,10 @@ export class LeadsController {
   @Auth('customer')
   @Idempotent()
   @ZodBody(availabilitySchema)
-  async request(@CurrentAuth() a: AuthContext, @Body(new ZodPipe(availabilitySchema)) b: z.output<typeof availabilitySchema>) {
+  async request(
+    @CurrentAuth() a: AuthContext,
+    @Body(new ZodPipe(availabilitySchema)) b: z.output<typeof availabilitySchema>,
+  ) {
     await this.gate();
     return this.availability.create(a.userId, b);
   }
@@ -88,7 +127,11 @@ export class LeadsController {
   @HttpCode(200)
   @Auth('dealer', 'dealer_owner', 'dealer_staff')
   @ZodBody(answerSchema)
-  answer(@CurrentDealer() d: Dealer, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodPipe(answerSchema)) b: z.output<typeof answerSchema>) {
+  answer(
+    @CurrentDealer() d: Dealer,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodPipe(answerSchema)) b: z.output<typeof answerSchema>,
+  ) {
     return this.availability.answer(d.dealerId, id, b.available);
   }
 }

@@ -9,5 +9,12 @@
     "types": ["jest", "nativewind/types"],
     "paths": { "@/*": ["./src/*"] }
   },
-  "include": ["src", "app.config.ts", "nativewind-env.d.ts", ".expo/types/**/*.ts", "expo-env.d.ts", "jest.setup.ts"]
+  "include": [
+    "src",
+    "app.config.ts",
+    "nativewind-env.d.ts",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts",
+    "jest.setup.ts"
+  ]
 }

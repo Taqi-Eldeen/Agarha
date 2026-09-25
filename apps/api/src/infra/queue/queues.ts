@@ -47,8 +47,13 @@ export class Queues implements OnApplicationShutdown {
     return q;
   }
 
-  async add<N extends keyof JobPayloads>(name: N, data: JobPayloads[N], opts: JobsOptions = {}): Promise<void> {
-    const jobName = 'job' in (data as object) ? String((data as { job: string }).job) : String(name);
+  async add<N extends keyof JobPayloads>(
+    name: N,
+    data: JobPayloads[N],
+    opts: JobsOptions = {},
+  ): Promise<void> {
+    const jobName =
+      'job' in (data as object) ? String((data as { job: string }).job) : String(name);
     await this.get(QUEUE[name]).add(jobName, data, opts);
   }
 

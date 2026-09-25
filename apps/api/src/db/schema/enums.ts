@@ -39,7 +39,10 @@ export const otpChannelEnum = pgEnum('otp_channel', OTP_CHANNELS);
 export const otpPurposeEnum = pgEnum('otp_purpose', OTP_PURPOSES);
 export const dealerStatusEnum = pgEnum('dealer_status', DEALER_STATUSES);
 export const verificationDocTypeEnum = pgEnum('verification_doc_type', VERIFICATION_DOC_TYPES);
-export const verificationDocStatusEnum = pgEnum('verification_doc_status', VERIFICATION_DOC_STATUSES);
+export const verificationDocStatusEnum = pgEnum(
+  'verification_doc_status',
+  VERIFICATION_DOC_STATUSES,
+);
 export const reportReasonEnum = pgEnum('report_reason', REPORT_REASONS);
 export const reportStatusEnum = pgEnum('report_status', REPORT_STATUSES);
 export const reviewStatusEnum = pgEnum('review_status', REVIEW_STATUSES);
@@ -47,11 +50,41 @@ export const mediaStatusEnum = pgEnum('media_status', MEDIA_STATUSES);
 export const subscriptionStatusEnum = pgEnum('subscription_status', SUBSCRIPTION_STATUSES);
 export const userStatusEnum = pgEnum('user_status', ['active', 'blocked', 'deleted']);
 export const dealerMemberRoleEnum = pgEnum('dealer_member_role', ['dealer_owner', 'dealer_staff']);
-export const deliveryStatusEnum = pgEnum('delivery_status', ['queued', 'sent', 'delivered', 'failed']);
-export const notificationChannelEnum = pgEnum('notification_channel', ['sms', 'whatsapp', 'push', 'email']);
+export const deliveryStatusEnum = pgEnum('delivery_status', [
+  'queued',
+  'sent',
+  'delivered',
+  'failed',
+]);
+export const notificationChannelEnum = pgEnum('notification_channel', [
+  'sms',
+  'whatsapp',
+  'push',
+  'email',
+]);
 export const sessionScopeEnum = pgEnum('session_scope', ['customer', 'dealer', 'admin']);
-export const socialProviderEnum = pgEnum('social_provider', ['google', 'apple', 'google_workspace']);
+export const socialProviderEnum = pgEnum('social_provider', [
+  'google',
+  'apple',
+  'google_workspace',
+]);
 export const devicePlatformEnum = pgEnum('device_platform', ['ios', 'android', 'web']);
-export const invoiceStatusEnum = pgEnum('invoice_status', ['draft', 'open', 'paid', 'void', 'failed']);
-export const availabilityRequestStatusEnum = pgEnum('availability_request_status', ['sent', 'available', 'unavailable', 'expired']);
-export const importStatusEnum = pgEnum('import_status', ['validating', 'ready', 'applied', 'failed']);
+export const invoiceStatusEnum = pgEnum('invoice_status', [
+  'draft',
+  'open',
+  'paid',
+  'void',
+  'failed',
+]);
+export const availabilityRequestStatusEnum = pgEnum('availability_request_status', [
+  'sent',
+  'available',
+  'unavailable',
+  'expired',
+]);
+export const importStatusEnum = pgEnum('import_status', [
+  'validating',
+  'ready',
+  'applied',
+  'failed',
+]);

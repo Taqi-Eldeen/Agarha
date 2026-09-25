@@ -1,6 +1,14 @@
 import { useDealerProfile } from '@agarha/api-client';
 import type { ListingCard } from '@agarha/schemas';
-import { DealerCard, EmptyState, ErrorState, ListingCardSkeleton, ReviewItem, Text, useUi } from '@agarha/ui-native';
+import {
+  DealerCard,
+  EmptyState,
+  ErrorState,
+  ListingCardSkeleton,
+  ReviewItem,
+  Text,
+  useUi,
+} from '@agarha/ui-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { MapPin } from 'lucide-react-native';
 import { ScrollView, View } from 'react-native';
@@ -13,8 +21,18 @@ export default function DealerScreen() {
   const t = useTranslations('web');
   const format = useFormatter();
   const { locale, colors } = useUi();
-  if (q.isPending) return <View className="flex-1 bg-page p-4"><ListingCardSkeleton /></View>;
-  if (q.isError || !q.data) return <View className="flex-1 bg-page p-4"><ErrorState body={t('search.errorBody')} onRetry={() => void q.refetch()} /></View>;
+  if (q.isPending)
+    return (
+      <View className="flex-1 bg-page p-4">
+        <ListingCardSkeleton />
+      </View>
+    );
+  if (q.isError || !q.data)
+    return (
+      <View className="flex-1 bg-page p-4">
+        <ErrorState body={t('search.errorBody')} onRetry={() => void q.refetch()} />
+      </View>
+    );
   const { dealer, branches, reviews, responseRate, fleet, fleetTotal } = q.data;
   const name = locale === 'ar' ? dealer.nameAr : dealer.nameEn;
   const description = locale === 'ar' ? dealer.descriptionAr : dealer.descriptionEn;
@@ -26,8 +44,14 @@ export default function DealerScreen() {
         verified={dealer.verified}
         reviews={{ count: reviews.count, average: reviews.average }}
         responseRate={responseRate}
-        responseRateLabel={responseRate === null ? '' : t('listing.responseRate', { percent: Math.round(responseRate * 100) })}
-        memberSinceLabel={t('listing.memberSince', { date: format.dateTime(new Date(dealer.memberSince), { month: 'long', year: 'numeric' }) })}
+        responseRateLabel={
+          responseRate === null
+            ? ''
+            : t('listing.responseRate', { percent: Math.round(responseRate * 100) })
+        }
+        memberSinceLabel={t('listing.memberSince', {
+          date: format.dateTime(new Date(dealer.memberSince), { month: 'long', year: 'numeric' }),
+        })}
       />
       {description ? <Text>{description}</Text> : null}
 
@@ -39,7 +63,14 @@ export default function DealerScreen() {
               <MapPin size={20} color={colors.brandPrimary} strokeWidth={1.75} />
               <View className="flex-1">
                 <Text weight="medium">{locale === 'ar' ? b.nameAr : b.nameEn}</Text>
-                <Text variant="caption" tone="secondary">{[b.area ? (locale === 'ar' ? b.area.nameAr : b.area.nameEn) : null, locale === 'ar' ? b.addressAr : b.addressEn].filter(Boolean).join(' · ')}</Text>
+                <Text variant="caption" tone="secondary">
+                  {[
+                    b.area ? (locale === 'ar' ? b.area.nameAr : b.area.nameEn) : null,
+                    locale === 'ar' ? b.addressAr : b.addressEn,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </Text>
               </View>
             </View>
           ))}
@@ -55,7 +86,19 @@ export default function DealerScreen() {
 
       <View className="gap-1">
         <Text variant="h2">{t('dealerPage.reviews')}</Text>
-        {reviews.latest.length ? reviews.latest.map((r) => <ReviewItem key={r.id} rating={r.rating} body={r.body} date={r.createdAt} reply={r.dealerReply} />) : <EmptyState body={t('dealerPage.noReviews')} />}
+        {reviews.latest.length ? (
+          reviews.latest.map((r) => (
+            <ReviewItem
+              key={r.id}
+              rating={r.rating}
+              body={r.body}
+              date={r.createdAt}
+              reply={r.dealerReply}
+            />
+          ))
+        ) : (
+          <EmptyState body={t('dealerPage.noReviews')} />
+        )}
       </View>
     </ScrollView>
   );

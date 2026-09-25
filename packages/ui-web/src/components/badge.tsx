@@ -24,11 +24,33 @@ const ICONS: Record<Kind, ReactNode> = {
 };
 
 /** Status colours always come with an icon and a text label (never colour alone). */
-export function Badge({ kind, children, className }: { kind: Kind; children?: ReactNode; className?: string }) {
+export function Badge({
+  kind,
+  children,
+  className,
+}: {
+  kind: Kind;
+  children?: ReactNode;
+  className?: string;
+}) {
   const { t } = useUi();
-  const text = children ?? { verified: t.verified, featured: t.featured, fresh: t.fresh, stale: t.stale, driver: t.withDriver }[kind];
+  const text =
+    children ??
+    {
+      verified: t.verified,
+      featured: t.featured,
+      fresh: t.fresh,
+      stale: t.stale,
+      driver: t.withDriver,
+    }[kind];
   return (
-    <span className={cn('inline-flex min-h-7 max-w-full items-center gap-1 rounded-2xl px-2 py-0.5 text-caption font-medium', STYLES[kind], className)}>
+    <span
+      className={cn(
+        'inline-flex min-h-7 max-w-full items-center gap-1 rounded-2xl px-2 py-0.5 text-caption font-medium',
+        STYLES[kind],
+        className,
+      )}
+    >
       {ICONS[kind]}
       {text}
     </span>
@@ -39,7 +61,9 @@ export function Badge({ kind, children, className }: { kind: Kind; children?: Re
 export function FreshnessChip({ lastConfirmedAt }: { lastConfirmedAt: string }) {
   const { f, ago } = useUi();
   const state = freshnessOf(new Date(lastConfirmedAt));
-  if (state === 'fresh') return <Badge kind="fresh">{f('confirmedAgo', { ago: ago(lastConfirmedAt) })}</Badge>;
-  if (state === 'aging') return <Badge kind="stale">{f('confirmedAgo', { ago: ago(lastConfirmedAt) })}</Badge>;
+  if (state === 'fresh')
+    return <Badge kind="fresh">{f('confirmedAgo', { ago: ago(lastConfirmedAt) })}</Badge>;
+  if (state === 'aging')
+    return <Badge kind="stale">{f('confirmedAgo', { ago: ago(lastConfirmedAt) })}</Badge>;
   return null;
 }

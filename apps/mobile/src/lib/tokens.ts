@@ -8,7 +8,9 @@ let cache: Tokens | null | undefined;
 const listeners = new Set<(signedIn: boolean) => void>();
 
 /** Customer tokens live in the Keychain / Keystore (never AsyncStorage). */
-export const tokenStore: TokenStore & { subscribe: (fn: (signedIn: boolean) => void) => () => void } = {
+export const tokenStore: TokenStore & {
+  subscribe: (fn: (signedIn: boolean) => void) => () => void;
+} = {
   async get() {
     if (cache === undefined) {
       const raw = await SecureStore.getItemAsync(KEY);
@@ -18,7 +20,10 @@ export const tokenStore: TokenStore & { subscribe: (fn: (signedIn: boolean) => v
   },
   async set(tokens) {
     cache = tokens;
-    if (tokens) await SecureStore.setItemAsync(KEY, JSON.stringify(tokens), { keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY });
+    if (tokens)
+      await SecureStore.setItemAsync(KEY, JSON.stringify(tokens), {
+        keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+      });
     else await SecureStore.deleteItemAsync(KEY);
     listeners.forEach((fn) => fn(!!tokens));
   },

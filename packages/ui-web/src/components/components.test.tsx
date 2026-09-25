@@ -21,21 +21,29 @@ import { Wizard } from './stepper';
 describe.each(['ar', 'en'] as const)('components in %s', (locale) => {
   it('ListingCard shows the full anatomy and passes axe', async () => {
     const onContact = vi.fn();
-    const { container } = renderUi(<ListingCard card={CARD} href="/cars/x" onContact={onContact} />, locale);
+    const { container } = renderUi(
+      <ListingCard card={CARD} href="/cars/x" onContact={onContact} />,
+      locale,
+    );
     const name = locale === 'ar' ? 'تويوتا كورولا' : 'Toyota Corolla';
     expect(screen.getByRole('article', { name: `${name} 2024` })).toBeInTheDocument();
     expect(screen.getByText(locale === 'ar' ? 'مميّز' : 'Featured')).toBeInTheDocument();
     expect(container.textContent).toContain(locale === 'ar' ? '1,500 ج.م' : '1,500 EGP');
     expect(container.textContent).toContain(locale === 'ar' ? 'بطاقة رقم قومي' : 'National ID');
     expect(container.textContent).toMatch(locale === 'ar' ? /اتأكد/ : /Confirmed/);
-    await userEvent.click(screen.getByRole('button', { name: locale === 'ar' ? 'واتساب' : 'WhatsApp' }));
+    await userEvent.click(
+      screen.getByRole('button', { name: locale === 'ar' ? 'واتساب' : 'WhatsApp' }),
+    );
     expect(onContact).toHaveBeenCalledWith('whatsapp');
     expect(await axeViolations(container)).toEqual([]);
   });
 
   it('PriceTag derives week/month and shows the deposit separately', () => {
     expect(priceFor(CARD.prices, 'month')).toBe(45000);
-    const { container } = renderUi(<PriceTag prices={CARD.prices} period="week" showDeposit />, locale);
+    const { container } = renderUi(
+      <PriceTag prices={CARD.prices} period="week" showDeposit />,
+      locale,
+    );
     expect(container.textContent).toContain(locale === 'ar' ? '9,000 ج.م' : '9,000 EGP');
     expect(container.textContent).toContain(locale === 'ar' ? 'التأمين' : 'Deposit');
   });
@@ -93,7 +101,15 @@ describe.each(['ar', 'en'] as const)('components in %s', (locale) => {
   it('AvailabilitySwitch offers undo after a successful change', async () => {
     const onChange = vi.fn().mockResolvedValue(undefined);
     let undo: (() => void) | undefined;
-    renderUi(<AvailabilitySwitch available label="Corolla" onChange={onChange} onChanged={(_v, u) => (undo = u)} />, locale);
+    renderUi(
+      <AvailabilitySwitch
+        available
+        label="Corolla"
+        onChange={onChange}
+        onChanged={(_v, u) => (undo = u)}
+      />,
+      locale,
+    );
     await userEvent.click(screen.getByRole('switch'));
     await waitFor(() => expect(undo).toBeDefined());
     undo!();
@@ -105,7 +121,15 @@ describe.each(['ar', 'en'] as const)('components in %s', (locale) => {
     const onRemove = vi.fn();
     renderUi(
       <>
-        <ChipGroup label="Type" options={[{ value: 'suv', label: 'SUV' }, { value: 'sedan', label: 'Sedan' }]} value={['suv']} onChange={onChange} />
+        <ChipGroup
+          label="Type"
+          options={[
+            { value: 'suv', label: 'SUV' },
+            { value: 'sedan', label: 'Sedan' },
+          ]}
+          value={['suv']}
+          onChange={onChange}
+        />
         <FilterChip label="Automatic" onRemove={onRemove} />
       </>,
       locale,
@@ -130,15 +154,34 @@ describe.each(['ar', 'en'] as const)('components in %s', (locale) => {
   });
 
   it('Gallery is manual and keyboard-navigable (arrow keys follow reading direction)', () => {
-    renderUi(<Gallery alt="Corolla" photos={[{ id: 'a', src: '/a' }, { id: 'b', src: '/b' }, { id: 'c', src: '/c' }]} />, locale);
+    renderUi(
+      <Gallery
+        alt="Corolla"
+        photos={[
+          { id: 'a', src: '/a' },
+          { id: 'b', src: '/b' },
+          { id: 'c', src: '/c' },
+        ]}
+      />,
+      locale,
+    );
     const region = screen.getByRole('region', { name: 'Corolla' });
     fireEvent.keyDown(region, { key: locale === 'ar' ? 'ArrowLeft' : 'ArrowRight' });
     expect(region).toHaveTextContent('2 / 3');
   });
 
   it('ContactBar always shows WhatsApp and Call plus the deposit notice', () => {
-    const { container } = renderUi(<ContactBar prices={CARD.prices} onContact={() => undefined} notice="Never pay a deposit before seeing the car." />, locale);
-    expect(screen.getAllByRole('button', { name: locale === 'ar' ? 'واتساب' : 'WhatsApp' }).length).toBeGreaterThan(0);
+    const { container } = renderUi(
+      <ContactBar
+        prices={CARD.prices}
+        onContact={() => undefined}
+        notice="Never pay a deposit before seeing the car."
+      />,
+      locale,
+    );
+    expect(
+      screen.getAllByRole('button', { name: locale === 'ar' ? 'واتساب' : 'WhatsApp' }).length,
+    ).toBeGreaterThan(0);
     expect(container.textContent).toContain('Never pay a deposit');
   });
 
@@ -148,13 +191,33 @@ describe.each(['ar', 'en'] as const)('components in %s', (locale) => {
         <InlineAlert tone="warning" title="Heads up">
           Body
         </InlineAlert>
-        <EmptyState body="No cars match. Try removing a filter." action={<Button>Clear filters</Button>} />
+        <EmptyState
+          body="No cars match. Try removing a filter."
+          action={<Button>Clear filters</Button>}
+        />
         <ErrorState body="Could not load." onRetry={() => undefined} requestId="abc" />
         <StatTile label="Views" value="1,204" trend="up" />
-        <DataTable caption="Cars" rows={[{ id: '1', n: 'Corolla', v: 3 }, { id: '2', n: 'Elantra', v: 9 }]} rowKey={(r) => r.id} columns={[{ key: 'n', header: 'Car', cell: (r) => r.n }, { key: 'v', header: 'Views', cell: (r) => r.v, sortValue: (r) => r.v, numeric: true }]} />
+        <DataTable
+          caption="Cars"
+          rows={[
+            { id: '1', n: 'Corolla', v: 3 },
+            { id: '2', n: 'Elantra', v: 9 },
+          ]}
+          rowKey={(r) => r.id}
+          columns={[
+            { key: 'n', header: 'Car', cell: (r) => r.n },
+            { key: 'v', header: 'Views', cell: (r) => r.v, sortValue: (r) => r.v, numeric: true },
+          ]}
+        />
         <RatingStars value={4} />
         <ReviewItem rating={5} body="Great" date={new Date().toISOString()} reply="Thanks" />
-        <RequirementList deposit={0} minAge={25} requiredDocs={['passport']} kmLimitPerDay={null} airportPickup />
+        <RequirementList
+          deposit={0}
+          minAge={25}
+          requiredDocs={['passport']}
+          kmLimitPerDay={null}
+          airportPickup
+        />
         <Badge kind="verified" />
         <ListingCardSkeleton />
       </main>,
@@ -166,13 +229,20 @@ describe.each(['ar', 'en'] as const)('components in %s', (locale) => {
   it('Wizard shows progress and navigates', async () => {
     const onNext = vi.fn();
     renderUi(
-      <Wizard steps={['Car', 'Prices', 'Photos']} current={1} onNext={onNext} onBack={() => undefined}>
+      <Wizard
+        steps={['Car', 'Prices', 'Photos']}
+        current={1}
+        onNext={onNext}
+        onBack={() => undefined}
+      >
         <p>body</p>
       </Wizard>,
       locale,
     );
     expect(screen.getByRole('heading', { name: 'Prices' })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: locale === 'ar' ? 'التالي' : 'Next' }));
+    await userEvent.click(
+      screen.getByRole('button', { name: locale === 'ar' ? 'التالي' : 'Next' }),
+    );
     expect(onNext).toHaveBeenCalled();
   });
 });

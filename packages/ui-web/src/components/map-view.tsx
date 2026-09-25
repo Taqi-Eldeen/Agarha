@@ -31,7 +31,16 @@ export interface MapViewProps {
  * '@agarha/ui-web/map' with next/dynamic so the library never ships with the listing page.
  * Pins = circles with the price label; clusters show a count and zoom in on click.
  */
-export default function MapView({ pins, styleUrl, center = { lat: 30.0444, lng: 31.2357 }, zoom = 11, selectedId, onSelect, onMoveEnd, className }: MapViewProps) {
+export default function MapView({
+  pins,
+  styleUrl,
+  center = { lat: 30.0444, lng: 31.2357 },
+  zoom = 11,
+  selectedId,
+  onSelect,
+  onMoveEnd,
+  className,
+}: MapViewProps) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   const { t, locale } = useUi();
@@ -41,15 +50,67 @@ export default function MapView({ pins, styleUrl, center = { lat: 30.0444, lng: 
     void (async () => {
       const maplibre = (await import('maplibre-gl')).default;
       if (cancelled || !el.current) return;
-      const m = new maplibre.Map({ container: el.current, style: styleUrl, center: [center.lng, center.lat], zoom, attributionControl: { compact: true }, locale: { 'NavigationControl.ZoomIn': t.zoomIn, 'NavigationControl.ZoomOut': t.zoomOut } });
+      const m = new maplibre.Map({
+        container: el.current,
+        style: styleUrl,
+        center: [center.lng, center.lat],
+        zoom,
+        attributionControl: { compact: true },
+        locale: { 'NavigationControl.ZoomIn': t.zoomIn, 'NavigationControl.ZoomOut': t.zoomOut },
+      });
       map.current = m;
-      m.addControl(new maplibre.NavigationControl({ showCompass: false }), locale === 'ar' ? 'top-left' : 'top-right');
+      m.addControl(
+        new maplibre.NavigationControl({ showCompass: false }),
+        locale === 'ar' ? 'top-left' : 'top-right',
+      );
       m.on('load', () => {
-        m.addSource('pins', { type: 'geojson', data: toGeoJson(pins), cluster: true, clusterRadius: 48, clusterMaxZoom: 14 });
-        m.addLayer({ id: 'clusters', type: 'circle', source: 'pins', filter: ['has', 'point_count'], paint: { 'circle-color': '#0F6E68', 'circle-radius': ['step', ['get', 'point_count'], 18, 10, 24, 50, 30], 'circle-stroke-width': 2, 'circle-stroke-color': '#ffffff' } });
-        m.addLayer({ id: 'cluster-count', type: 'symbol', source: 'pins', filter: ['has', 'point_count'], layout: { 'text-field': ['get', 'point_count_abbreviated'], 'text-size': 14 }, paint: { 'text-color': '#ffffff' } });
-        m.addLayer({ id: 'pin', type: 'circle', source: 'pins', filter: ['!', ['has', 'point_count']], paint: { 'circle-color': ['case', ['get', 'featured'], '#F2A900', '#0F6E68'], 'circle-radius': 9, 'circle-stroke-width': 2, 'circle-stroke-color': '#ffffff' } });
-        m.addLayer({ id: 'pin-label', type: 'symbol', source: 'pins', filter: ['!', ['has', 'point_count']], layout: { 'text-field': ['get', 'label'], 'text-offset': [0, 1.4], 'text-size': 12 }, paint: { 'text-color': '#16202B', 'text-halo-color': '#ffffff', 'text-halo-width': 1.5 } });
+        m.addSource('pins', {
+          type: 'geojson',
+          data: toGeoJson(pins),
+          cluster: true,
+          clusterRadius: 48,
+          clusterMaxZoom: 14,
+        });
+        m.addLayer({
+          id: 'clusters',
+          type: 'circle',
+          source: 'pins',
+          filter: ['has', 'point_count'],
+          paint: {
+            'circle-color': '#0F6E68',
+            'circle-radius': ['step', ['get', 'point_count'], 18, 10, 24, 50, 30],
+            'circle-stroke-width': 2,
+            'circle-stroke-color': '#ffffff',
+          },
+        });
+        m.addLayer({
+          id: 'cluster-count',
+          type: 'symbol',
+          source: 'pins',
+          filter: ['has', 'point_count'],
+          layout: { 'text-field': ['get', 'point_count_abbreviated'], 'text-size': 14 },
+          paint: { 'text-color': '#ffffff' },
+        });
+        m.addLayer({
+          id: 'pin',
+          type: 'circle',
+          source: 'pins',
+          filter: ['!', ['has', 'point_count']],
+          paint: {
+            'circle-color': ['case', ['get', 'featured'], '#F2A900', '#0F6E68'],
+            'circle-radius': 9,
+            'circle-stroke-width': 2,
+            'circle-stroke-color': '#ffffff',
+          },
+        });
+        m.addLayer({
+          id: 'pin-label',
+          type: 'symbol',
+          source: 'pins',
+          filter: ['!', ['has', 'point_count']],
+          layout: { 'text-field': ['get', 'label'], 'text-offset': [0, 1.4], 'text-size': 12 },
+          paint: { 'text-color': '#16202B', 'text-halo-color': '#ffffff', 'text-halo-width': 1.5 },
+        });
         m.on('click', 'clusters', async (e) => {
           const f = e.features?.[0];
           const src = m.getSource('pins') as GeoJSONSource;
@@ -85,7 +146,14 @@ export default function MapView({ pins, styleUrl, center = { lat: 30.0444, lng: 
     src?.setData(toGeoJson(pins, selectedId));
   }, [pins, selectedId]);
 
-  return <div ref={el} role="region" aria-label={t.map} className={className ?? 'h-full min-h-80 w-full rounded-lg'} />;
+  return (
+    <div
+      ref={el}
+      role="region"
+      aria-label={t.map}
+      className={className ?? 'h-full min-h-80 w-full rounded-lg'}
+    />
+  );
 }
 
 function toGeoJson(pins: MapPinData[], selectedId?: string | null): FeatureCollection {
@@ -94,7 +162,11 @@ function toGeoJson(pins: MapPinData[], selectedId?: string | null): FeatureColle
     features: pins.map((p) => ({
       type: 'Feature',
       geometry: { type: 'Point', coordinates: [p.lng, p.lat] },
-      properties: { id: p.id, featured: p.featured || p.id === selectedId, label: `${p.price.toLocaleString('en')} EGP` },
+      properties: {
+        id: p.id,
+        featured: p.featured || p.id === selectedId,
+        label: `${p.price.toLocaleString('en')} EGP`,
+      },
     })),
   };
 }

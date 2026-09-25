@@ -2,10 +2,10 @@ appId: ${APP_ID}
 name: Save a car and find it under Saved (signed in)
 ---
 - launchApp
-- tapOn: "استكشف"
+- tapOn: 'استكشف'
 - tapOn:
-    text: "احفظ"
+    text: 'احفظ'
     index: 0
-- tapOn: "المحفوظات"
-- assertVisible: "عربيات محفوظة"
-- assertNotVisible: "مفيش عربيات محفوظة.*"
+- tapOn: 'المحفوظات'
+- assertVisible: 'عربيات محفوظة'
+- assertNotVisible: 'مفيش عربيات محفوظة.*'

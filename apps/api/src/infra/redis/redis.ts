@@ -18,7 +18,8 @@ class RedisCloser implements OnApplicationShutdown {
     {
       provide: REDIS,
       inject: [ENV],
-      useFactory: (env: Env) => new Redis(env.REDIS_URL, { maxRetriesPerRequest: null, lazyConnect: false }),
+      useFactory: (env: Env) =>
+        new Redis(env.REDIS_URL, { maxRetriesPerRequest: null, lazyConnect: false }),
     },
     RedisCloser,
   ],

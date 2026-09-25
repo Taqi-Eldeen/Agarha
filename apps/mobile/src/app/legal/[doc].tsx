@@ -15,7 +15,9 @@ export default function Legal() {
   return (
     <Screen edges={['bottom']}>
       <Stack.Screen options={{ title }} />
-      <Text variant="h1" accessibilityRole="header">{title}</Text>
+      <Text variant="h1" accessibilityRole="header">
+        {title}
+      </Text>
       <InlineAlert tone="info">{`${t('draftNotice')} · ${LEGAL_UPDATED}`}</InlineAlert>
       {legalDoc(d, locale).map((s) => (
         <View key={s.h} className="gap-2">

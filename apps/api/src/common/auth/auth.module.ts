@@ -4,5 +4,8 @@ import { AuthGuard } from './guards';
 import { TokenService } from './token.service';
 
 @Global()
-@Module({ providers: [TokenService, AuthGuard, AdminIpGuard], exports: [TokenService, AuthGuard, AdminIpGuard] })
+@Module({
+  providers: [TokenService, AuthGuard, AdminIpGuard],
+  exports: [TokenService, AuthGuard, AdminIpGuard],
+})
 export class AuthCoreModule {}

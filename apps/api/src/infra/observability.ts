@@ -25,12 +25,15 @@ export async function startObservability(env: Env, service: 'api' | 'worker'): P
   }
   if (env.OTEL_EXPORTER_OTLP_ENDPOINT) {
     const { NodeSDK } = await import('@opentelemetry/sdk-node');
-    const { getNodeAutoInstrumentations } = await import('@opentelemetry/auto-instrumentations-node');
+    const { getNodeAutoInstrumentations } =
+      await import('@opentelemetry/auto-instrumentations-node');
     const { OTLPTraceExporter } = await import('@opentelemetry/exporter-trace-otlp-http');
     const sdk = new NodeSDK({
       serviceName: `agarha-${service}`,
       traceExporter: new OTLPTraceExporter({ url: `${env.OTEL_EXPORTER_OTLP_ENDPOINT}/v1/traces` }),
-      instrumentations: [getNodeAutoInstrumentations({ '@opentelemetry/instrumentation-fs': { enabled: false } })],
+      instrumentations: [
+        getNodeAutoInstrumentations({ '@opentelemetry/instrumentation-fs': { enabled: false } }),
+      ],
     });
     sdk.start();
   }

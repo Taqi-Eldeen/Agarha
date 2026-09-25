@@ -1,4 +1,11 @@
-import { Global, Inject, Injectable, Logger, Module, type OnApplicationShutdown } from '@nestjs/common';
+import {
+  Global,
+  Inject,
+  Injectable,
+  Logger,
+  Module,
+  type OnApplicationShutdown,
+} from '@nestjs/common';
 import { PostHog } from 'posthog-node';
 import { ENV, type Env } from '../config/env';
 
@@ -29,7 +36,13 @@ export class FlagsService implements OnApplicationShutdown {
 
   constructor(@Inject(ENV) private readonly env: Env) {
     this.forced = new Set(env.FLAGS);
-    this.ph = env.POSTHOG_API_KEY ? new PostHog(env.POSTHOG_API_KEY, { host: env.POSTHOG_HOST, flushAt: 20, flushInterval: 10_000 }) : null;
+    this.ph = env.POSTHOG_API_KEY
+      ? new PostHog(env.POSTHOG_API_KEY, {
+          host: env.POSTHOG_HOST,
+          flushAt: 20,
+          flushInterval: 10_000,
+        })
+      : null;
   }
 
   async isEnabled(flag: Flag, distinctId = 'server'): Promise<boolean> {
@@ -45,7 +58,8 @@ export class FlagsService implements OnApplicationShutdown {
 
   /** Server-side analytics. Never send phone numbers or names as properties. */
   capture(e: AnalyticsEvent): void {
-    if (this.ph) this.ph.capture({ event: e.event, distinctId: e.distinctId, properties: e.properties ?? {} });
+    if (this.ph)
+      this.ph.capture({ event: e.event, distinctId: e.distinctId, properties: e.properties ?? {} });
     else {
       this.captured.push(e);
       if (this.captured.length > 1000) this.captured.shift();

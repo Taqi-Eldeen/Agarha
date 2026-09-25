@@ -11,7 +11,9 @@ import { useLocale } from '@/lib/i18n';
 WebBrowser.maybeCompleteAuthSession();
 
 type Tokens = { accessToken: string; refreshToken: string };
-type SocialResult = { status: 'signed_in'; user: { id: string }; tokens: Tokens } | { status: 'phone_required'; linkToken: string };
+type SocialResult =
+  | { status: 'signed_in'; user: { id: string }; tokens: Tokens }
+  | { status: 'phone_required'; linkToken: string };
 
 const GOOGLE = {
   iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ?? '',
@@ -24,7 +26,15 @@ const googleConfigured = Platform.OS === 'ios' ? !!GOOGLE.iosClientId : !!GOOGLE
  * Optional Google / Apple sign-in. Sign in with Apple is always offered on iOS next to Google
  * (App Store guideline 4.8). The first social sign-in confirms the phone by OTP (linkToken).
  */
-export function SocialButtons({ onSignedIn, onPhoneRequired, onError }: { onSignedIn: (t: Tokens, userId: string) => Promise<void>; onPhoneRequired: (linkToken: string) => void; onError: (message: string) => void }) {
+export function SocialButtons({
+  onSignedIn,
+  onPhoneRequired,
+  onError,
+}: {
+  onSignedIn: (t: Tokens, userId: string) => Promise<void>;
+  onPhoneRequired: (linkToken: string) => void;
+  onError: (message: string) => void;
+}) {
   const t = useTranslations();
   const api = useApi();
   const { locale } = useLocale();
@@ -35,7 +45,9 @@ export function SocialButtons({ onSignedIn, onPhoneRequired, onError }: { onSign
 
   const exchange = async (provider: 'google' | 'apple', idToken: string) => {
     try {
-      const { data } = await api.POST('/v1/auth/social', { body: { provider, idToken, client: 'mobile' } });
+      const { data } = await api.POST('/v1/auth/social', {
+        body: { provider, idToken, client: 'mobile' },
+      });
       const r = data as unknown as SocialResult;
       if (r.status === 'signed_in') await onSignedIn(r.tokens, r.user.id);
       else onPhoneRequired(r.linkToken);
@@ -55,24 +67,44 @@ export function SocialButtons({ onSignedIn, onPhoneRequired, onError }: { onSign
           style={{ height: 48 }}
           onPress={async () => {
             try {
-              const cred = await AppleAuthentication.signInAsync({ requestedScopes: [AppleAuthentication.AppleAuthenticationScope.EMAIL] });
+              const cred = await AppleAuthentication.signInAsync({
+                requestedScopes: [AppleAuthentication.AppleAuthenticationScope.EMAIL],
+              });
               if (cred.identityToken) await exchange('apple', cred.identityToken);
             } catch (e) {
-              if ((e as { code?: string }).code !== 'ERR_REQUEST_CANCELED') onError(t('errors.internal_error'));
+              if ((e as { code?: string }).code !== 'ERR_REQUEST_CANCELED')
+                onError(t('errors.internal_error'));
             }
           }}
         />
       ) : null}
-      {googleConfigured ? <GoogleButton label={t('app.auth.google')} locale={locale} onIdToken={(tok) => void exchange('google', tok)} /> : null}
-      <Text variant="caption" tone="secondary" className="text-center">{t('app.auth.or')}</Text>
+      {googleConfigured ? (
+        <GoogleButton
+          label={t('app.auth.google')}
+          locale={locale}
+          onIdToken={(tok) => void exchange('google', tok)}
+        />
+      ) : null}
+      <Text variant="caption" tone="secondary" className="text-center">
+        {t('app.auth.or')}
+      </Text>
     </View>
   );
 }
 
-function GoogleButton({ label, locale, onIdToken }: { label: string; locale: string; onIdToken: (token: string) => void }) {
+function GoogleButton({
+  label,
+  locale,
+  onIdToken,
+}: {
+  label: string;
+  locale: string;
+  onIdToken: (token: string) => void;
+}) {
   const [request, response, prompt] = Google.useIdTokenAuthRequest({ ...GOOGLE, language: locale });
   useEffect(() => {
-    if (response?.type === 'success' && response.params.id_token) onIdToken(response.params.id_token);
+    if (response?.type === 'success' && response.params.id_token)
+      onIdToken(response.params.id_token);
   }, [response, onIdToken]);
   return (
     <Button variant="secondary" disabled={!request} onPress={() => void prompt()}>

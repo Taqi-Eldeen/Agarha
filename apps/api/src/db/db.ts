@@ -19,7 +19,11 @@ export function createDb(url: string, max = 10): { pool: Pool; db: Database } {
  * Second line of defence behind the policy layer: runs `fn` as the restricted `agarha_app`
  * role with app.dealer_id set, so Postgres RLS only exposes that dealer's rows.
  */
-export async function withDealerRls<T>(db: Database, dealerId: string, fn: (tx: Tx) => Promise<T>): Promise<T> {
+export async function withDealerRls<T>(
+  db: Database,
+  dealerId: string,
+  fn: (tx: Tx) => Promise<T>,
+): Promise<T> {
   return db.transaction(async (tx) => {
     await tx.execute(sql`set local role agarha_app`);
     await tx.execute(sql`select set_config('app.dealer_id', ${dealerId}, true)`);

@@ -16,10 +16,23 @@ export interface DealerCardProps {
   actions?: ReactNode;
 }
 
-export function DealerCard({ name, href, verified, area, reviews, responseRate, responseRateLabel, memberSinceLabel, actions }: DealerCardProps) {
+export function DealerCard({
+  name,
+  href,
+  verified,
+  area,
+  reviews,
+  responseRate,
+  responseRateLabel,
+  memberSinceLabel,
+  actions,
+}: DealerCardProps) {
   const { t, f } = useUi();
   return (
-    <section className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4" aria-label={name}>
+    <section
+      className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4"
+      aria-label={name}
+    >
       <div className="flex items-start justify-between gap-2">
         <div>
           <a href={href} className="text-body font-semibold hover:underline">

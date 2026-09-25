@@ -1,5 +1,17 @@
 'use client';
-import { BarChart3, BookOpen, Building2, CreditCard, Flag, Languages, ListChecks, LogOut, ScrollText, Star, Users } from 'lucide-react';
+import {
+  BarChart3,
+  BookOpen,
+  Building2,
+  CreditCard,
+  Flag,
+  Languages,
+  ListChecks,
+  LogOut,
+  ScrollText,
+  Star,
+  Users,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, type ReactNode } from 'react';
@@ -25,7 +37,8 @@ export function Shell({ children }: { children: ReactNode }) {
   // Any admin endpoint doubles as the session check.
   const session = useAdminQuery(['session'], '/admin/metrics');
   useEffect(() => {
-    if (session.error && (session.error as { status?: number }).status === 401) router.replace('/sign-in');
+    if (session.error && (session.error as { status?: number }).status === 401)
+      router.replace('/sign-in');
   }, [session.error, router]);
   return (
     <div className="grid min-h-dvh md:grid-cols-[15rem_1fr]">
@@ -35,7 +48,12 @@ export function Shell({ children }: { children: ReactNode }) {
           {NAV.map((n) => {
             const active = n.href === '/' ? pathname === '/' : pathname.startsWith(n.href);
             return (
-              <Link key={n.href} href={n.href} aria-current={active ? 'page' : undefined} className="flex min-h-touch items-center gap-3 rounded-md px-3 hover:bg-brand-subtle aria-[current=page]:bg-brand-subtle aria-[current=page]:font-semibold">
+              <Link
+                key={n.href}
+                href={n.href}
+                aria-current={active ? 'page' : undefined}
+                className="flex min-h-touch items-center gap-3 rounded-md px-3 hover:bg-brand-subtle aria-[current=page]:bg-brand-subtle aria-[current=page]:font-semibold"
+              >
                 <n.icon aria-hidden className="size-5" strokeWidth={1.75} />
                 {t(`nav.${n.key}`)}
               </Link>
@@ -43,7 +61,11 @@ export function Shell({ children }: { children: ReactNode }) {
           })}
         </nav>
         <div className="flex flex-col gap-1 p-2">
-          <button type="button" className="flex min-h-touch items-center gap-3 rounded-md px-3 hover:bg-brand-subtle" onClick={() => setLocale(locale === 'ar' ? 'en' : 'ar')}>
+          <button
+            type="button"
+            className="flex min-h-touch items-center gap-3 rounded-md px-3 hover:bg-brand-subtle"
+            onClick={() => setLocale(locale === 'ar' ? 'en' : 'ar')}
+          >
             <Languages aria-hidden className="size-5" strokeWidth={1.75} />
             {locale === 'ar' ? 'English' : 'العربية'}
           </button>

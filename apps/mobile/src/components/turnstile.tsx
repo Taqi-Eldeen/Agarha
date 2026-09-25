@@ -7,7 +7,13 @@ import { env, webOrigin } from '@/lib/env';
  * Cloudflare Turnstile inside a WebView served from the web origin (the site key is bound to that
  * hostname). Invisible unless Cloudflare needs an interaction. Posts the token back to the app.
  */
-export function Turnstile({ onToken, locale }: { onToken: (token: string | null) => void; locale: Locale }) {
+export function Turnstile({
+  onToken,
+  locale,
+}: {
+  onToken: (token: string | null) => void;
+  locale: Locale;
+}) {
   const html = `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=go&render=explicit" async defer></script></head>
 <body style="margin:0;display:flex;justify-content:center;background:transparent"><div id="t"></div><script>
 function send(t){window.ReactNativeWebView.postMessage(JSON.stringify({token:t}))}

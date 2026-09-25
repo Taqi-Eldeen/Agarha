@@ -9,7 +9,8 @@ export function DealerProviders({ children }: { children: ReactNode }) {
   const locale = useLocale() as 'ar' | 'en';
   const [client] = useState(() => makeClient('dealer', () => locale));
   useEffect(() => {
-    if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') void navigator.serviceWorker.register('/sw.js');
+    if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production')
+      void navigator.serviceWorker.register('/sw.js');
   }, []);
   return <ApiProvider client={client}>{children}</ApiProvider>;
 }

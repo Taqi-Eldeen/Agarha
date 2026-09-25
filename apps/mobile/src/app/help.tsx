@@ -22,12 +22,18 @@ export default function Help() {
         <Text variant="h2">{t('faqTitle')}</Text>
         {FAQ.map((n) => (
           <View key={n} className="gap-1">
-            <Text weight="semibold" accessibilityRole="header">{t(`faq.q${n}`)}</Text>
+            <Text weight="semibold" accessibilityRole="header">
+              {t(`faq.q${n}`)}
+            </Text>
             <Text tone="secondary">{t(`faq.a${n}`)}</Text>
           </View>
         ))}
       </View>
-      <Pressable accessibilityRole="link" onPress={() => void Linking.openURL('mailto:support@agarha.com')} className="min-h-touch justify-center">
+      <Pressable
+        accessibilityRole="link"
+        onPress={() => void Linking.openURL('mailto:support@agarha.com')}
+        className="min-h-touch justify-center"
+      >
         <Text tone="brand">{t('contact')}</Text>
       </Pressable>
     </Screen>

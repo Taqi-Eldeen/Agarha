@@ -5,7 +5,16 @@ const { theme } = require('@agarha/tokens/native');
 
 const px = (n) => `${n}px`;
 const fontSize = Object.fromEntries(
-  Object.entries(theme.type).map(([k, v]) => [k, [px(v.fontSize), { lineHeight: px(v.lineHeightAr ?? v.lineHeight), ...(v.letterSpacing ? { letterSpacing: px(v.letterSpacing) } : {}) }]]),
+  Object.entries(theme.type).map(([k, v]) => [
+    k,
+    [
+      px(v.fontSize),
+      {
+        lineHeight: px(v.lineHeightAr ?? v.lineHeight),
+        ...(v.letterSpacing ? { letterSpacing: px(v.letterSpacing) } : {}),
+      },
+    ],
+  ]),
 );
 
 /** @type {import('tailwindcss').Config} */

@@ -34,7 +34,11 @@ export function formatEgp(amount: number, locale: Locale): string {
   return locale === 'ar' ? `${n} ج.م` : `${n} EGP`;
 }
 
-export function formatDate(date: Date, locale: Locale, opts: Intl.DateTimeFormatOptions = { dateStyle: 'medium' }): string {
+export function formatDate(
+  date: Date,
+  locale: Locale,
+  opts: Intl.DateTimeFormatOptions = { dateStyle: 'medium' },
+): string {
   return new Intl.DateTimeFormat(tag(locale), { timeZone: TIME_ZONE, ...opts }).format(date);
 }
 

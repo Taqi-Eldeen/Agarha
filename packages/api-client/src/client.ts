@@ -5,7 +5,8 @@ export type ApiPaths = paths;
 
 // In the CommonJS build (Jest, Node require) esbuild's node-mode interop hands us the module object,
 // whose `default` is the function; the ESM build gets the function directly.
-const createClient = ((openapiFetch as unknown as { default?: typeof openapiFetch }).default ?? openapiFetch) as typeof openapiFetch;
+const createClient = ((openapiFetch as unknown as { default?: typeof openapiFetch }).default ??
+  openapiFetch) as typeof openapiFetch;
 export type SessionScope = 'customer' | 'dealer' | 'admin';
 
 /** Where mobile keeps its tokens (SecureStore). Web leaves this undefined and relies on httpOnly cookies. */
@@ -69,15 +70,23 @@ export function createApiClient(opts: ClientOptions) {
           method: 'POST',
           credentials: 'include',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify(stored ? { refreshToken: stored.refreshToken, client: 'mobile' } : { client: 'web' }),
+          body: JSON.stringify(
+            stored ? { refreshToken: stored.refreshToken, client: 'mobile' } : { client: 'web' },
+          ),
         });
         if (!res.ok) {
           await opts.tokens?.set(null);
           opts.onSessionExpired?.();
           return false;
         }
-        const body = (await res.json()) as { tokens?: { accessToken: string; refreshToken: string } };
-        if (body.tokens) await opts.tokens?.set({ accessToken: body.tokens.accessToken, refreshToken: body.tokens.refreshToken });
+        const body = (await res.json()) as {
+          tokens?: { accessToken: string; refreshToken: string };
+        };
+        if (body.tokens)
+          await opts.tokens?.set({
+            accessToken: body.tokens.accessToken,
+            refreshToken: body.tokens.refreshToken,
+          });
         return true;
       } catch {
         return false;
@@ -102,7 +111,11 @@ export function createApiClient(opts: ClientOptions) {
     return res;
   };
 
-  const client = createClient<paths>({ baseUrl: opts.baseUrl, fetch: authFetch, credentials: 'include' });
+  const client = createClient<paths>({
+    baseUrl: opts.baseUrl,
+    fetch: authFetch,
+    credentials: 'include',
+  });
 
   const headers: Middleware = {
     onRequest({ request }) {
@@ -117,7 +130,13 @@ export function createApiClient(opts: ClientOptions) {
       } catch {
         /* non-JSON error */
       }
-      throw new ApiRequestError(response.status, body.code ?? 'internal_error', body.message ?? response.statusText, body.requestId ?? '', body.details);
+      throw new ApiRequestError(
+        response.status,
+        body.code ?? 'internal_error',
+        body.message ?? response.statusText,
+        body.requestId ?? '',
+        body.details,
+      );
     },
   };
   client.use(headers);
@@ -128,22 +147,34 @@ export type ApiClient = ReturnType<typeof createApiClient>;
 
 /** Idempotency key for create calls (leads, listings, uploads): retries reuse the same key. */
 export function idempotencyKey(): string {
-  return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return (
+    globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`
+  );
 }
 
 /** Uploads a file to a presigned URL with the exact signed Content-Type. Reports progress where XHR exists. */
-export function uploadToPresigned(url: string, file: Blob, contentType: string, onProgress?: (fraction: number) => void): Promise<void> {
+export function uploadToPresigned(
+  url: string,
+  file: Blob,
+  contentType: string,
+  onProgress?: (fraction: number) => void,
+): Promise<void> {
   if (typeof XMLHttpRequest === 'undefined') {
-    return fetch(url, { method: 'PUT', body: file, headers: { 'content-type': contentType } }).then((r) => {
-      if (!r.ok) throw new ApiRequestError(r.status, 'upload_failed', 'Upload failed', '');
-    });
+    return fetch(url, { method: 'PUT', body: file, headers: { 'content-type': contentType } }).then(
+      (r) => {
+        if (!r.ok) throw new ApiRequestError(r.status, 'upload_failed', 'Upload failed', '');
+      },
+    );
   }
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open('PUT', url);
     xhr.setRequestHeader('content-type', contentType);
     xhr.upload.onprogress = (e) => e.lengthComputable && onProgress?.(e.loaded / e.total);
-    xhr.onload = () => (xhr.status < 300 ? resolve() : reject(new ApiRequestError(xhr.status, 'upload_failed', 'Upload failed', '')));
+    xhr.onload = () =>
+      xhr.status < 300
+        ? resolve()
+        : reject(new ApiRequestError(xhr.status, 'upload_failed', 'Upload failed', ''));
     xhr.onerror = () => reject(new ApiRequestError(0, 'network_error', 'Network error', ''));
     xhr.send(file);
   });

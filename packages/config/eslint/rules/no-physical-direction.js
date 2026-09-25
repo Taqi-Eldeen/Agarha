@@ -24,9 +24,11 @@ export default {
     type: 'problem',
     docs: { description: 'Disallow physical left/right margins, paddings and alignment' },
     messages: {
-      className: 'Physical direction class "{{cls}}". Use a logical class (ms-/me-/ps-/pe-/text-start/text-end).',
+      className:
+        'Physical direction class "{{cls}}". Use a logical class (ms-/me-/ps-/pe-/text-start/text-end).',
       style: 'Physical style key "{{key}}". Use {{alt}}.',
-      textAlign: 'textAlign "{{value}}" is physical. Use "start"/"end" (CSS) or rely on writing direction (RN).',
+      textAlign:
+        'textAlign "{{value}}" is physical. Use "start"/"end" (CSS) or rely on writing direction (RN).',
     },
     schema: [],
   },

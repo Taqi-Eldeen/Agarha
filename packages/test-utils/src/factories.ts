@@ -40,7 +40,15 @@ export function listingCard(overrides: Partial<ListingCard> = {}): ListingCard {
     lastConfirmedAt: new Date().toISOString(),
     available: true,
     featured: false,
-    dealer: { id: uuid(1000 + n), slug: `test-rentals-${n}`, nameAr: `تأجير تجريبي ${n}`, nameEn: `Test Rentals ${n}`, verified: true, whatsapp: fakeMobile(n), phone: fakeMobile(n) },
+    dealer: {
+      id: uuid(1000 + n),
+      slug: `test-rentals-${n}`,
+      nameAr: `تأجير تجريبي ${n}`,
+      nameEn: `Test Rentals ${n}`,
+      verified: true,
+      whatsapp: fakeMobile(n),
+      phone: fakeMobile(n),
+    },
     area: { slug: 'nasr-city', ar: 'مدينة نصر', en: 'Nasr City' },
     city: { slug: 'cairo', ar: 'القاهرة', en: 'Cairo' },
     location: { lat: 30.06, lng: 31.33 },
@@ -89,14 +97,30 @@ export function listingDetail(card = listingCard()): ListingDetail {
       model: null,
     },
     card,
-    dealer: { id: card.dealer.id, slug: card.dealer.slug, nameAr: card.dealer.nameAr, nameEn: card.dealer.nameEn, verified: true, verifiedAt: card.lastConfirmedAt, memberSince: '2026-01-01T00:00:00Z', reviews: { count: 0, average: null }, responseRate: null },
+    dealer: {
+      id: card.dealer.id,
+      slug: card.dealer.slug,
+      nameAr: card.dealer.nameAr,
+      nameEn: card.dealer.nameEn,
+      verified: true,
+      verifiedAt: card.lastConfirmedAt,
+      memberSince: '2026-01-01T00:00:00Z',
+      reviews: { count: 0, average: null },
+      responseRate: null,
+    },
     similar: [],
     safety: { neverPayDepositBeforeSeeing: true, agarhaIsNotAParty: true },
   } as unknown as ListingDetail;
 }
 
-export function leadResponse(card: ListingCard, channel: 'whatsapp' | 'call' = 'whatsapp'): LeadResponse {
+export function leadResponse(
+  card: ListingCard,
+  channel: 'whatsapp' | 'call' = 'whatsapp',
+): LeadResponse {
   const refCode = 'AG-7K2Q';
-  const url = channel === 'whatsapp' ? `https://wa.me/${card.dealer.whatsapp.replace('+', '')}?text=${encodeURIComponent(`Ref ${refCode}`)}` : `tel:${card.dealer.phone}`;
+  const url =
+    channel === 'whatsapp'
+      ? `https://wa.me/${card.dealer.whatsapp.replace('+', '')}?text=${encodeURIComponent(`Ref ${refCode}`)}`
+      : `tel:${card.dealer.phone}`;
   return { leadId: uuid(), refCode, channel, url };
 }

@@ -9,7 +9,12 @@ import { api } from './api';
 import { webPathToAppPath } from './links';
 
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({ shouldShowBanner: true, shouldShowList: true, shouldPlaySound: false, shouldSetBadge: false }),
+  handleNotification: async () => ({
+    shouldShowBanner: true,
+    shouldShowList: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
 });
 
 export type PushState = 'granted' | 'denied' | 'unsupported';
@@ -17,14 +22,21 @@ export type PushState = 'granted' | 'denied' | 'unsupported';
 /** Asks once (after sign-in, never on first launch) and registers the Expo push token with the API. */
 export async function registerPush(locale: Locale, ask = true): Promise<PushState> {
   if (!Device.isDevice) return 'unsupported';
-  if (Platform.OS === 'android') await Notifications.setNotificationChannelAsync('default', { name: 'Agarha', importance: Notifications.AndroidImportance.DEFAULT });
+  if (Platform.OS === 'android')
+    await Notifications.setNotificationChannelAsync('default', {
+      name: 'Agarha',
+      importance: Notifications.AndroidImportance.DEFAULT,
+    });
   let { status } = await Notifications.getPermissionsAsync();
   if (status !== 'granted' && ask) status = (await Notifications.requestPermissionsAsync()).status;
   if (status !== 'granted') return 'denied';
-  const projectId = (Constants.expoConfig?.extra as { eas?: { projectId?: string } } | undefined)?.eas?.projectId;
+  const projectId = (Constants.expoConfig?.extra as { eas?: { projectId?: string } } | undefined)
+    ?.eas?.projectId;
   if (!projectId) return 'unsupported';
   const { data } = await Notifications.getExpoPushTokenAsync({ projectId });
-  await api.POST('/v1/me/push-tokens', { body: { token: data, platform: Platform.OS === 'ios' ? 'ios' : 'android', locale } });
+  await api.POST('/v1/me/push-tokens', {
+    body: { token: data, platform: Platform.OS === 'ios' ? 'ios' : 'android', locale },
+  });
   return 'granted';
 }
 

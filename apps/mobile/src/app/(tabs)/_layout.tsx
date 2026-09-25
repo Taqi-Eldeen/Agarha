@@ -23,10 +23,34 @@ export default function TabsLayout() {
         tabBarLabelStyle: { fontFamily, fontSize: 12 },
       }}
     >
-      <Tabs.Screen name="index" options={{ title: t('explore'), tabBarIcon: ({ color }) => <Compass size={24} color={color} strokeWidth={1.75} /> }} />
-      <Tabs.Screen name="map" options={{ title: t('map'), tabBarIcon: ({ color }) => <Map size={24} color={color} strokeWidth={1.75} /> }} />
-      <Tabs.Screen name="saved" options={{ title: t('saved'), tabBarIcon: ({ color }) => <Heart size={24} color={color} strokeWidth={1.75} /> }} />
-      <Tabs.Screen name="account" options={{ title: t('account'), tabBarIcon: ({ color }) => <UserRound size={24} color={color} strokeWidth={1.75} /> }} />
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: t('explore'),
+          tabBarIcon: ({ color }) => <Compass size={24} color={color} strokeWidth={1.75} />,
+        }}
+      />
+      <Tabs.Screen
+        name="map"
+        options={{
+          title: t('map'),
+          tabBarIcon: ({ color }) => <Map size={24} color={color} strokeWidth={1.75} />,
+        }}
+      />
+      <Tabs.Screen
+        name="saved"
+        options={{
+          title: t('saved'),
+          tabBarIcon: ({ color }) => <Heart size={24} color={color} strokeWidth={1.75} />,
+        }}
+      />
+      <Tabs.Screen
+        name="account"
+        options={{
+          title: t('account'),
+          tabBarIcon: ({ color }) => <UserRound size={24} color={color} strokeWidth={1.75} />,
+        }}
+      />
     </Tabs>
   );
 }

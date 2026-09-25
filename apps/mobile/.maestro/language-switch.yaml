@@ -2,13 +2,13 @@ appId: ${APP_ID}
 name: Switch to English (app reloads LTR) and back to Arabic
 ---
 - launchApp
-- tapOn: "حسابي"
-- tapOn: "English"
+- tapOn: 'حسابي'
+- tapOn: 'English'
 - extendedWaitUntil:
-    visible: "Explore"
+    visible: 'Explore'
     timeout: 20000
-- tapOn: "Account"
-- tapOn: "العربية"
+- tapOn: 'Account'
+- tapOn: 'العربية'
 - extendedWaitUntil:
-    visible: "استكشف"
+    visible: 'استكشف'
     timeout: 20000

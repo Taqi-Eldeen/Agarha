@@ -1,6 +1,16 @@
 // Owned by the dealers module.
 import { sql } from 'drizzle-orm';
-import { boolean, geometry, index, pgTable, primaryKey, text, unique, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  geometry,
+  index,
+  pgTable,
+  primaryKey,
+  text,
+  unique,
+  uniqueIndex,
+  uuid,
+} from 'drizzle-orm/pg-core';
 import { createdAt, id, tstz, updatedAt } from './_columns';
 import { areas } from './catalog';
 import { dealerMemberRoleEnum, dealerStatusEnum } from './enums';
@@ -37,8 +47,12 @@ export const branches = pgTable(
   'branches',
   {
     id: id(),
-    dealerId: uuid('dealer_id').notNull().references(() => dealers.id, { onDelete: 'cascade' }),
-    areaId: uuid('area_id').notNull().references(() => areas.id),
+    dealerId: uuid('dealer_id')
+      .notNull()
+      .references(() => dealers.id, { onDelete: 'cascade' }),
+    areaId: uuid('area_id')
+      .notNull()
+      .references(() => areas.id),
     nameAr: text('name_ar').notNull(),
     nameEn: text('name_en').notNull(),
     addressAr: text('address_ar'),
@@ -56,17 +70,26 @@ export const branches = pgTable(
     index('branches_location_gist').using('gist', t.location),
     // Lets listings carry dealer_id with a composite FK so it can never disagree with the branch.
     unique('branches_id_dealer_key').on(t.id, t.dealerId),
-    uniqueIndex('branches_one_primary_per_dealer').on(t.dealerId).where(sql`${t.isPrimary}`),
+    uniqueIndex('branches_one_primary_per_dealer')
+      .on(t.dealerId)
+      .where(sql`${t.isPrimary}`),
   ],
 );
 
 export const dealerMembers = pgTable(
   'dealer_members',
   {
-    dealerId: uuid('dealer_id').notNull().references(() => dealers.id, { onDelete: 'cascade' }),
-    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    dealerId: uuid('dealer_id')
+      .notNull()
+      .references(() => dealers.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
     role: dealerMemberRoleEnum('role').notNull(),
     createdAt: createdAt(),
   },
-  (t) => [primaryKey({ columns: [t.dealerId, t.userId] }), index('dealer_members_user_idx').on(t.userId)],
+  (t) => [
+    primaryKey({ columns: [t.dealerId, t.userId] }),
+    index('dealer_members_user_idx').on(t.userId),
+  ],
 );

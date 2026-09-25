@@ -21,8 +21,12 @@ export default function Reviews() {
         <div key={r.id} className="rounded-lg border border-border bg-card px-4">
           <ReviewItem rating={r.rating} body={r.body} date={r.createdAt} reply={null} />
           <div className="flex gap-2 pb-3">
-            <Button size="sm" onClick={() => void moderate(r.id, true)}>{t('reviews.approve')}</Button>
-            <Button size="sm" variant="danger" onClick={() => void moderate(r.id, false)}>{t('reviews.reject')}</Button>
+            <Button size="sm" onClick={() => void moderate(r.id, true)}>
+              {t('reviews.approve')}
+            </Button>
+            <Button size="sm" variant="danger" onClick={() => void moderate(r.id, false)}>
+              {t('reviews.reject')}
+            </Button>
           </div>
         </div>
       ))}

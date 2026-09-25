@@ -5,14 +5,27 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
-type R = { id: string; rating: number; body: string | null; createdAt: string; dealerReply: string | null };
+type R = {
+  id: string;
+  rating: number;
+  body: string | null;
+  createdAt: string;
+  dealerReply: string | null;
+};
 
 export default function Reviews() {
   const t = useTranslations('dealer.reviews');
   const tu = useTranslations('ui');
   const api = useApi();
   const qc = useQueryClient();
-  const q = useQuery({ queryKey: ['dealer-reviews'], queryFn: async () => (await api.GET('/v1/dealer/reviews')).data as unknown as { items: R[]; summary: { count: number; average: number | null } } });
+  const q = useQuery({
+    queryKey: ['dealer-reviews'],
+    queryFn: async () =>
+      (await api.GET('/v1/dealer/reviews')).data as unknown as {
+        items: R[];
+        summary: { count: number; average: number | null };
+      },
+  });
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   return (
     <div className="flex flex-col gap-4">
@@ -32,12 +45,20 @@ export default function Reviews() {
               className="flex items-end gap-2 pb-4"
               onSubmit={async (e) => {
                 e.preventDefault();
-                await api.POST('/v1/dealer/reviews/{id}/reply', { params: { path: { id: r.id } }, body: { text: drafts[r.id] ?? '' } });
+                await api.POST('/v1/dealer/reviews/{id}/reply', {
+                  params: { path: { id: r.id } },
+                  body: { text: drafts[r.id] ?? '' },
+                });
                 await qc.invalidateQueries({ queryKey: ['dealer-reviews'] });
               }}
             >
               <div className="flex-1">
-                <TextField label={t('reply')} placeholder={t('replyPlaceholder')} value={drafts[r.id] ?? ''} onChange={(e) => setDrafts({ ...drafts, [r.id]: e.target.value })} />
+                <TextField
+                  label={t('reply')}
+                  placeholder={t('replyPlaceholder')}
+                  value={drafts[r.id] ?? ''}
+                  onChange={(e) => setDrafts({ ...drafts, [r.id]: e.target.value })}
+                />
               </div>
               <Button type="submit" disabled={!drafts[r.id]?.trim()}>
                 {t('send')}

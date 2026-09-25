@@ -16,7 +16,11 @@ export const updateListingSchema = createListingSchema;
 export const availabilitySchema = z.object({ available: z.boolean() });
 export const photoUploadSchema = z.object({
   mimeType: z.enum(['image/jpeg', 'image/png', 'image/webp', 'image/heic']),
-  sizeBytes: z.number().int().min(1).max(10 * 1024 * 1024),
+  sizeBytes: z
+    .number()
+    .int()
+    .min(1)
+    .max(10 * 1024 * 1024),
 });
 export const reorderSchema = z.object({ photoIds: z.array(z.uuid()).min(1).max(12) });
 export const fleetQuerySchema = z.object({

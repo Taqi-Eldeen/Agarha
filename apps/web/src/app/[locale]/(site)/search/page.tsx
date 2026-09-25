@@ -18,8 +18,12 @@ export default async function SearchPage({ params }: { params: Promise<{ locale:
   const areasByCity: Record<string, { slug: string; nameAr: string; nameEn: string }[]> = {};
   await Promise.all(
     cities.map(async (c) => {
-      const r = await fetch(`${apiInternal}/v1/catalog/cities/${c.slug}`, { next: { revalidate: 300 } }).catch(() => null);
-      areasByCity[c.slug] = r?.ok ? ((await r.json()) as { areas: { slug: string; nameAr: string; nameEn: string }[] }).areas : [];
+      const r = await fetch(`${apiInternal}/v1/catalog/cities/${c.slug}`, {
+        next: { revalidate: 300 },
+      }).catch(() => null);
+      areasByCity[c.slug] = r?.ok
+        ? ((await r.json()) as { areas: { slug: string; nameAr: string; nameEn: string }[] }).areas
+        : [];
     }),
   );
   return (

@@ -27,7 +27,10 @@ test('css exposes light and dark brand colour', () => {
 });
 
 test('tailwind preset maps colours to css vars', () => {
-  assert.equal(preset.theme.extend.colors.brand.DEFAULT, 'rgb(var(--ag-color-brand-primary) / <alpha-value>)');
+  assert.equal(
+    preset.theme.extend.colors.brand.DEFAULT,
+    'rgb(var(--ag-color-brand-primary) / <alpha-value>)',
+  );
   assert.deepEqual(Object.keys(preset.theme.screens), ['md', 'lg', 'xl']);
   assert.equal(preset.theme.extend.fontSize.body[1].lineHeight, 'var(--ag-leading-body)');
 });
@@ -42,7 +45,14 @@ test('native theme has both schemes with identical keys', () => {
 for (const scheme of ['light', 'dark']) {
   test(`${scheme}: text colours meet 4.5:1 on surfaces`, () => {
     const c = theme.colors[scheme];
-    for (const fg of ['textPrimary', 'textSecondary', 'brandPrimary', 'statusDanger', 'statusInfo', 'statusAvailable']) {
+    for (const fg of [
+      'textPrimary',
+      'textSecondary',
+      'brandPrimary',
+      'statusDanger',
+      'statusInfo',
+      'statusAvailable',
+    ]) {
       for (const bg of ['surfacePage', 'surfaceCard']) {
         const ratio = contrast(c[fg], c[bg]);
         assert.ok(ratio >= 4.5, `${fg} on ${bg} = ${ratio.toFixed(2)}`);

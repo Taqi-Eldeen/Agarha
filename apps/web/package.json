@@ -9,7 +9,7 @@
     "build": "next build",
     "start": "next start -p 3000",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings=0",
     "test": "vitest run",
     "e2e": "playwright test",
     "budget": "node scripts/check-budget.mjs"
@@ -35,6 +35,7 @@
   },
   "devDependencies": {
     "@agarha/config": "workspace:*",
+    "@agarha/test-utils": "workspace:*",
     "@agarha/tokens": "workspace:*",
     "@axe-core/playwright": "^4.10.2",
     "@playwright/test": "1.56.1",

@@ -12,7 +12,27 @@ describe('payment gateways', () => {
   it('paymob verifies the documented HMAC field order', () => {
     const secret = 'paymob-hmac';
     const g = new PaymobGateway('sk', 'pk', secret, [1]);
-    const obj = { id: 99, amount_cents: 57000, created_at: '2026-09-25T10:00:00', currency: 'EGP', error_occured: false, has_parent_transaction: false, integration_id: 1, is_3d_secure: true, is_auth: false, is_capture: false, is_refunded: false, is_standalone_payment: true, is_voided: false, order: { id: 7, merchant_order_id: 'inv-1' }, owner: 3, pending: false, source_data: { pan: '2346', sub_type: 'MasterCard', type: 'card' }, success: true, special_reference: 'inv-1' };
+    const obj = {
+      id: 99,
+      amount_cents: 57000,
+      created_at: '2026-09-25T10:00:00',
+      currency: 'EGP',
+      error_occured: false,
+      has_parent_transaction: false,
+      integration_id: 1,
+      is_3d_secure: true,
+      is_auth: false,
+      is_capture: false,
+      is_refunded: false,
+      is_standalone_payment: true,
+      is_voided: false,
+      order: { id: 7, merchant_order_id: 'inv-1' },
+      owner: 3,
+      pending: false,
+      source_data: { pan: '2346', sub_type: 'MasterCard', type: 'card' },
+      success: true,
+      special_reference: 'inv-1',
+    };
     const raw = JSON.stringify({ type: 'TRANSACTION', obj });
     const ev = g.parseWebhook({ hmac: PaymobGateway.hmacOf(obj, secret) }, {}, raw);
     expect(ev).toMatchObject({ invoiceId: 'inv-1', success: true, amountEgp: 570 });

@@ -14,7 +14,13 @@ type Purpose = 'customer_sign_in' | 'dealer_sign_up' | 'dealer_sign_in';
  * Phone → Turnstile → OTP. For customers it signs in (cookies); for dealer sign-up it returns a
  * phone proof to the caller. Resend is throttled client-side and server-side (3 / 15 min).
  */
-export function OtpSignIn({ purpose = 'customer_sign_in', onDone }: { purpose?: Purpose; onDone: (result: { phoneProof?: string; phone: string }) => void }) {
+export function OtpSignIn({
+  purpose = 'customer_sign_in',
+  onDone,
+}: {
+  purpose?: Purpose;
+  onDone: (result: { phoneProof?: string; phone: string }) => void;
+}) {
   const t = useTranslations('auth');
   const tErr = useTranslations('errors');
   const tAcc = useTranslations('web.account');
@@ -24,7 +30,12 @@ export function OtpSignIn({ purpose = 'customer_sign_in', onDone }: { purpose?: 
   const [phone, setPhone] = useState('');
   const [phoneError, setPhoneError] = useState<string>();
   const [captcha, setCaptcha] = useState<string | null>(null);
-  const [challenge, setChallenge] = useState<{ id: string; channel: 'sms' | 'whatsapp'; resendAt: number; phone: string } | null>(null);
+  const [challenge, setChallenge] = useState<{
+    id: string;
+    channel: 'sms' | 'whatsapp';
+    resendAt: number;
+    phone: string;
+  } | null>(null);
   const [code, setCode] = useState('');
   const [error, setError] = useState<string>();
   const [busy, setBusy] = useState(false);
@@ -51,8 +62,15 @@ export function OtpSignIn({ purpose = 'customer_sign_in', onDone }: { purpose?: 
     setBusy(true);
     track('sign_in_started', { purpose });
     try {
-      const { data } = await api.POST('/v1/auth/otp/request', { body: { phone: parsed.data, purpose, channel, locale, turnstileToken: captcha ?? '' } });
-      setChallenge({ id: data!.challengeId, channel: data!.channel, resendAt: Date.now() + data!.resendAfterSeconds * 1000, phone: parsed.data });
+      const { data } = await api.POST('/v1/auth/otp/request', {
+        body: { phone: parsed.data, purpose, channel, locale, turnstileToken: captcha ?? '' },
+      });
+      setChallenge({
+        id: data!.challengeId,
+        channel: data!.channel,
+        resendAt: Date.now() + data!.resendAfterSeconds * 1000,
+        phone: parsed.data,
+      });
       setCode('');
     } catch (e) {
       setError(errorText(e));
@@ -67,13 +85,20 @@ export function OtpSignIn({ purpose = 'customer_sign_in', onDone }: { purpose?: 
     setError(undefined);
     try {
       if (purpose === 'customer_sign_in') {
-        await api.POST('/v1/auth/otp/verify', { body: { challengeId: challenge.id, phone: challenge.phone, code: value, client: 'web' } });
+        await api.POST('/v1/auth/otp/verify', {
+          body: { challengeId: challenge.id, phone: challenge.phone, code: value, client: 'web' },
+        });
         await qc.invalidateQueries();
         track('sign_in_completed', {});
         onDone({ phone: challenge.phone });
       } else {
-        const { data } = await api.POST('/v1/auth/otp/proof', { body: { challengeId: challenge.id, phone: challenge.phone, code: value, client: 'web' } });
-        onDone({ phoneProof: (data as unknown as { phoneProof: string }).phoneProof, phone: challenge.phone });
+        const { data } = await api.POST('/v1/auth/otp/proof', {
+          body: { challengeId: challenge.id, phone: challenge.phone, code: value, client: 'web' },
+        });
+        onDone({
+          phoneProof: (data as unknown as { phoneProof: string }).phoneProof,
+          phone: challenge.phone,
+        });
       }
     } catch (e) {
       setError(errorText(e));
@@ -92,7 +117,14 @@ export function OtpSignIn({ purpose = 'customer_sign_in', onDone }: { purpose?: 
           void send();
         }}
       >
-        <PhoneField label={t('phoneLabel')} hint={t('phoneHint')} value={phone} onChange={(e) => setPhone(e.target.value)} error={phoneError} autoFocus />
+        <PhoneField
+          label={t('phoneLabel')}
+          hint={t('phoneHint')}
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          error={phoneError}
+          autoFocus
+        />
         <Turnstile onToken={onToken} locale={locale} />
         {error ? <InlineAlert tone="danger">{error}</InlineAlert> : null}
         <Button type="submit" loading={busy} disabled={!captcha} block>
@@ -104,16 +136,37 @@ export function OtpSignIn({ purpose = 'customer_sign_in', onDone }: { purpose?: 
   const wait = Math.max(0, Math.ceil((challenge.resendAt - now) / 1000));
   return (
     <div className="flex flex-col gap-4">
-      <p>{challenge.channel === 'sms' ? t('codeSentSms', { phone: challenge.phone }) : t('codeSentWhatsapp', { phone: challenge.phone })}</p>
-      <OTPField label={t('codeLabel')} value={code} onChange={setCode} onComplete={(v) => void verify(v)} error={error} disabled={busy} />
+      <p>
+        {challenge.channel === 'sms'
+          ? t('codeSentSms', { phone: challenge.phone })
+          : t('codeSentWhatsapp', { phone: challenge.phone })}
+      </p>
+      <OTPField
+        label={t('codeLabel')}
+        value={code}
+        onChange={setCode}
+        onComplete={(v) => void verify(v)}
+        error={error}
+        disabled={busy}
+      />
       <Button onClick={() => void verify(code)} loading={busy} disabled={code.length !== 6} block>
         {t('verify')}
       </Button>
       <div className="flex flex-wrap gap-2">
-        <Button variant="ghost" size="sm" disabled={wait > 0 || busy} onClick={() => void send('sms')}>
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={wait > 0 || busy}
+          onClick={() => void send('sms')}
+        >
           {wait > 0 ? t('resendIn', { seconds: wait }) : t('resend')}
         </Button>
-        <Button variant="ghost" size="sm" disabled={wait > 0 || busy} onClick={() => void send('whatsapp')}>
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={wait > 0 || busy}
+          onClick={() => void send('whatsapp')}
+        >
           {t('useWhatsapp')}
         </Button>
       </div>

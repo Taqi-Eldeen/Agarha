@@ -2,12 +2,12 @@
 
 Everything outside a laptop is Terraform (section 10: no manual console changes in production).
 
-| Path | What |
-| --- | --- |
-| `docker-compose.yml` | Local: Postgres 16 + PostGIS, Redis 7, MinIO (both buckets). `--profile app` also runs the images. |
-| `terraform/` | AWS (VPC, ECS Fargate, RDS Postgres, ElastiCache Redis, ECR, Secrets Manager, CloudWatch, Route 53 health checks, Budgets) + Cloudflare (DNS, WAF, rate limits, TLS, Turnstile, R2). |
-| `terraform/envs/*.tfvars` | Per-environment sizing. Secrets and account ids come from `TF_VAR_*` in CI. |
-| `terraform/tests/` | `terraform test` against mock providers: min 2 API instances, rollback, encryption, Cloudflare-only ingress, admin allowlist, TLS 1.2+. |
+| Path                      | What                                                                                                                                                                                 |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `docker-compose.yml`      | Local: Postgres 16 + PostGIS, Redis 7, MinIO (both buckets). `--profile app` also runs the images.                                                                                   |
+| `terraform/`              | AWS (VPC, ECS Fargate, RDS Postgres, ElastiCache Redis, ECR, Secrets Manager, CloudWatch, Route 53 health checks, Budgets) + Cloudflare (DNS, WAF, rate limits, TLS, Turnstile, R2). |
+| `terraform/envs/*.tfvars` | Per-environment sizing. Secrets and account ids come from `TF_VAR_*` in CI.                                                                                                          |
+| `terraform/tests/`        | `terraform test` against mock providers: min 2 API instances, rollback, encryption, Cloudflare-only ingress, admin allowlist, TLS 1.2+.                                              |
 
 ```bash
 # local dependencies

@@ -21,7 +21,8 @@ const ar = {
   },
   home: {
     title: 'أجّر عربيتك من مكاتب موثّقة، والسعر والتأمين قدامك',
-    subtitle: 'السعر باليوم والأسبوع والشهر، التأمين، المستندات المطلوبة، وهل العربية متاحة فعلاً. بعدها كلّم المكتب على واتساب مباشرة.',
+    subtitle:
+      'السعر باليوم والأسبوع والشهر، التأمين، المستندات المطلوبة، وهل العربية متاحة فعلاً. بعدها كلّم المكتب على واتساب مباشرة.',
     city: 'المدينة',
     type: 'نوع العربية',
     anyType: 'أي نوع',
@@ -33,7 +34,8 @@ const ar = {
     how1Title: 'دوّر وقارن',
     how1Body: 'فلتر بالسعر والنوع والفتيس، وشوف التأمين والمستندات المطلوبة قبل ما تكلّم حد.',
     how2Title: 'اتأكد إنها متاحة',
-    how2Body: 'كل عربية عليها آخر مرة المكتب أكّد إنها متاحة. العربيات اللي متأكدتش من 14 يوم بتختفي.',
+    how2Body:
+      'كل عربية عليها آخر مرة المكتب أكّد إنها متاحة. العربيات اللي متأكدتش من 14 يوم بتختفي.',
     how3Title: 'كلّم المكتب مباشرة',
     how3Body: 'واتساب أو مكالمة بضغطة، من غير تسجيل. الاتفاق والدفع بينك وبين المكتب.',
     trustTitle: 'مكاتب موثّقة بس',
@@ -88,12 +90,14 @@ const ar = {
     branch: 'الفرع',
     similar: 'عربيات شبهها',
     safetyTitle: 'متدفعش أي تأمين قبل ما تشوف العربية',
-    safetyBody: 'أجّرها مش طرف في عقد الإيجار ومش بيستلم أي فلوس. لو حد طلب تحويل قبل ما تشوف العربية، بلّغنا.',
+    safetyBody:
+      'أجّرها مش طرف في عقد الإيجار ومش بيستلم أي فلوس. لو حد طلب تحويل قبل ما تشوف العربية، بلّغنا.',
     report: 'بلّغ عن الإعلان',
     share: 'شارك',
     save: 'احفظ',
     saved: 'محفوظة',
-    unavailableNotice: 'المكتب قال إن العربية دي مش متاحة دلوقتي. تقدر تكلّمه تسأل عن مواعيد تانية.',
+    unavailableNotice:
+      'المكتب قال إن العربية دي مش متاحة دلوقتي. تقدر تكلّمه تسأل عن مواعيد تانية.',
     lastConfirmed: 'آخر تأكيد إنها متاحة: {ago}',
     year: 'سنة الصنع',
     transmission: 'ناقل الحركة',
@@ -102,8 +106,18 @@ const ar = {
     color: 'اللون',
     driverOption: 'السواقة',
     delivery: 'التسليم',
-    deliveryOptions: { branch_pickup: 'استلام من الفرع', home_delivery: 'توصيل للبيت', hotel_delivery: 'توصيل للفندق' },
-    fuels: { petrol: 'بنزين', diesel: 'سولار', hybrid: 'هايبرد', electric: 'كهرباء', natural_gas: 'غاز طبيعي' },
+    deliveryOptions: {
+      branch_pickup: 'استلام من الفرع',
+      home_delivery: 'توصيل للبيت',
+      hotel_delivery: 'توصيل للفندق',
+    },
+    fuels: {
+      petrol: 'بنزين',
+      diesel: 'سولار',
+      hybrid: 'هايبرد',
+      electric: 'كهرباء',
+      natural_gas: 'غاز طبيعي',
+    },
     contactError: 'معرفناش نفتح واتساب. جرّب تاني أو اتصل بالمكتب.',
     requestAvailability: 'اسأل عن مواعيد معيّنة',
     availabilityFrom: 'من يوم',
@@ -141,7 +155,8 @@ const ar = {
   account: {
     title: 'حسابي',
     signInTitle: 'سجّل دخولك برقم موبايلك',
-    signInBody: 'محتاج حساب عشان تحفظ عربيات وبحث، وتكتب تقييم، أو تبلّغ عن إعلان. التصفح والتواصل من غير حساب.',
+    signInBody:
+      'محتاج حساب عشان تحفظ عربيات وبحث، وتكتب تقييم، أو تبلّغ عن إعلان. التصفح والتواصل من غير حساب.',
     consent: 'بتسجيل الدخول إنت موافق على الشروط وسياسة الخصوصية.',
     captcha: 'بنتأكد إنك مش روبوت…',
     profile: 'بياناتي',
@@ -152,7 +167,8 @@ const ar = {
     exportBody: 'ملف فيه كل البيانات اللي عندنا عنك.',
     exportButton: 'نزّل الملف',
     deleteTitle: 'امسح حسابي',
-    deleteBody: 'هنمسح رقمك واسمك ومحفوظاتك فوراً. الاستفسارات اللي بعتها للمكاتب بتفضل عندهم من غير بياناتك.',
+    deleteBody:
+      'هنمسح رقمك واسمك ومحفوظاتك فوراً. الاستفسارات اللي بعتها للمكاتب بتفضل عندهم من غير بياناتك.',
     deleteConfirm: 'متأكد؟ مفيش رجوع في الخطوة دي.',
     deleteButton: 'امسح الحساب',
     deleted: 'اتمسح حسابك.',
@@ -257,9 +273,11 @@ const ar = {
   },
   seo: {
     homeTitle: 'أجّرها | إيجار عربيات في مصر من مكاتب موثّقة',
-    homeDescription: 'قارن أسعار إيجار العربيات باليوم والأسبوع والشهر، التأمين والمستندات المطلوبة، وكلّم المكتب على واتساب مباشرة.',
+    homeDescription:
+      'قارن أسعار إيجار العربيات باليوم والأسبوع والشهر، التأمين والمستندات المطلوبة، وكلّم المكتب على واتساب مباشرة.',
     listingTitle: 'إيجار {car} {year} في {area} | أجّرها',
-    listingDescription: '{car} {year} للإيجار بـ {price} في اليوم، تأمين {deposit}. مكتب {dealer} الموثّق في {area}.',
+    listingDescription:
+      '{car} {year} للإيجار بـ {price} في اليوم، تأمين {deposit}. مكتب {dealer} الموثّق في {area}.',
     dealerTitle: '{dealer} | مكتب تأجير عربيات موثّق في {city}',
     comingSoon: 'قريباً',
   },
@@ -295,7 +313,8 @@ const en: DeepString<typeof ar> = {
   },
   home: {
     title: 'Rent from verified companies, with the price and deposit upfront',
-    subtitle: 'Daily, weekly and monthly prices, the deposit, the documents you need and whether the car is actually available. Then message the company on WhatsApp.',
+    subtitle:
+      'Daily, weekly and monthly prices, the deposit, the documents you need and whether the car is actually available. Then message the company on WhatsApp.',
     city: 'City',
     type: 'Car type',
     anyType: 'Any type',
@@ -305,13 +324,17 @@ const en: DeepString<typeof ar> = {
     featured: 'Featured cars',
     howTitle: 'How it works',
     how1Title: 'Search and compare',
-    how1Body: 'Filter by price, type and transmission, and see the deposit and documents before you contact anyone.',
+    how1Body:
+      'Filter by price, type and transmission, and see the deposit and documents before you contact anyone.',
     how2Title: 'Check it is available',
-    how2Body: 'Every car shows when the company last confirmed it is available. Cars not confirmed for 14 days are hidden.',
+    how2Body:
+      'Every car shows when the company last confirmed it is available. Cars not confirmed for 14 days are hidden.',
     how3Title: 'Contact the company directly',
-    how3Body: 'WhatsApp or call in one tap, no sign-up. The agreement and payment are between you and the company.',
+    how3Body:
+      'WhatsApp or call in one tap, no sign-up. The agreement and payment are between you and the company.',
     trustTitle: 'Verified companies only',
-    trustBody: 'Every company provides a commercial registration and tax card, and we review them before any car goes live.',
+    trustBody:
+      'Every company provides a commercial registration and tax card, and we review them before any car goes live.',
     browseAll: 'See all cars',
   },
   search: {
@@ -362,12 +385,14 @@ const en: DeepString<typeof ar> = {
     branch: 'Branch',
     similar: 'Similar cars',
     safetyTitle: 'Never pay a deposit before seeing the car',
-    safetyBody: 'Agarha is not a party to the rental and never takes payments. If anyone asks for a transfer before you see the car, report it.',
+    safetyBody:
+      'Agarha is not a party to the rental and never takes payments. If anyone asks for a transfer before you see the car, report it.',
     report: 'Report this listing',
     share: 'Share',
     save: 'Save',
     saved: 'Saved',
-    unavailableNotice: 'The company says this car is not available right now. You can still ask about other dates.',
+    unavailableNotice:
+      'The company says this car is not available right now. You can still ask about other dates.',
     lastConfirmed: 'Availability last confirmed {ago}',
     year: 'Year',
     transmission: 'Transmission',
@@ -376,28 +401,43 @@ const en: DeepString<typeof ar> = {
     color: 'Colour',
     driverOption: 'Driving',
     delivery: 'Handover',
-    deliveryOptions: { branch_pickup: 'Pick up at branch', home_delivery: 'Home delivery', hotel_delivery: 'Hotel delivery' },
-    fuels: { petrol: 'Petrol', diesel: 'Diesel', hybrid: 'Hybrid', electric: 'Electric', natural_gas: 'Natural gas' },
+    deliveryOptions: {
+      branch_pickup: 'Pick up at branch',
+      home_delivery: 'Home delivery',
+      hotel_delivery: 'Hotel delivery',
+    },
+    fuels: {
+      petrol: 'Petrol',
+      diesel: 'Diesel',
+      hybrid: 'Hybrid',
+      electric: 'Electric',
+      natural_gas: 'Natural gas',
+    },
     contactError: 'We could not open WhatsApp. Try again or call the company.',
     requestAvailability: 'Ask about specific dates',
     availabilityFrom: 'From',
     availabilityTo: 'Until',
     availabilityNote: 'Note to the company (optional)',
     availabilitySent: 'Your question was sent. We will tell you when the company replies.',
-    availabilityHint: 'This is only a question, not a booking. You arrange the rental with the company directly.',
+    availabilityHint:
+      'This is only a question, not a booking. You arrange the rental with the company directly.',
     responseRate: 'Replies to {percent}% of enquiries',
     memberSince: 'On Agarha since {date}',
     notFoundTitle: 'This listing is not available',
-    notFoundBody: 'The company may have removed it or the car is rented. Have a look at similar cars.',
-    priceNote: 'Prices are in Egyptian pounds and set by the company. The deposit is separate from the rental price.',
+    notFoundBody:
+      'The company may have removed it or the car is rented. Have a look at similar cars.',
+    priceNote:
+      'Prices are in Egyptian pounds and set by the company. The deposit is separate from the rental price.',
   },
   dealerPage: {
     title: 'Verified rental companies',
-    subtitle: 'Every company here provided a commercial registration and tax card and was reviewed.',
+    subtitle:
+      'Every company here provided a commercial registration and tax card and was reviewed.',
     branches: 'Branches',
     fleet: 'Cars ({count})',
     reviews: 'Reviews',
-    noReviews: 'No reviews yet. Reviews come only from people who contacted the company through Agarha.',
+    noReviews:
+      'No reviews yet. Reviews come only from people who contacted the company through Agarha.',
     emptyDirectory: 'No companies in this city yet. Try another city.',
     carsCount: '{count} cars',
   },
@@ -415,7 +455,8 @@ const en: DeepString<typeof ar> = {
   account: {
     title: 'My account',
     signInTitle: 'Sign in with your mobile number',
-    signInBody: 'You need an account to save cars and searches, write reviews or report a listing. Browsing and contacting companies need no account.',
+    signInBody:
+      'You need an account to save cars and searches, write reviews or report a listing. Browsing and contacting companies need no account.',
     consent: 'By signing in you agree to the Terms and Privacy Policy.',
     captcha: 'Checking you are human…',
     profile: 'Profile',
@@ -426,7 +467,8 @@ const en: DeepString<typeof ar> = {
     exportBody: 'A file with everything we hold about you.',
     exportButton: 'Download',
     deleteTitle: 'Delete my account',
-    deleteBody: 'We delete your number, name and saved items immediately. Enquiries you sent to companies stay with them without your details.',
+    deleteBody:
+      'We delete your number, name and saved items immediately. Enquiries you sent to companies stay with them without your details.',
     deleteConfirm: 'Are you sure? This cannot be undone.',
     deleteButton: 'Delete account',
     deleted: 'Your account was deleted.',
@@ -496,24 +538,28 @@ const en: DeepString<typeof ar> = {
   },
   forDealers: {
     title: 'Show your cars to renters searching right now',
-    subtitle: 'Free at launch. Customers contact you directly on WhatsApp with an Agarha reference code.',
+    subtitle:
+      'Free at launch. Customers contact you directly on WhatsApp with an Agarha reference code.',
     cta: 'Register your company',
     signIn: 'Already registered? Sign in',
     benefitsTitle: 'Why Agarha?',
     b1Title: 'Ready customers',
-    b1Body: 'Customers contact you already knowing the price, deposit and requirements, so conversations are shorter.',
+    b1Body:
+      'Customers contact you already knowing the price, deposit and requirements, so conversations are shorter.',
     b2Title: 'Add a car in under 3 minutes',
     b2Body: 'From your phone: model, price, photos, done.',
     b3Title: 'One-tap updates',
     b3Body: 'An available / not available switch per car, and a confirm-all button.',
     b4Title: 'Clear stats',
-    b4Body: 'Views and enquiries per car, and a reference code for every customer who came from Agarha.',
+    b4Body:
+      'Views and enquiries per car, and a reference code for every customer who came from Agarha.',
     stepsTitle: 'How to register',
     step1: 'Sign up with your mobile number',
     step2: 'Company and branch details',
     step3: 'Upload the commercial registration and tax card',
     step4: 'After review, add your cars',
-    requirements: 'Registration is for licensed rental companies only (commercial registration + tax card). Not for individuals.',
+    requirements:
+      'Registration is for licensed rental companies only (commercial registration + tax card). Not for individuals.',
   },
   footer: {
     rights: '© {year} Agarha',
@@ -531,9 +577,11 @@ const en: DeepString<typeof ar> = {
   },
   seo: {
     homeTitle: 'Agarha | Car rental in Egypt from verified companies',
-    homeDescription: 'Compare daily, weekly and monthly car rental prices, deposits and required documents, then contact the company on WhatsApp.',
+    homeDescription:
+      'Compare daily, weekly and monthly car rental prices, deposits and required documents, then contact the company on WhatsApp.',
     listingTitle: 'Rent a {car} {year} in {area} | Agarha',
-    listingDescription: '{car} {year} for rent at {price} a day, deposit {deposit}. Verified company {dealer} in {area}.',
+    listingDescription:
+      '{car} {year} for rent at {price} a day, deposit {deposit}. Verified company {dealer} in {area}.',
     dealerTitle: '{dealer} | Verified car rental company in {city}',
     comingSoon: 'Coming soon',
   },

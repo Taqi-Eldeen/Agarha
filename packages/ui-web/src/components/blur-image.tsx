@@ -3,7 +3,23 @@ import { useEffect, useRef, useState } from 'react';
 import { cn } from '../lib/cn';
 
 /** Image with a blurhash placeholder painted into a canvas until the real image loads (no CLS: parent sizes it). */
-export function BlurImage({ src, srcSet, sizes, blurhash, alt, priority, className }: { src: string; srcSet?: string; sizes?: string; blurhash?: string | null; alt: string; priority?: boolean | undefined; className?: string }) {
+export function BlurImage({
+  src,
+  srcSet,
+  sizes,
+  blurhash,
+  alt,
+  priority,
+  className,
+}: {
+  src: string;
+  srcSet?: string;
+  sizes?: string;
+  blurhash?: string | null;
+  alt: string;
+  priority?: boolean | undefined;
+  className?: string;
+}) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const [loaded, setLoaded] = useState(false);
   useEffect(() => {
@@ -29,7 +45,15 @@ export function BlurImage({ src, srcSet, sizes, blurhash, alt, priority, classNa
   }, [blurhash]);
   return (
     <>
-      {blurhash && !loaded ? <canvas ref={canvas} width={32} height={24} aria-hidden className="absolute inset-0 size-full" /> : null}
+      {blurhash && !loaded ? (
+        <canvas
+          ref={canvas}
+          width={32}
+          height={24}
+          aria-hidden
+          className="absolute inset-0 size-full"
+        />
+      ) : null}
       <img
         src={src}
         srcSet={srcSet}
@@ -39,7 +63,11 @@ export function BlurImage({ src, srcSet, sizes, blurhash, alt, priority, classNa
         fetchPriority={priority ? 'high' : 'auto'}
         decoding="async"
         onLoad={() => setLoaded(true)}
-        className={cn('absolute inset-0 size-full object-cover transition-opacity duration-base', loaded ? 'opacity-100' : 'opacity-0', className)}
+        className={cn(
+          'absolute inset-0 size-full object-cover transition-opacity duration-base',
+          loaded ? 'opacity-100' : 'opacity-0',
+          className,
+        )}
       />
     </>
   );

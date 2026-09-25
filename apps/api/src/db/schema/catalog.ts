@@ -1,6 +1,15 @@
 // Owned by the catalog module: geography and car reference data.
 import { sql } from 'drizzle-orm';
-import { boolean, geometry, index, integer, pgTable, text, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  geometry,
+  index,
+  integer,
+  pgTable,
+  text,
+  uniqueIndex,
+  uuid,
+} from 'drizzle-orm/pg-core';
 import { createdAt, id } from './_columns';
 import { carBodyTypeEnum } from './enums';
 
@@ -31,7 +40,9 @@ export const areas = pgTable(
   'areas',
   {
     id: id(),
-    cityId: uuid('city_id').notNull().references(() => cities.id),
+    cityId: uuid('city_id')
+      .notNull()
+      .references(() => cities.id),
     slug: text('slug').notNull(),
     nameAr: text('name_ar').notNull(),
     nameEn: text('name_en').notNull(),
@@ -61,7 +72,9 @@ export const carModels = pgTable(
   'car_models',
   {
     id: id(),
-    makeId: uuid('make_id').notNull().references(() => carMakes.id),
+    makeId: uuid('make_id')
+      .notNull()
+      .references(() => carMakes.id),
     slug: text('slug').notNull(),
     nameAr: text('name_ar').notNull(),
     nameEn: text('name_en').notNull(),

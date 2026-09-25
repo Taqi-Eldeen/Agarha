@@ -23,9 +23,18 @@ export function FieldShell({ label, hint, error, optional, children }: FieldShel
         {optional ? <Text variant="caption" tone="secondary">{`  ${t.optional}`}</Text> : null}
       </Text>
       {children}
-      {hint && !error ? <Text variant="caption" tone="secondary">{hint}</Text> : null}
+      {hint && !error ? (
+        <Text variant="caption" tone="secondary">
+          {hint}
+        </Text>
+      ) : null}
       {error ? (
-        <Text variant="caption" tone="danger" accessibilityRole="alert" accessibilityLiveRegion="polite">
+        <Text
+          variant="caption"
+          tone="danger"
+          accessibilityRole="alert"
+          accessibilityLiveRegion="polite"
+        >
           {`⚠ ${error}`}
         </Text>
       ) : null}
@@ -43,7 +52,10 @@ export interface TextFieldProps extends TextInputProps {
 
 const inputClass = 'h-12 w-full rounded-md border bg-card px-3 text-body text-fg';
 
-export const TextField = forwardRef<TextInput, TextFieldProps>(function TextField({ label, hint, error, optional, className, ...props }, ref) {
+export const TextField = forwardRef<TextInput, TextFieldProps>(function TextField(
+  { label, hint, error, optional, className, ...props },
+  ref,
+) {
   const { colors, font, dir } = useUi();
   return (
     <FieldShell label={label} hint={hint} error={error} optional={optional}>
@@ -61,13 +73,18 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(function TextFiel
 });
 
 /** Egyptian mobile: accepts 01X…, +20…, 0020…, Arabic-Indic digits; always LTR. */
-export const PhoneField = forwardRef<TextInput, TextFieldProps>(function PhoneField({ label, hint, error, onChangeText, ...props }, ref) {
+export const PhoneField = forwardRef<TextInput, TextFieldProps>(function PhoneField(
+  { label, hint, error, onChangeText, ...props },
+  ref,
+) {
   const { t, colors, font } = useUi();
   return (
     <FieldShell label={label} hint={hint} error={error}>
       <View className="flex-row items-stretch gap-2" style={{ direction: 'ltr' }}>
         <View className="justify-center rounded-md border border-border bg-page px-3">
-          <Text variant="caption" tone="secondary">{t.phonePrefix}</Text>
+          <Text variant="caption" tone="secondary">
+            {t.phonePrefix}
+          </Text>
         </View>
         <TextInput
           ref={ref}
@@ -102,15 +119,35 @@ export interface OTPFieldProps {
  * One hidden input drives six boxes: SMS autofill (iOS oneTimeCode / Android sms-otp) and paste land
  * in one place. Always LTR.
  */
-export function OTPField({ length = 6, value, onChange, onComplete, label, error, disabled }: OTPFieldProps) {
+export function OTPField({
+  length = 6,
+  value,
+  onChange,
+  onComplete,
+  label,
+  error,
+  disabled,
+}: OTPFieldProps) {
   const { f } = useUi();
   const input = useRef<TextInput>(null);
   return (
     <View className="gap-2">
       <Text weight="medium">{label}</Text>
-      <Pressable accessibilityRole="none" onPress={() => input.current?.focus()} className="flex-row gap-2" style={{ direction: 'ltr' }}>
+      <Pressable
+        accessibilityRole="none"
+        onPress={() => input.current?.focus()}
+        className="flex-row gap-2"
+        style={{ direction: 'ltr' }}
+      >
         {Array.from({ length }, (_, i) => (
-          <View key={i} accessibilityLabel={f('otpDigit', { index: i + 1 })} className={cn('h-14 w-12 items-center justify-center rounded-md border bg-card', error ? 'border-danger' : i === value.length ? 'border-brand' : 'border-border')}>
+          <View
+            key={i}
+            accessibilityLabel={f('otpDigit', { index: i + 1 })}
+            className={cn(
+              'h-14 w-12 items-center justify-center rounded-md border bg-card',
+              error ? 'border-danger' : i === value.length ? 'border-brand' : 'border-border',
+            )}
+          >
             <Text variant="h2">{value[i] ?? ''}</Text>
           </View>
         ))}

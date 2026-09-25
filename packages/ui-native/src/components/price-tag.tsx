@@ -6,7 +6,17 @@ import { Text } from './text';
 
 export { priceFor, type Prices };
 
-export function PriceTag({ prices, period = 'day', size = 'md', showDeposit = false }: { prices: Prices; period?: PricePeriod; size?: 'md' | 'lg'; showDeposit?: boolean }) {
+export function PriceTag({
+  prices,
+  period = 'day',
+  size = 'md',
+  showDeposit = false,
+}: {
+  prices: Prices;
+  period?: PricePeriod;
+  size?: 'md' | 'lg';
+  showDeposit?: boolean;
+}) {
   const { t, egp } = useUi();
   const suffix = period === 'week' ? t.perWeek : period === 'month' ? t.perMonth : t.perDay;
   return (

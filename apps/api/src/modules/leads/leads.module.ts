@@ -5,5 +5,10 @@ import { AvailabilityService } from './availability.service';
 import { LeadsController } from './leads.controller';
 import { LeadsService } from './leads.service';
 
-@Module({ imports: [CatalogModule], controllers: [LeadsController], providers: [LeadsService, AvailabilityService, RateLimiter], exports: [LeadsService, AvailabilityService] })
+@Module({
+  imports: [CatalogModule],
+  controllers: [LeadsController],
+  providers: [LeadsService, AvailabilityService, RateLimiter],
+  exports: [LeadsService, AvailabilityService],
+})
 export class LeadsModule {}

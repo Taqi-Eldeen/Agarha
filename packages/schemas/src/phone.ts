@@ -16,7 +16,9 @@ const MOBILE_NATIONAL = /^1[0125]\d{8}$/;
 const LANDLINE_NATIONAL = /^(?:2\d{8}|3\d{7}|[4-9]\d{8}|[4-9]\d{7})$/;
 
 function toNational(input: string): string | null {
-  let s = toWesternDigits(input).trim().replace(/[\s\-().]/g, '');
+  let s = toWesternDigits(input)
+    .trim()
+    .replace(/[\s\-().]/g, '');
   if (s.startsWith('+')) s = s.slice(1);
   else if (s.startsWith('00')) s = s.slice(2);
   else if (s.startsWith('0')) return s.slice(1);

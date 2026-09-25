@@ -35,7 +35,11 @@ export default function DealerSignIn() {
   const onToken = useCallback((tok: string | null) => setCaptcha(tok), []);
   const err = (e: unknown) => {
     const c = (e as ApiRequestError).code;
-    return (e as ApiRequestError).status === 401 ? t('wrongCredentials') : te.has(c) ? te(c) : te('internal_error');
+    return (e as ApiRequestError).status === 401
+      ? t('wrongCredentials')
+      : te.has(c)
+        ? te(c)
+        : te('internal_error');
   };
   const done = async () => {
     await qc.invalidateQueries();
@@ -54,10 +58,30 @@ export default function DealerSignIn() {
           setBusy(true);
           setError(undefined);
           try {
-            const { data } = await api.POST('/v1/auth/dealer/login', { body: { phone: p.data, password, turnstileToken: captcha ?? '', locale } });
-            const r = data as unknown as { next: 'totp' | 'otp' | 'totp_setup'; loginToken?: string; challengeId?: string; setupToken?: string; totp?: { uri: string; secret: string } };
-            if (r.next === 'totp_setup') setStep({ k: 'setup', setupToken: r.setupToken!, uri: r.totp!.uri, secret: r.totp!.secret });
-            else setStep({ k: 'second', factor: r.next, loginToken: r.loginToken!, ...(r.challengeId ? { challengeId: r.challengeId } : {}) });
+            const { data } = await api.POST('/v1/auth/dealer/login', {
+              body: { phone: p.data, password, turnstileToken: captcha ?? '', locale },
+            });
+            const r = data as unknown as {
+              next: 'totp' | 'otp' | 'totp_setup';
+              loginToken?: string;
+              challengeId?: string;
+              setupToken?: string;
+              totp?: { uri: string; secret: string };
+            };
+            if (r.next === 'totp_setup')
+              setStep({
+                k: 'setup',
+                setupToken: r.setupToken!,
+                uri: r.totp!.uri,
+                secret: r.totp!.secret,
+              });
+            else
+              setStep({
+                k: 'second',
+                factor: r.next,
+                loginToken: r.loginToken!,
+                ...(r.challengeId ? { challengeId: r.challengeId } : {}),
+              });
           } catch (e2) {
             setError(err(e2));
           } finally {
@@ -67,16 +91,38 @@ export default function DealerSignIn() {
       >
         <h1 className="text-h1">{t('title')}</h1>
         {notice ? <InlineAlert tone="success">{notice}</InlineAlert> : null}
-        <PhoneField label={t('phone')} value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="username" />
-        <TextField label={t('password')} type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
+        <PhoneField
+          label={t('phone')}
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          autoComplete="username"
+        />
+        <TextField
+          label={t('password')}
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          autoComplete="current-password"
+        />
         <Turnstile onToken={onToken} locale={locale} />
         {error ? <InlineAlert tone="danger">{error}</InlineAlert> : null}
         <Button type="submit" loading={busy} disabled={!captcha} block>
           {t('signIn')}
         </Button>
         <div className="flex flex-wrap justify-between gap-2">
-          <button type="button" className="min-h-touch text-brand underline" onClick={() => setStep({ k: 'forgot' })}>{t('forgot')}</button>
-          <Link href="/dealer/sign-up" className="inline-flex min-h-touch items-center text-brand underline">{t('noAccount')}</Link>
+          <button
+            type="button"
+            className="min-h-touch text-brand underline"
+            onClick={() => setStep({ k: 'forgot' })}
+          >
+            {t('forgot')}
+          </button>
+          <Link
+            href="/dealer/sign-up"
+            className="inline-flex min-h-touch items-center text-brand underline"
+          >
+            {t('noAccount')}
+          </Link>
         </div>
       </form>
     );
@@ -96,7 +142,14 @@ export default function DealerSignIn() {
             setBusy(true);
             setError(undefined);
             try {
-              await api.POST('/v1/auth/dealer/login/verify', { body: { loginToken: step.loginToken, code: c, client: 'web', ...(step.challengeId ? { challengeId: step.challengeId } : {}) } });
+              await api.POST('/v1/auth/dealer/login/verify', {
+                body: {
+                  loginToken: step.loginToken,
+                  code: c,
+                  client: 'web',
+                  ...(step.challengeId ? { challengeId: step.challengeId } : {}),
+                },
+              });
               await done();
             } catch (e2) {
               setError(err(e2));
@@ -119,7 +172,9 @@ export default function DealerSignIn() {
         onCode={async (c) => {
           setBusy(true);
           try {
-            await api.POST('/v1/auth/dealer/totp/confirm', { body: { setupToken: step.setupToken, code: c, client: 'web' } });
+            await api.POST('/v1/auth/dealer/totp/confirm', {
+              body: { setupToken: step.setupToken, code: c, client: 'web' },
+            });
             await done();
           } catch (e2) {
             setError(err(e2));
@@ -134,7 +189,10 @@ export default function DealerSignIn() {
     return (
       <div className="flex flex-col gap-4">
         <h1 className="text-h1">{t('reset')}</h1>
-        <OtpSignIn purpose="dealer_sign_in" onDone={({ phoneProof }) => setStep({ k: 'reset', proof: phoneProof! })} />
+        <OtpSignIn
+          purpose="dealer_sign_in"
+          onDone={({ phoneProof }) => setStep({ k: 'reset', proof: phoneProof! })}
+        />
       </div>
     );
 
@@ -145,7 +203,9 @@ export default function DealerSignIn() {
         e.preventDefault();
         setBusy(true);
         try {
-          await api.POST('/v1/auth/dealer/password/reset', { body: { phoneProof: step.proof, password } });
+          await api.POST('/v1/auth/dealer/password/reset', {
+            body: { phoneProof: step.proof, password },
+          });
           setNotice(t('resetDone'));
           setPassword('');
           setStep({ k: 'password' });
@@ -157,7 +217,16 @@ export default function DealerSignIn() {
       }}
     >
       <h1 className="text-h1">{t('reset')}</h1>
-      <TextField label={t('newPassword')} hint={t('passwordHint')} type="password" value={password} onChange={(e) => setPassword(e.target.value)} minLength={10} autoComplete="new-password" error={error} />
+      <TextField
+        label={t('newPassword')}
+        hint={t('passwordHint')}
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        minLength={10}
+        autoComplete="new-password"
+        error={error}
+      />
       <Button type="submit" loading={busy} block>
         {t('reset')}
       </Button>

@@ -21,17 +21,42 @@ describe('deep links (universal / app links → app routes)', () => {
   ])('%s → %s', (input, expected) => {
     expect(webPathToAppPath(input)).toBe(expected);
   });
-  it.each(['https://agarha.com/ar/help', 'https://agarha.com/ar/dealer/fleet', '/ar/cars/not-a-uuid', '/ar/legal/terms'])('%s has no app screen', (input) => {
+  it.each([
+    'https://agarha.com/ar/help',
+    'https://agarha.com/ar/dealer/fleet',
+    '/ar/cars/not-a-uuid',
+    '/ar/legal/terms',
+  ])('%s has no app screen', (input) => {
     expect(webPathToAppPath(input)).toBeNull();
   });
   it('builds share URLs on the public website', () => {
-    expect(listingShareUrl('en', id, 'toyota-corolla-2024')).toBe(`https://agarha.com/en/cars/${id}-toyota-corolla-2024`);
+    expect(listingShareUrl('en', id, 'toyota-corolla-2024')).toBe(
+      `https://agarha.com/en/cars/${id}-toyota-corolla-2024`,
+    );
   });
 });
 
 describe('search params from a link', () => {
   it('keeps known filters and drops junk', () => {
-    expect(paramsFrom({ city: 'cairo', period: 'week', priceMax: '1500', transmission: 'automatic', sort: 'price_asc', airport: 'true', bogus: 'x', seatsMin: 'abc' })).toEqual({ city: 'cairo', period: 'week', priceMax: 1500, transmission: 'automatic', sort: 'price_asc', airport: true });
+    expect(
+      paramsFrom({
+        city: 'cairo',
+        period: 'week',
+        priceMax: '1500',
+        transmission: 'automatic',
+        sort: 'price_asc',
+        airport: 'true',
+        bogus: 'x',
+        seatsMin: 'abc',
+      }),
+    ).toEqual({
+      city: 'cairo',
+      period: 'week',
+      priceMax: 1500,
+      transmission: 'automatic',
+      sort: 'price_asc',
+      airport: true,
+    });
   });
   it('ignores unknown enum values', () => {
     expect(paramsFrom({ period: 'year', transmission: 'cvt', sort: 'random' })).toEqual({});
@@ -40,7 +65,9 @@ describe('search params from a link', () => {
 
 describe('map bbox', () => {
   it('is west,south,east,north around the region centre', () => {
-    expect(bboxOf({ latitude: 30, longitude: 31, latitudeDelta: 0.2, longitudeDelta: 0.4 })).toBe('30.8000,29.9000,31.2000,30.1000');
+    expect(bboxOf({ latitude: 30, longitude: 31, latitudeDelta: 0.2, longitudeDelta: 0.4 })).toBe(
+      '30.8000,29.9000,31.2000,30.1000',
+    );
   });
 });
 
@@ -58,7 +85,10 @@ describe('token store (SecureStore)', () => {
     const seen: boolean[] = [];
     const off = tokenStore.subscribe((v) => seen.push(v));
     await tokenStore.set({ accessToken: 'a'.repeat(30), refreshToken: 'r'.repeat(40) });
-    expect(await tokenStore.get()).toEqual({ accessToken: 'a'.repeat(30), refreshToken: 'r'.repeat(40) });
+    expect(await tokenStore.get()).toEqual({
+      accessToken: 'a'.repeat(30),
+      refreshToken: 'r'.repeat(40),
+    });
     await tokenStore.set(null);
     expect(await tokenStore.get()).toBeNull();
     off();

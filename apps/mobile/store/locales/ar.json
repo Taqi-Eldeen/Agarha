@@ -1,1 +1,4 @@
-{ "CFBundleDisplayName": "أجّرها", "NSLocationWhenInUseUsageDescription": "أجّرها بيستخدم موقعك بس عشان يوريك العربيات القريبة منك." }
+{
+  "CFBundleDisplayName": "أجّرها",
+  "NSLocationWhenInUseUsageDescription": "أجّرها بيستخدم موقعك بس عشان يوريك العربيات القريبة منك."
+}

@@ -10,13 +10,28 @@ import { applyServerErrors, schemaResolver, useFieldError } from '@/lib/forms';
 
 type ReportForm = { reason: ReportReason | ''; details: string };
 
-export function ReportDrawer({ listingId, open, setOpen }: { listingId: string; open: boolean; setOpen: (o: boolean) => void }) {
+export function ReportDrawer({
+  listingId,
+  open,
+  setOpen,
+}: {
+  listingId: string;
+  open: boolean;
+  setOpen: (o: boolean) => void;
+}) {
   const t = useTranslations('web.report');
   const api = useApi();
   const toast = useToast();
   const { text, known } = useFieldError();
-  const toInput = (v: ReportForm) => ({ listingId, reason: v.reason || undefined, ...(v.details.trim() ? { details: v.details.trim() } : {}) });
-  const form = useForm<ReportForm>({ defaultValues: { reason: '', details: '' }, resolver: schemaResolver(reportInputSchema, toInput, known) });
+  const toInput = (v: ReportForm) => ({
+    listingId,
+    reason: v.reason || undefined,
+    ...(v.details.trim() ? { details: v.details.trim() } : {}),
+  });
+  const form = useForm<ReportForm>({
+    defaultValues: { reason: '', details: '' },
+    resolver: schemaResolver(reportInputSchema, toInput, known),
+  });
   const submit = form.handleSubmit(async (v) => {
     try {
       await api.POST('/v1/reports', { body: toInput(v) as never });
@@ -34,7 +49,12 @@ export function ReportDrawer({ listingId, open, setOpen }: { listingId: string; 
       onOpenChange={setOpen}
       title={t('title')}
       footer={
-        <Button block disabled={!form.watch('reason')} loading={form.formState.isSubmitting} onClick={() => void submit()}>
+        <Button
+          block
+          disabled={!form.watch('reason')}
+          loading={form.formState.isSubmitting}
+          onClick={() => void submit()}
+        >
           {t('submit')}
         </Button>
       }
@@ -44,10 +64,21 @@ export function ReportDrawer({ listingId, open, setOpen }: { listingId: string; 
           control={form.control}
           name="reason"
           render={({ field }) => (
-            <Select label={t('reason')} value={field.value || undefined} onValueChange={field.onChange} error={text(form.formState.errors.reason?.message)} options={REPORT_REASONS.map((r) => ({ value: r, label: t(`reasons.${r}`) }))} />
+            <Select
+              label={t('reason')}
+              value={field.value || undefined}
+              onValueChange={field.onChange}
+              error={text(form.formState.errors.reason?.message)}
+              options={REPORT_REASONS.map((r) => ({ value: r, label: t(`reasons.${r}`) }))}
+            />
           )}
         />
-        <TextField label={t('details')} {...form.register('details')} error={text(form.formState.errors.details?.message)} maxLength={1000} />
+        <TextField
+          label={t('details')}
+          {...form.register('details')}
+          error={text(form.formState.errors.details?.message)}
+          maxLength={1000}
+        />
       </div>
     </Drawer>
   );

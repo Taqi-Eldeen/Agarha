@@ -8,13 +8,23 @@ export const revalidate = 3600;
 /** One entry per page with ar/en hreflang alternates. Search result pages are excluded (noindex). */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const data = await serverApi.sitemap();
-  const entry = (path: string, lastModified?: string, priority = 0.6): MetadataRoute.Sitemap[number] => ({
+  const entry = (
+    path: string,
+    lastModified?: string,
+    priority = 0.6,
+  ): MetadataRoute.Sitemap[number] => ({
     url: `${siteUrl}/ar${path}`,
     lastModified: lastModified ? new Date(lastModified) : new Date(),
     priority,
     alternates: { languages: { ar: `${siteUrl}/ar${path}`, en: `${siteUrl}/en${path}` } },
   });
-  const out: MetadataRoute.Sitemap = [entry('', undefined, 1), entry('/dealers', undefined, 0.7), entry('/for-dealers', undefined, 0.5), entry('/help', undefined, 0.4), ...LEGAL_DOCS.map((d) => entry(`/legal/${d}`, undefined, 0.2))];
+  const out: MetadataRoute.Sitemap = [
+    entry('', undefined, 1),
+    entry('/dealers', undefined, 0.7),
+    entry('/for-dealers', undefined, 0.5),
+    entry('/help', undefined, 0.4),
+    ...LEGAL_DOCS.map((d) => entry(`/legal/${d}`, undefined, 0.2)),
+  ];
   if (!data) return out;
   for (const c of data.cities) out.push(entry(`/${c}`, undefined, 0.9));
   for (const a of data.areas) out.push(entry(`/${a.city}/${a.area}`, undefined, 0.8));

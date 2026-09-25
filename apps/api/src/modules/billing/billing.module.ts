@@ -13,8 +13,12 @@ import { MockGateway, PAYMENT_GATEWAY, PaymobGateway } from './gateway';
       inject: [ENV],
       useFactory: (env: Env) =>
         env.PAYMENT_GATEWAY === 'paymob'
-          ?  
-            new PaymobGateway(env.PAYMOB_SECRET_KEY!, env.PAYMOB_PUBLIC_KEY!, env.PAYMOB_HMAC_SECRET!, env.PAYMOB_INTEGRATION_IDS.map(Number))
+          ? new PaymobGateway(
+              env.PAYMOB_SECRET_KEY!,
+              env.PAYMOB_PUBLIC_KEY!,
+              env.PAYMOB_HMAC_SECRET!,
+              env.PAYMOB_INTEGRATION_IDS.map(Number),
+            )
           : new MockGateway(env.MOCK_PAYMENT_WEBHOOK_SECRET, env.PUBLIC_WEB_URL),
     },
   ],

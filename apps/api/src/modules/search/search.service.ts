@@ -25,7 +25,8 @@ export class SearchService implements OnModuleInit {
   constructor(
     @Inject(DB) private readonly db: Database,
     @Inject(REDIS) private readonly redis: Redis,
-    @Inject(SEARCH_ENGINES) private readonly engines: { postgres: SearchEngine; meili: SearchEngine | null },
+    @Inject(SEARCH_ENGINES)
+    private readonly engines: { postgres: SearchEngine; meili: SearchEngine | null },
     private readonly flags: FlagsService,
     private readonly events: EventBus,
     private readonly listings: ListingsService,
@@ -43,7 +44,16 @@ export class SearchService implements OnModuleInit {
     this.events.on('dealer.verified', ({ dealerId }) => this.reindexDealer(dealerId));
     this.privacy.register({
       name: 'savedSearches',
-      export: (userId) => this.db.select({ name: savedSearches.name, query: savedSearches.query, alertsEnabled: savedSearches.alertsEnabled, createdAt: savedSearches.createdAt }).from(savedSearches).where(eq(savedSearches.userId, userId)),
+      export: (userId) =>
+        this.db
+          .select({
+            name: savedSearches.name,
+            query: savedSearches.query,
+            alertsEnabled: savedSearches.alertsEnabled,
+            createdAt: savedSearches.createdAt,
+          })
+          .from(savedSearches)
+          .where(eq(savedSearches.userId, userId)),
       erase: async (userId) => {
         await this.db.delete(savedSearches).where(eq(savedSearches.userId, userId));
       },
@@ -52,7 +62,8 @@ export class SearchService implements OnModuleInit {
 
   /** Engine for reads: Meilisearch when the P6 flag is on and configured, else Postgres. */
   private async engine(): Promise<SearchEngine> {
-    if (this.engines.meili && (await this.flags.isEnabled(FLAGS.searchEngine))) return this.engines.meili;
+    if (this.engines.meili && (await this.flags.isEnabled(FLAGS.searchEngine)))
+      return this.engines.meili;
     return this.engines.postgres;
   }
 
@@ -64,14 +75,24 @@ export class SearchService implements OnModuleInit {
   async buildDocument(listingId: string): Promise<SearchDocument | null> {
     const l = await this.listings.publicOne(listingId);
     if (!l) return null;
-    const [model, dealer, branch] = await Promise.all([this.catalog.model(l.carModelId), this.dealers.get(l.dealerId), this.dealers.branch(l.dealerId, l.branchId)]);
+    const [model, dealer, branch] = await Promise.all([
+      this.catalog.model(l.carModelId),
+      this.dealers.get(l.dealerId),
+      this.dealers.branch(l.dealerId, l.branchId),
+    ]);
     const area = await this.catalog.area(branch.areaId);
     if (!model || !area) return null;
     const first = l.photos[0];
     const card: ListingCard = {
       id: l.id,
       slug: l.slug,
-      photo: first?.urls ? { url320: first.urls.webp?.['320'] ?? null, url640: first.urls.webp?.['640'] ?? null, blurhash: first.blurhash } : null,
+      photo: first?.urls
+        ? {
+            url320: first.urls.webp?.['320'] ?? null,
+            url640: first.urls.webp?.['640'] ?? null,
+            blurhash: first.blurhash,
+          }
+        : null,
       photoCount: l.photos.length,
       make: { ar: model.makeNameAr, en: model.makeNameEn },
       model: { ar: model.nameAr, en: model.nameEn },
@@ -88,10 +109,19 @@ export class SearchService implements OnModuleInit {
       lastConfirmedAt: l.lastConfirmedAt,
       available: l.available,
       featured: l.featured,
-      dealer: { id: dealer.id, slug: dealer.slug, nameAr: dealer.displayNameAr, nameEn: dealer.displayNameEn, verified: this.dealers.isPublic(dealer), whatsapp: branch.whatsapp ?? dealer.whatsappE164, phone: branch.phone ?? dealer.phoneE164 },
+      dealer: {
+        id: dealer.id,
+        slug: dealer.slug,
+        nameAr: dealer.displayNameAr,
+        nameEn: dealer.displayNameEn,
+        verified: this.dealers.isPublic(dealer),
+        whatsapp: branch.whatsapp ?? dealer.whatsappE164,
+        phone: branch.phone ?? dealer.phoneE164,
+      },
       area: { slug: area.slug, ar: area.nameAr, en: area.nameEn },
       city: { slug: area.citySlug, ar: area.cityNameAr, en: area.cityNameEn },
-      location: branch.lat !== null && branch.lng !== null ? { lat: branch.lat, lng: branch.lng } : null,
+      location:
+        branch.lat !== null && branch.lng !== null ? { lat: branch.lat, lng: branch.lng } : null,
     };
     return {
       listingId: l.id,
@@ -117,7 +147,21 @@ export class SearchService implements OnModuleInit {
       publishedAt: new Date(l.publishedAt ?? l.updatedAt),
       lat: card.location?.lat ?? null,
       lng: card.location?.lng ?? null,
-      searchText: normalizeArabic([model.makeNameAr, model.makeNameEn, model.nameAr, model.nameEn, String(l.year), area.nameAr, area.nameEn, area.cityNameAr, area.cityNameEn, dealer.displayNameAr, dealer.displayNameEn].join(' ')),
+      searchText: normalizeArabic(
+        [
+          model.makeNameAr,
+          model.makeNameEn,
+          model.nameAr,
+          model.nameEn,
+          String(l.year),
+          area.nameAr,
+          area.nameEn,
+          area.cityNameAr,
+          area.cityNameEn,
+          dealer.displayNameAr,
+          dealer.displayNameEn,
+        ].join(' '),
+      ),
       card,
     };
   }
@@ -129,7 +173,10 @@ export class SearchService implements OnModuleInit {
         if (doc) await e.upsert(doc);
         else await e.remove(listingId);
       } catch (err) {
-        this.logger.error({ err: (err as Error).message, engine: e.name, listingId }, 'index failed');
+        this.logger.error(
+          { err: (err as Error).message, engine: e.name, listingId },
+          'index failed',
+        );
       }
     }
     await this.redis.del('seo:sitemap');
@@ -166,14 +213,33 @@ export class SearchService implements OnModuleInit {
     const doc = await this.buildDocument(id);
     if (!doc) throw Errors.notFound('Listing');
     const dealer = await this.dealers.get(l.dealerId);
-    const [reviewSummary, responseRate, model] = await Promise.all([this.reviews.summary(dealer.id), this.leads.responseRate(dealer.id), this.catalog.model(l.carModelId)]);
+    const [reviewSummary, responseRate, model] = await Promise.all([
+      this.reviews.summary(dealer.id),
+      this.leads.responseRate(dealer.id),
+      this.catalog.model(l.carModelId),
+    ]);
     await this.analytics.recordView(l.id, l.dealerId, visitor);
-    const similar = await this.search(searchQuerySchema.parse({ city: doc.citySlug, type: doc.bodyType, limit: 5 }));
+    const similar = await this.search(
+      searchQuerySchema.parse({ city: doc.citySlug, type: doc.bodyType, limit: 5 }),
+    );
     return {
       listing: { ...l, model },
       card: doc.card,
-      dealer: { id: dealer.id, slug: dealer.slug, nameAr: dealer.displayNameAr, nameEn: dealer.displayNameEn, verified: this.dealers.isPublic(dealer), verifiedAt: dealer.verifiedAt, memberSince: dealer.createdAt, reviews: reviewSummary, responseRate },
-      similar: similar.items.filter((i) => i.card.id !== id).slice(0, 4).map((i) => i.card),
+      dealer: {
+        id: dealer.id,
+        slug: dealer.slug,
+        nameAr: dealer.displayNameAr,
+        nameEn: dealer.displayNameEn,
+        verified: this.dealers.isPublic(dealer),
+        verifiedAt: dealer.verifiedAt,
+        memberSince: dealer.createdAt,
+        reviews: reviewSummary,
+        responseRate,
+      },
+      similar: similar.items
+        .filter((i) => i.card.id !== id)
+        .slice(0, 4)
+        .map((i) => i.card),
       safety: { neverPayDepositBeforeSeeing: true, agarhaIsNotAParty: true },
     };
   }
@@ -189,9 +255,22 @@ export class SearchService implements OnModuleInit {
       this.reviews.publicForDealer(d.id, { limit: 5 }),
     ]);
     const areas = new Map<string, Awaited<ReturnType<CatalogService['area']>>>();
-    for (const b of branches) if (!areas.has(b.areaId)) areas.set(b.areaId, await this.catalog.area(b.areaId));
+    for (const b of branches)
+      if (!areas.has(b.areaId)) areas.set(b.areaId, await this.catalog.area(b.areaId));
     return {
-      dealer: { id: d.id, slug: d.slug, nameAr: d.displayNameAr, nameEn: d.displayNameEn, descriptionAr: d.descriptionAr, descriptionEn: d.descriptionEn, verified: true, verifiedAt: d.verifiedAt, memberSince: d.createdAt, whatsapp: d.whatsappE164, phone: d.phoneE164 },
+      dealer: {
+        id: d.id,
+        slug: d.slug,
+        nameAr: d.displayNameAr,
+        nameEn: d.displayNameEn,
+        descriptionAr: d.descriptionAr,
+        descriptionEn: d.descriptionEn,
+        verified: true,
+        verifiedAt: d.verifiedAt,
+        memberSince: d.createdAt,
+        whatsapp: d.whatsappE164,
+        phone: d.phoneE164,
+      },
       branches: branches.map((b) => ({ ...b, area: areas.get(b.areaId) })),
       reviews: { ...reviewSummary, latest: latestReviews.items },
       responseRate,
@@ -205,14 +284,46 @@ export class SearchService implements OnModuleInit {
     const city = await this.catalog.cityBySlug(citySlug);
     const areas = await this.catalog.areas(city.id);
     const base = and(eq(searchDocuments.citySlug, citySlug), eq(searchDocuments.available, true));
-    const byArea = await this.db.select({ area: searchDocuments.areaSlug, n: sql<number>`count(*)::int` }).from(searchDocuments).where(base).groupBy(searchDocuments.areaSlug);
-    const byType = await this.db.select({ type: searchDocuments.bodyType, n: sql<number>`count(*)::int`, min: sql<number>`min(${searchDocuments.priceDay})::int` }).from(searchDocuments).where(and(base, filter.area ? eq(searchDocuments.areaSlug, filter.area) : undefined)).groupBy(searchDocuments.bodyType);
-    const [range] = await this.db
-      .select({ n: sql<number>`count(*)::int`, min: sql<number | null>`min(${searchDocuments.priceDay})::int`, max: sql<number | null>`max(${searchDocuments.priceDay})::int`, median: sql<number | null>`percentile_cont(0.5) WITHIN GROUP (ORDER BY ${searchDocuments.priceDay})::int` })
+    const byArea = await this.db
+      .select({ area: searchDocuments.areaSlug, n: sql<number>`count(*)::int` })
       .from(searchDocuments)
-      .where(and(base, filter.area ? eq(searchDocuments.areaSlug, filter.area) : undefined, filter.type ? eq(searchDocuments.bodyType, filter.type as never) : undefined));
+      .where(base)
+      .groupBy(searchDocuments.areaSlug);
+    const byType = await this.db
+      .select({
+        type: searchDocuments.bodyType,
+        n: sql<number>`count(*)::int`,
+        min: sql<number>`min(${searchDocuments.priceDay})::int`,
+      })
+      .from(searchDocuments)
+      .where(and(base, filter.area ? eq(searchDocuments.areaSlug, filter.area) : undefined))
+      .groupBy(searchDocuments.bodyType);
+    const [range] = await this.db
+      .select({
+        n: sql<number>`count(*)::int`,
+        min: sql<number | null>`min(${searchDocuments.priceDay})::int`,
+        max: sql<number | null>`max(${searchDocuments.priceDay})::int`,
+        median: sql<
+          number | null
+        >`percentile_cont(0.5) WITHIN GROUP (ORDER BY ${searchDocuments.priceDay})::int`,
+      })
+      .from(searchDocuments)
+      .where(
+        and(
+          base,
+          filter.area ? eq(searchDocuments.areaSlug, filter.area) : undefined,
+          filter.type ? eq(searchDocuments.bodyType, filter.type as never) : undefined,
+        ),
+      );
     const counts = new Map(byArea.map((a) => [a.area, a.n]));
-    const results = await this.search(searchQuerySchema.parse({ city: citySlug, ...(filter.area ? { area: filter.area } : {}), ...(filter.type ? { type: filter.type } : {}), limit: 12 }));
+    const results = await this.search(
+      searchQuerySchema.parse({
+        city: citySlug,
+        ...(filter.area ? { area: filter.area } : {}),
+        ...(filter.type ? { type: filter.type } : {}),
+        limit: 12,
+      }),
+    );
     return {
       city,
       area: filter.area ? (areas.find((a) => a.slug === filter.area) ?? null) : null,
@@ -230,16 +341,32 @@ export class SearchService implements OnModuleInit {
     const cached = await this.redis.get('seo:sitemap');
     if (cached) return JSON.parse(cached) as unknown;
     const cities = await this.catalog.cities();
-    const areaRows = await this.db.select({ city: searchDocuments.citySlug, area: searchDocuments.areaSlug }).from(searchDocuments).groupBy(searchDocuments.citySlug, searchDocuments.areaSlug);
-    const typeRows = await this.db.select({ city: searchDocuments.citySlug, type: searchDocuments.bodyType }).from(searchDocuments).groupBy(searchDocuments.citySlug, searchDocuments.bodyType);
-    const listingRows = await this.db.select({ id: searchDocuments.listingId, card: searchDocuments.card, updatedAt: searchDocuments.indexedAt }).from(searchDocuments);
+    const areaRows = await this.db
+      .select({ city: searchDocuments.citySlug, area: searchDocuments.areaSlug })
+      .from(searchDocuments)
+      .groupBy(searchDocuments.citySlug, searchDocuments.areaSlug);
+    const typeRows = await this.db
+      .select({ city: searchDocuments.citySlug, type: searchDocuments.bodyType })
+      .from(searchDocuments)
+      .groupBy(searchDocuments.citySlug, searchDocuments.bodyType);
+    const listingRows = await this.db
+      .select({
+        id: searchDocuments.listingId,
+        card: searchDocuments.card,
+        updatedAt: searchDocuments.indexedAt,
+      })
+      .from(searchDocuments);
     const dealers = await this.dealers.allPublicIds();
     const out = {
       generatedAt: new Date().toISOString(),
       cities: cities.map((c) => c.slug),
       areas: areaRows,
       types: typeRows,
-      listings: listingRows.map((r) => ({ id: r.id, slug: (r.card as ListingCard).slug, updatedAt: r.updatedAt })),
+      listings: listingRows.map((r) => ({
+        id: r.id,
+        slug: (r.card as ListingCard).slug,
+        updatedAt: r.updatedAt,
+      })),
       dealers: dealers.map((d) => ({ slug: d.slug, updatedAt: d.updatedAt })),
     };
     await this.redis.set('seo:sitemap', JSON.stringify(out), 'EX', 3600);
@@ -253,32 +380,61 @@ export class SearchService implements OnModuleInit {
 
   // ---- saved searches (P4) ---------------------------------------------
   listSaved(userId: string) {
-    return this.db.select().from(savedSearches).where(eq(savedSearches.userId, userId)).orderBy(desc(savedSearches.createdAt));
+    return this.db
+      .select()
+      .from(savedSearches)
+      .where(eq(savedSearches.userId, userId))
+      .orderBy(desc(savedSearches.createdAt));
   }
 
-  async createSaved(userId: string, input: { name?: string | undefined; query: Record<string, unknown>; alertsEnabled: boolean }) {
+  async createSaved(
+    userId: string,
+    input: { name?: string | undefined; query: Record<string, unknown>; alertsEnabled: boolean },
+  ) {
     const existing = await this.listSaved(userId);
     if (existing.length >= 20) throw Errors.conflict('You can save up to 20 searches');
-    const [r] = await this.db.insert(savedSearches).values({ userId, name: input.name ?? null, query: input.query, alertsEnabled: input.alertsEnabled, lastNotifiedAt: new Date() }).returning();
+    const [r] = await this.db
+      .insert(savedSearches)
+      .values({
+        userId,
+        name: input.name ?? null,
+        query: input.query,
+        alertsEnabled: input.alertsEnabled,
+        lastNotifiedAt: new Date(),
+      })
+      .returning();
     return r!;
   }
 
-  async updateSaved(userId: string, id: string, patch: { name?: string | undefined; alertsEnabled?: boolean | undefined }) {
+  async updateSaved(
+    userId: string,
+    id: string,
+    patch: { name?: string | undefined; alertsEnabled?: boolean | undefined },
+  ) {
     const set: Partial<typeof savedSearches.$inferInsert> = {};
     if (patch.name !== undefined) set.name = patch.name;
     if (patch.alertsEnabled !== undefined) set.alertsEnabled = patch.alertsEnabled;
-    const [r] = await this.db.update(savedSearches).set(set).where(and(eq(savedSearches.id, id), eq(savedSearches.userId, userId))).returning();
+    const [r] = await this.db
+      .update(savedSearches)
+      .set(set)
+      .where(and(eq(savedSearches.id, id), eq(savedSearches.userId, userId)))
+      .returning();
     if (!r) throw Errors.notFound('Saved search');
     return r;
   }
 
   async deleteSaved(userId: string, id: string) {
-    await this.db.delete(savedSearches).where(and(eq(savedSearches.id, id), eq(savedSearches.userId, userId)));
+    await this.db
+      .delete(savedSearches)
+      .where(and(eq(savedSearches.id, id), eq(savedSearches.userId, userId)));
   }
 
   /** Job: push "N new cars match" for each alert-enabled saved search. */
   async runSavedSearchMatching() {
-    const all = await this.db.select().from(savedSearches).where(eq(savedSearches.alertsEnabled, true));
+    const all = await this.db
+      .select()
+      .from(savedSearches)
+      .where(eq(savedSearches.alertsEnabled, true));
     let notified = 0;
     const engine = await this.engine();
     for (const s of all) {
@@ -287,8 +443,19 @@ export class SearchService implements OnModuleInit {
       const since = s.lastNotifiedAt ?? s.createdAt;
       const ids = await engine.newSince(q.data, since);
       if (!ids.length) continue;
-      await this.notifications.notify({ template: 'saved_search_alert', locale: 'ar', vars: { count: ids.length, name: s.name ?? '' }, channels: ['push'], userId: s.userId, data: { url: `agarha://saved/${s.id}` }, related: { type: 'saved_search', id: s.id } });
-      await this.db.update(savedSearches).set({ lastNotifiedAt: new Date() }).where(eq(savedSearches.id, s.id));
+      await this.notifications.notify({
+        template: 'saved_search_alert',
+        locale: 'ar',
+        vars: { count: ids.length, name: s.name ?? '' },
+        channels: ['push'],
+        userId: s.userId,
+        data: { url: `agarha://saved/${s.id}` },
+        related: { type: 'saved_search', id: s.id },
+      });
+      await this.db
+        .update(savedSearches)
+        .set({ lastNotifiedAt: new Date() })
+        .where(eq(savedSearches.id, s.id));
       notified++;
     }
     return { checked: all.length, notified };
@@ -298,7 +465,10 @@ export class SearchService implements OnModuleInit {
     const ids = await this.listings.favorites(userId);
     const cards: ListingCard[] = [];
     for (const id of ids) {
-      const [row] = await this.db.select({ card: searchDocuments.card }).from(searchDocuments).where(eq(searchDocuments.listingId, id));
+      const [row] = await this.db
+        .select({ card: searchDocuments.card })
+        .from(searchDocuments)
+        .where(eq(searchDocuments.listingId, id));
       if (row) cards.push(row.card as ListingCard);
     }
     return { items: cards, unavailableIds: ids.filter((id) => !cards.some((c) => c.id === id)) };

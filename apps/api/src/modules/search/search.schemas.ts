@@ -1,7 +1,10 @@
 import { CAR_BODY_TYPES, DRIVER_OPTIONS, PRICE_PERIODS, TRANSMISSIONS } from '@agarha/schemas';
 import { z } from 'zod';
 
-const bool = z.union([z.boolean(), z.enum(['true', 'false', '1', '0']).transform((v) => v === 'true' || v === '1')]);
+const bool = z.union([
+  z.boolean(),
+  z.enum(['true', 'false', '1', '0']).transform((v) => v === 'true' || v === '1'),
+]);
 const num = z.coerce.number();
 
 export const searchQuerySchema = z.object({
@@ -41,4 +44,7 @@ export const savedSearchSchema = z.object({
   query: searchQuerySchema.omit({ cursor: true, limit: true, sort: true }).partial(),
   alertsEnabled: z.boolean().default(true),
 });
-export const savedSearchPatchSchema = z.object({ name: z.string().trim().max(60).optional(), alertsEnabled: z.boolean().optional() });
+export const savedSearchPatchSchema = z.object({
+  name: z.string().trim().max(60).optional(),
+  alertsEnabled: z.boolean().optional(),
+});

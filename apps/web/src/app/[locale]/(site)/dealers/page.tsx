@@ -8,13 +8,27 @@ import { serverApi } from '@/lib/server-api';
 
 export const revalidate = 60;
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'web.dealerPage' });
-  return { title: t('title'), description: t('subtitle'), alternates: alternates(locale, '/dealers') };
+  return {
+    title: t('title'),
+    description: t('subtitle'),
+    alternates: alternates(locale, '/dealers'),
+  };
 }
 
-export default async function Dealers({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ city?: string }> }) {
+export default async function Dealers({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ city?: string }>;
+}) {
   const { locale } = await params;
   const { city } = await searchParams;
   setRequestLocale(locale);
@@ -29,7 +43,12 @@ export default async function Dealers({ params, searchParams }: { params: Promis
       </header>
       <nav className="flex flex-wrap gap-2">
         {(cities?.items ?? []).map((c) => (
-          <Link key={c.slug} href={`/dealers?city=${c.slug}`} aria-current={city === c.slug ? 'page' : undefined} className="inline-flex min-h-touch items-center rounded-full border border-border px-4 aria-[current=page]:border-brand aria-[current=page]:bg-brand-subtle">
+          <Link
+            key={c.slug}
+            href={`/dealers?city=${c.slug}`}
+            aria-current={city === c.slug ? 'page' : undefined}
+            className="inline-flex min-h-touch items-center rounded-full border border-border px-4 aria-[current=page]:border-brand aria-[current=page]:bg-brand-subtle"
+          >
             {locale === 'ar' ? c.nameAr : c.nameEn}
           </Link>
         ))}
@@ -38,12 +57,21 @@ export default async function Dealers({ params, searchParams }: { params: Promis
         <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {dealers.items.map((d) => (
             <li key={d.id}>
-              <Link href={`/dealers/${d.slug}`} className="flex flex-col gap-2 rounded-lg border border-border bg-card p-4 hover:shadow-1">
+              <Link
+                href={`/dealers/${d.slug}`}
+                className="flex flex-col gap-2 rounded-lg border border-border bg-card p-4 hover:shadow-1"
+              >
                 <span className="flex items-center gap-2 font-semibold">
                   {locale === 'ar' ? d.nameAr : d.nameEn}
-                  <BadgeCheck aria-label={tu('verified')} className="size-5 text-brand" strokeWidth={1.75} />
+                  <BadgeCheck
+                    aria-label={tu('verified')}
+                    className="size-5 text-brand"
+                    strokeWidth={1.75}
+                  />
                 </span>
-                {d.reviews.count ? <span className="text-caption">{`★ ${d.reviews.average} · ${tu('reviewsCount', { count: d.reviews.count })}`}</span> : null}
+                {d.reviews.count ? (
+                  <span className="text-caption">{`★ ${d.reviews.average} · ${tu('reviewsCount', { count: d.reviews.count })}`}</span>
+                ) : null}
               </Link>
             </li>
           ))}

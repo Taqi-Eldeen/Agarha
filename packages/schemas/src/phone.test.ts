@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { egyptMobileSchema } from './common.js';
-import { normalizeEgyptMobile, normalizeEgyptPhone, toWaMeNumber, toWesternDigits } from './phone.js';
+import {
+  normalizeEgyptMobile,
+  normalizeEgyptPhone,
+  toWaMeNumber,
+  toWesternDigits,
+} from './phone.js';
 
 describe('normalizeEgyptMobile', () => {
   it.each([

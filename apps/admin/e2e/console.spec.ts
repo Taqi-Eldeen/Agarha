@@ -3,7 +3,16 @@ import { expect, test } from '@playwright/test';
 import { authenticator } from 'otplib';
 
 const SECRET = process.env.E2E_ADMIN_TOTP_SECRET ?? 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP';
-const SECTIONS = ['Dealers', 'Listings', 'Reports', 'Reviews', 'Catalog', 'Users', 'Plans', 'Audit log'];
+const SECTIONS = [
+  'Dealers',
+  'Listings',
+  'Reports',
+  'Reviews',
+  'Catalog',
+  'Users',
+  'Plans',
+  'Audit log',
+];
 
 test('ops signs in with TOTP, walks every section and moderates a listing', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('ag_admin_locale', 'en'));
@@ -19,7 +28,9 @@ test('ops signs in with TOTP, walks every section and moderates a listing', asyn
   for (const name of SECTIONS) {
     await page.getByRole('navigation').getByRole('link', { name, exact: true }).click();
     await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
-    const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze();
+    const axe = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
+      .analyze();
     expect(axe.violations.map((v) => `${name}: ${v.id}`)).toEqual([]);
   }
 

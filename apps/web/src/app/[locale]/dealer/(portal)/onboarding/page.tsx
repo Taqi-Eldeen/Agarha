@@ -1,7 +1,15 @@
 'use client';
 import { useApi, useCities } from '@agarha/api-client';
 import { branchInputSchema, businessSchema } from '@agarha/schemas';
-import { Button, InlineAlert, PhoneField, Select, Stepper, TextField, useToast } from '@agarha/ui-web';
+import {
+  Button,
+  InlineAlert,
+  PhoneField,
+  Select,
+  Stepper,
+  TextField,
+  useToast,
+} from '@agarha/ui-web';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { CheckCircle2, FileUp } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
@@ -32,24 +40,51 @@ export default function Onboarding() {
       {current === 2 && d ? <DocumentsStep me={d} onDone={refresh} /> : null}
       {current === 3 && d ? (
         <div className="flex flex-col gap-4">
-          {d.dealer.status === 'pending_review' ? <InlineAlert tone="info">{t('reviewPending')}</InlineAlert> : null}
-          {d.dealer.status === 'verified' ? <InlineAlert tone="success">{t('reviewVerified')}</InlineAlert> : null}
-          <Link href="/dealer/fleet/new" className="text-brand underline">{tf('add')}</Link>
+          {d.dealer.status === 'pending_review' ? (
+            <InlineAlert tone="info">{t('reviewPending')}</InlineAlert>
+          ) : null}
+          {d.dealer.status === 'verified' ? (
+            <InlineAlert tone="success">{t('reviewVerified')}</InlineAlert>
+          ) : null}
+          <Link href="/dealer/fleet/new" className="text-brand underline">
+            {tf('add')}
+          </Link>
         </div>
       ) : null}
     </div>
   );
 }
 
-type BusinessForm = { legalName: string; displayNameAr: string; displayNameEn: string; commercialRegistrationNo: string; taxCardNo: string; phone: string; whatsapp: string; descriptionAr: string };
-const businessInput = (v: BusinessForm) => ({ ...v, descriptionAr: v.descriptionAr.trim() || undefined });
+type BusinessForm = {
+  legalName: string;
+  displayNameAr: string;
+  displayNameEn: string;
+  commercialRegistrationNo: string;
+  taxCardNo: string;
+  phone: string;
+  whatsapp: string;
+  descriptionAr: string;
+};
+const businessInput = (v: BusinessForm) => ({
+  ...v,
+  descriptionAr: v.descriptionAr.trim() || undefined,
+});
 
 function BusinessStep({ onDone }: { onDone: () => void }) {
   const t = useTranslations('dealer.onboarding');
   const api = useApi();
   const { text, known } = useFieldError();
   const form = useForm<BusinessForm>({
-    defaultValues: { legalName: '', displayNameAr: '', displayNameEn: '', commercialRegistrationNo: '', taxCardNo: '', phone: '', whatsapp: '', descriptionAr: '' },
+    defaultValues: {
+      legalName: '',
+      displayNameAr: '',
+      displayNameEn: '',
+      commercialRegistrationNo: '',
+      taxCardNo: '',
+      phone: '',
+      whatsapp: '',
+      descriptionAr: '',
+    },
     resolver: schemaResolver(businessSchema, businessInput, known),
   });
   const err = (k: keyof BusinessForm) => text(form.formState.errors[k]?.message);
@@ -59,21 +94,61 @@ function BusinessStep({ onDone }: { onDone: () => void }) {
       noValidate
       onSubmit={form.handleSubmit(async (v) => {
         try {
-          await api.POST('/v1/dealer/onboarding/business', { body: { ...businessInput(v), client: 'web' } as never });
+          await api.POST('/v1/dealer/onboarding/business', {
+            body: { ...businessInput(v), client: 'web' } as never,
+          });
           onDone();
         } catch (e) {
           applyServerErrors(form, e);
         }
       })}
     >
-      <TextField label={t('legalName')} {...form.register('legalName')} error={err('legalName')} required />
-      <TextField label={t('displayNameAr')} {...form.register('displayNameAr')} error={err('displayNameAr')} required lang="ar" dir="rtl" />
-      <TextField label={t('displayNameEn')} {...form.register('displayNameEn')} error={err('displayNameEn')} required lang="en" dir="ltr" />
-      <TextField label={t('cr')} {...form.register('commercialRegistrationNo')} error={err('commercialRegistrationNo')} required inputMode="numeric" dir="ltr" />
-      <TextField label={t('taxCard')} {...form.register('taxCardNo')} error={err('taxCardNo')} required inputMode="numeric" dir="ltr" />
+      <TextField
+        label={t('legalName')}
+        {...form.register('legalName')}
+        error={err('legalName')}
+        required
+      />
+      <TextField
+        label={t('displayNameAr')}
+        {...form.register('displayNameAr')}
+        error={err('displayNameAr')}
+        required
+        lang="ar"
+        dir="rtl"
+      />
+      <TextField
+        label={t('displayNameEn')}
+        {...form.register('displayNameEn')}
+        error={err('displayNameEn')}
+        required
+        lang="en"
+        dir="ltr"
+      />
+      <TextField
+        label={t('cr')}
+        {...form.register('commercialRegistrationNo')}
+        error={err('commercialRegistrationNo')}
+        required
+        inputMode="numeric"
+        dir="ltr"
+      />
+      <TextField
+        label={t('taxCard')}
+        {...form.register('taxCardNo')}
+        error={err('taxCardNo')}
+        required
+        inputMode="numeric"
+        dir="ltr"
+      />
       <PhoneField label={t('businessPhone')} {...form.register('phone')} error={err('phone')} />
       <PhoneField label={t('whatsapp')} {...form.register('whatsapp')} error={err('whatsapp')} />
-      <TextField label={t('description')} {...form.register('descriptionAr')} error={err('descriptionAr')} optional />
+      <TextField
+        label={t('description')}
+        {...form.register('descriptionAr')}
+        error={err('descriptionAr')}
+        optional
+      />
       <Button type="submit" loading={form.formState.isSubmitting} block>
         {t('steps.branches')}
       </Button>
@@ -89,10 +164,25 @@ function BranchStep({ onDone }: { onDone: () => void }) {
   const api = useApi();
   const cities = useCities();
   const { text, known } = useFieldError();
-  const branchInput = (v: BranchForm) => ({ areaId: v.areaId, nameAr: v.nameAr, nameEn: v.nameEn.trim() || v.nameAr, ...(locale === 'ar' ? { addressAr: v.address } : { addressEn: v.address }), isPrimary: true });
-  const form = useForm<BranchForm>({ defaultValues: { city: '', areaId: '', nameAr: '', nameEn: '', address: '' }, resolver: schemaResolver(branchInputSchema, branchInput, known) });
+  const branchInput = (v: BranchForm) => ({
+    areaId: v.areaId,
+    nameAr: v.nameAr,
+    nameEn: v.nameEn.trim() || v.nameAr,
+    ...(locale === 'ar' ? { addressAr: v.address } : { addressEn: v.address }),
+    isPrimary: true,
+  });
+  const form = useForm<BranchForm>({
+    defaultValues: { city: '', areaId: '', nameAr: '', nameEn: '', address: '' },
+    resolver: schemaResolver(branchInputSchema, branchInput, known),
+  });
   const city = form.watch('city');
-  const areas = useQuery({ queryKey: ['areas', city], enabled: !!city, queryFn: async () => (await api.GET('/v1/catalog/cities/{slug}', { params: { path: { slug: city } } })).data!.areas });
+  const areas = useQuery({
+    queryKey: ['areas', city],
+    enabled: !!city,
+    queryFn: async () =>
+      (await api.GET('/v1/catalog/cities/{slug}', { params: { path: { slug: city } } })).data!
+        .areas,
+  });
   const err = (k: keyof BranchForm) => text(form.formState.errors[k]?.message);
   return (
     <form
@@ -111,18 +201,50 @@ function BranchStep({ onDone }: { onDone: () => void }) {
         control={form.control}
         name="city"
         render={({ field }) => (
-          <Select label={t('city')} value={field.value || undefined} onValueChange={(v) => { field.onChange(v); form.setValue('areaId', ''); }} options={(cities.data ?? []).map((c) => ({ value: c.slug, label: locale === 'ar' ? c.nameAr : c.nameEn }))} />
+          <Select
+            label={t('city')}
+            value={field.value || undefined}
+            onValueChange={(v) => {
+              field.onChange(v);
+              form.setValue('areaId', '');
+            }}
+            options={(cities.data ?? []).map((c) => ({
+              value: c.slug,
+              label: locale === 'ar' ? c.nameAr : c.nameEn,
+            }))}
+          />
         )}
       />
       <Controller
         control={form.control}
         name="areaId"
         render={({ field }) => (
-          <Select label={t('area')} value={field.value || undefined} onValueChange={field.onChange} disabled={!areas.data} error={err('areaId')} options={(areas.data ?? []).map((a) => ({ value: a.id, label: locale === 'ar' ? a.nameAr : a.nameEn }))} />
+          <Select
+            label={t('area')}
+            value={field.value || undefined}
+            onValueChange={field.onChange}
+            disabled={!areas.data}
+            error={err('areaId')}
+            options={(areas.data ?? []).map((a) => ({
+              value: a.id,
+              label: locale === 'ar' ? a.nameAr : a.nameEn,
+            }))}
+          />
         )}
       />
-      <TextField label={t('branchName')} {...form.register('nameAr')} error={err('nameAr')} required />
-      <TextField label={t('branchNameEn')} {...form.register('nameEn')} error={err('nameEn')} optional dir="ltr" />
+      <TextField
+        label={t('branchName')}
+        {...form.register('nameAr')}
+        error={err('nameAr')}
+        required
+      />
+      <TextField
+        label={t('branchNameEn')}
+        {...form.register('nameEn')}
+        error={err('nameEn')}
+        optional
+        dir="ltr"
+      />
       <TextField label={t('address')} hint={t('pinHint')} {...form.register('address')} required />
       <Button type="submit" loading={form.formState.isSubmitting} block>
         {t('steps.documents')}
@@ -131,7 +253,13 @@ function BranchStep({ onDone }: { onDone: () => void }) {
   );
 }
 
-function DocumentsStep({ me, onDone }: { me: NonNullable<ReturnType<typeof useDealerMe>['data']>; onDone: () => void }) {
+function DocumentsStep({
+  me,
+  onDone,
+}: {
+  me: NonNullable<ReturnType<typeof useDealerMe>['data']>;
+  onDone: () => void;
+}) {
   const t = useTranslations('dealer.onboarding');
   const te = useTranslations('errors');
   const api = useApi();
@@ -142,17 +270,35 @@ function DocumentsStep({ me, onDone }: { me: NonNullable<ReturnType<typeof useDe
     <div className="flex flex-col gap-4">
       <h2 className="text-h2">{t('docsTitle')}</h2>
       <p className="text-fg-secondary">{t('docsBody')}</p>
-      {me.dealer.status === 'rejected' ? <InlineAlert tone="danger">{t('reviewRejected', { reason: me.documents.items.find((i) => i.rejectionReason)?.rejectionReason ?? '' })}</InlineAlert> : null}
+      {me.dealer.status === 'rejected' ? (
+        <InlineAlert tone="danger">
+          {t('reviewRejected', {
+            reason: me.documents.items.find((i) => i.rejectionReason)?.rejectionReason ?? '',
+          })}
+        </InlineAlert>
+      ) : null}
       <ul className="flex flex-col gap-3">
         {REQUIRED.map((type) => {
           const s = status(type);
-          const state = (s?.status ?? 'missing') as 'missing' | 'uploaded' | 'approved' | 'rejected';
+          const state = (s?.status ?? 'missing') as
+            'missing' | 'uploaded' | 'approved' | 'rejected';
           return (
-            <li key={type} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card p-4">
+            <li
+              key={type}
+              className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card p-4"
+            >
               <div>
                 <p className="font-medium">{t(`docTypes.${type}`)}</p>
-                <p className={state === 'rejected' ? 'text-caption text-danger' : 'text-caption text-fg-secondary'}>
-                  {state === 'approved' ? <CheckCircle2 aria-hidden className="me-1 inline size-4 text-available" /> : null}
+                <p
+                  className={
+                    state === 'rejected'
+                      ? 'text-caption text-danger'
+                      : 'text-caption text-fg-secondary'
+                  }
+                >
+                  {state === 'approved' ? (
+                    <CheckCircle2 aria-hidden className="me-1 inline size-4 text-available" />
+                  ) : null}
                   {t(`docStatus.${state}`)}
                 </p>
               </div>
@@ -166,7 +312,8 @@ function DocumentsStep({ me, onDone }: { me: NonNullable<ReturnType<typeof useDe
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;
-                    if (file.size > 10 * 1024 * 1024) return toast({ tone: 'danger', text: te('validation_failed') });
+                    if (file.size > 10 * 1024 * 1024)
+                      return toast({ tone: 'danger', text: te('validation_failed') });
                     setBusy(type);
                     try {
                       await uploadDocument(api, type, file);

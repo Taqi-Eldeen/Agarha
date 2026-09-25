@@ -31,7 +31,12 @@ import { VerificationModule } from './modules/verification';
 @Module({})
 class ConfigModule {
   static forRoot(env: Env): DynamicModule {
-    return { module: ConfigModule, global: true, providers: [{ provide: ENV, useValue: env }], exports: [ENV] };
+    return {
+      module: ConfigModule,
+      global: true,
+      providers: [{ provide: ENV, useValue: env }],
+      exports: [ENV],
+    };
   }
 }
 
@@ -73,7 +78,13 @@ export class AppModule {
   static forRoot(env: Env): DynamicModule {
     return {
       module: AppModule,
-      imports: [LoggerModule.forRoot(loggerParams(env)), ...coreImports(env), ...domainModules, AdminConsoleModule, HealthModule],
+      imports: [
+        LoggerModule.forRoot(loggerParams(env)),
+        ...coreImports(env),
+        ...domainModules,
+        AdminConsoleModule,
+        HealthModule,
+      ],
       controllers: env.STORAGE_DRIVER === 'local' ? [DevStorageController] : [],
     };
   }

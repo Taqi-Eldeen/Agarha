@@ -1,5 +1,12 @@
 'use client';
-import { dir as dirOf, formatEgp, formatRelative, interpolate, uiMessages, type Messages } from '@agarha/i18n';
+import {
+  dir as dirOf,
+  formatEgp,
+  formatRelative,
+  interpolate,
+  uiMessages,
+  type Messages,
+} from '@agarha/i18n';
 import type { Locale } from '@agarha/schemas';
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 

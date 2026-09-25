@@ -49,7 +49,15 @@ export interface ListingCard {
   lastConfirmedAt: string;
   available: boolean;
   featured: boolean;
-  dealer: { id: string; slug: string; nameAr: string; nameEn: string; verified: boolean; whatsapp: string; phone: string };
+  dealer: {
+    id: string;
+    slug: string;
+    nameAr: string;
+    nameEn: string;
+    verified: boolean;
+    whatsapp: string;
+    phone: string;
+  };
   area: { slug: string; ar: string; en: string };
   city: { slug: string; ar: string; en: string };
   location: { lat: number; lng: number } | null;

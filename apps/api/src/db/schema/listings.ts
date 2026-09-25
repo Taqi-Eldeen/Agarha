@@ -33,9 +33,13 @@ export const listings = pgTable(
   {
     id: id(),
     /** Denormalised from branch for the dealer policy layer / RLS; kept consistent by a composite FK. */
-    dealerId: uuid('dealer_id').notNull().references(() => dealers.id),
+    dealerId: uuid('dealer_id')
+      .notNull()
+      .references(() => dealers.id),
     branchId: uuid('branch_id').notNull(),
-    carModelId: uuid('car_model_id').notNull().references(() => carModels.id),
+    carModelId: uuid('car_model_id')
+      .notNull()
+      .references(() => carModels.id),
     trimId: uuid('trim_id').references(() => carTrims.id),
     /** Set when a moderator has reviewed a listing that went live without pre-approval. */
     reviewedAt: tstz('reviewed_at'),
@@ -53,7 +57,10 @@ export const listings = pgTable(
     requiredDocs: requiredDocEnum('required_docs').array().notNull(),
     /** null = unlimited km. */
     kmLimitPerDay: integer('km_limit_per_day'),
-    deliveryOptions: deliveryOptionEnum('delivery_options').array().notNull().default(sql`'{branch_pickup}'`),
+    deliveryOptions: deliveryOptionEnum('delivery_options')
+      .array()
+      .notNull()
+      .default(sql`'{branch_pickup}'`),
     airportPickup: boolean('airport_pickup').notNull().default(false),
     descriptionAr: text('description_ar'),
     descriptionEn: text('description_en'),
@@ -73,7 +80,9 @@ export const listings = pgTable(
     index('listings_branch_idx').on(t.branchId),
     index('listings_model_idx').on(t.carModelId),
     // Hot path for search and the hourly freshness job.
-    index('listings_live_confirmed_idx').on(t.lastConfirmedAt).where(sql`${t.status} = 'live'`),
+    index('listings_live_confirmed_idx')
+      .on(t.lastConfirmedAt)
+      .where(sql`${t.status} = 'live'`),
     check('listings_seats_range', sql`${t.seats} between 2 and 15`),
     check('listings_min_age_range', sql`${t.minAge} between 18 and 35`),
     check('listings_year_range', sql`${t.year} between 1990 and 2100`),
@@ -98,7 +107,10 @@ export const listingPrices = pgTable(
   (t) => [
     check('listing_prices_day_positive', sql`${t.priceDayEgp} > 0`),
     check('listing_prices_week_positive', sql`${t.priceWeekEgp} is null or ${t.priceWeekEgp} > 0`),
-    check('listing_prices_month_positive', sql`${t.priceMonthEgp} is null or ${t.priceMonthEgp} > 0`),
+    check(
+      'listing_prices_month_positive',
+      sql`${t.priceMonthEgp} is null or ${t.priceMonthEgp} > 0`,
+    ),
     check('listing_prices_deposit_nonneg', sql`${t.depositEgp} >= 0`),
     index('listing_prices_day_idx').on(t.priceDayEgp),
   ],
@@ -119,7 +131,8 @@ export const listingPhotos = pgTable(
     height: integer('height'),
     blurhash: text('blurhash'),
     /** { webp: { 320: key, 640: key, 1280: key }, avif: {...} } */
-    variants: jsonb('variants').$type<Record<'webp' | 'avif', Record<'320' | '640' | '1280', string>>>(),
+    variants:
+      jsonb('variants').$type<Record<'webp' | 'avif', Record<'320' | '640' | '1280', string>>>(),
     createdAt: createdAt(),
   },
   (t) => [
@@ -132,8 +145,12 @@ export const listingPhotos = pgTable(
 export const favorites = pgTable(
   'favorites',
   {
-    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-    listingId: uuid('listing_id').notNull().references(() => listings.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    listingId: uuid('listing_id')
+      .notNull()
+      .references(() => listings.id, { onDelete: 'cascade' }),
     createdAt: createdAt(),
   },
   (t) => [primaryKey({ columns: [t.userId, t.listingId] })],

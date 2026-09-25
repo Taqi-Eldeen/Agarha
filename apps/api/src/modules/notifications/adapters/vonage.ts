@@ -24,6 +24,9 @@ export class VonageSmsProvider implements SmsProvider {
       // Status 1 = throttled (retryable); most others are permanent (invalid number, barred).
       throw new ProviderError(this.name, m?.['error-text'] ?? 'unknown error', m?.status === '1');
     }
-    return { provider: this.name, ...(m['message-id'] ? { providerMessageId: m['message-id'] } : {}) };
+    return {
+      provider: this.name,
+      ...(m['message-id'] ? { providerMessageId: m['message-id'] } : {}),
+    };
   }
 }

@@ -24,7 +24,11 @@ function Switch({ label }: { label: string }) {
     <button
       type="button"
       lang={other}
-      onClick={() => router.replace(`${pathname}${search.size ? `?${search.toString()}` : ''}`, { locale: other })}
+      onClick={() =>
+        router.replace(`${pathname}${search.size ? `?${search.toString()}` : ''}`, {
+          locale: other,
+        })
+      }
       className="inline-flex min-h-touch items-center gap-1 rounded-md px-3 text-caption hover:bg-brand-subtle"
     >
       <Languages aria-hidden className="size-5" strokeWidth={1.75} />

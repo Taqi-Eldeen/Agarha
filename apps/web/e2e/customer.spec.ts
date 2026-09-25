@@ -3,7 +3,10 @@ import { expect, test } from '@playwright/test';
 import { API } from './helpers';
 
 test.describe('customer: search → listing → contact', () => {
-  test('finds a car, sees the facts and contacts the dealer on WhatsApp with a reference code', async ({ page, context }) => {
+  test('finds a car, sees the facts and contacts the dealer on WhatsApp with a reference code', async ({
+    page,
+    context,
+  }) => {
     await page.goto('/ar');
     await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
     await page.getByRole('button', { name: 'دوّر', exact: true }).click();
@@ -18,7 +21,13 @@ test.describe('customer: search → listing → contact', () => {
     await expect(page.getByText('متدفعش أي تأمين قبل ما تشوف العربية').first()).toBeVisible();
 
     // wa.me is external: stub it so the test asserts the deep link, not WhatsApp's site.
-    await context.route(/https:\/\/(wa\.me|api\.whatsapp\.com)\/.*/, (route) => route.fulfill({ status: 200, contentType: 'text/html', body: '<html lang="en"><title>wa</title></html>' }));
+    await context.route(/https:\/\/(wa\.me|api\.whatsapp\.com)\/.*/, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'text/html',
+        body: '<html lang="en"><title>wa</title></html>',
+      }),
+    );
     const popup = context.waitForEvent('page');
     await page.getByRole('button', { name: 'واتساب' }).first().click();
     const wa = await popup;
@@ -38,7 +47,8 @@ test.describe('customer: search → listing → contact', () => {
 
   test('landing pages expose structured data and hreflang', async ({ page, request }) => {
     const res = await request.get(`${API}/v1/search?limit=1`);
-    const card = ((await res.json()) as { items: { card: { id: string; slug: string } }[] }).items[0]!.card;
+    const card = ((await res.json()) as { items: { card: { id: string; slug: string } }[] })
+      .items[0]!.card;
     await page.goto(`/en/cars/${card.id}-${card.slug}`);
     const ld = await page.locator('script[type="application/ld+json"]').first().textContent();
     expect(JSON.parse(ld!)).toMatchObject({ '@type': 'Product', offers: { priceCurrency: 'EGP' } });
@@ -47,13 +57,33 @@ test.describe('customer: search → listing → contact', () => {
     await expect(page.getByRole('heading', { level: 1 })).toContainText('القاهرة');
   });
 
-  for (const path of ['/ar', '/en', '/ar/search?city=cairo', '/en/cairo', '/ar/dealers', '/en/help', '/ar/for-dealers', '/en/account']) {
+  for (const path of [
+    '/ar',
+    '/en',
+    '/ar/search?city=cairo',
+    '/en/cairo',
+    '/ar/dealers',
+    '/en/help',
+    '/ar/for-dealers',
+    '/en/account',
+  ]) {
     test(`axe: no WCAG 2.2 AA violations on ${path}`, async ({ page }) => {
       await page.goto(path);
       await page.locator('main').first().waitFor();
       await page.waitForTimeout(500);
-      const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).exclude('.maplibregl-map').analyze();
-      expect(r.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).slice(0, 3).join(' | ')}`)).toEqual([]);
+      const r = await new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
+        .exclude('.maplibregl-map')
+        .analyze();
+      expect(
+        r.violations.map(
+          (v) =>
+            `${v.id}: ${v.nodes
+              .map((n) => n.target.join(' '))
+              .slice(0, 3)
+              .join(' | ')}`,
+        ),
+      ).toEqual([]);
     });
   }
 });

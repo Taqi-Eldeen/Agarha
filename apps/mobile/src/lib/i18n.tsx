@@ -2,7 +2,15 @@ import { messages } from '@agarha/i18n';
 import type { Locale } from '@agarha/schemas';
 import * as Localization from 'expo-localization';
 import * as Updates from 'expo-updates';
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 import { I18nManager } from 'react-native';
 import { IntlProvider } from 'use-intl';
 import { setApiLocale } from './api';
@@ -15,7 +23,10 @@ interface LocaleCtx {
 const Ctx = createContext<LocaleCtx | null>(null);
 
 /** Device language decides the first run (Arabic unless the phone is in English); the choice is remembered. */
-export function initialLocale(saved: Locale | null, deviceLanguage: string | null | undefined): Locale {
+export function initialLocale(
+  saved: Locale | null,
+  deviceLanguage: string | null | undefined,
+): Locale {
   if (saved) return saved;
   return deviceLanguage === 'en' ? 'en' : 'ar';
 }

@@ -7,7 +7,9 @@ import { useState } from 'react';
 import { useRouter } from '@/i18n/routing';
 
 // The drawer (Radix Dialog + Select) loads only when someone actually reports.
-const ReportDrawer = dynamic(() => import('./report-dialog').then((m) => m.ReportDrawer), { ssr: false });
+const ReportDrawer = dynamic(() => import('./report-dialog').then((m) => m.ReportDrawer), {
+  ssr: false,
+});
 
 export function ReportButton({ listingId }: { listingId: string }) {
   const tl = useTranslations('web.listing');
@@ -19,7 +21,11 @@ export function ReportButton({ listingId }: { listingId: string }) {
       <button
         type="button"
         className="inline-flex min-h-touch items-center gap-2 text-caption text-fg-secondary hover:text-danger"
-        onClick={() => (me.data ? setOpen(true) : router.push(`/account?next=${encodeURIComponent(window.location.pathname)}`))}
+        onClick={() =>
+          me.data
+            ? setOpen(true)
+            : router.push(`/account?next=${encodeURIComponent(window.location.pathname)}`)
+        }
       >
         <Flag aria-hidden className="size-4" strokeWidth={1.75} />
         {tl('report')}

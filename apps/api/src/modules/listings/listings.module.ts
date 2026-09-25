@@ -3,7 +3,11 @@ import { BRANCH_LISTINGS_CHECK } from '../../common/ports';
 import { BillingModule } from '../billing';
 import { CatalogModule } from '../catalog';
 import { ImportService } from './import.service';
-import { AdminListingsController, DealerListingsController, FavoritesController } from './listings.controller';
+import {
+  AdminListingsController,
+  DealerListingsController,
+  FavoritesController,
+} from './listings.controller';
 import { ListingsService } from './listings.service';
 
 /** Global only to provide BRANCH_LISTINGS_CHECK to the dealers module without an import cycle. */
@@ -14,7 +18,11 @@ import { ListingsService } from './listings.service';
   providers: [
     ListingsService,
     ImportService,
-    { provide: BRANCH_LISTINGS_CHECK, inject: [ListingsService], useFactory: (l: ListingsService) => (branchId: string) => l.branchHasListings(branchId) },
+    {
+      provide: BRANCH_LISTINGS_CHECK,
+      inject: [ListingsService],
+      useFactory: (l: ListingsService) => (branchId: string) => l.branchHasListings(branchId),
+    },
   ],
   exports: [ListingsService, BRANCH_LISTINGS_CHECK],
 })

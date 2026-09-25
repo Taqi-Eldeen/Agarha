@@ -12,10 +12,17 @@ import { VerificationService } from './verification.service';
 const uploadSchema = z.object({
   type: z.enum(VERIFICATION_DOC_TYPES),
   mimeType: z.enum(['application/pdf', 'image/jpeg']),
-  sizeBytes: z.number().int().min(1).max(10 * 1024 * 1024),
+  sizeBytes: z
+    .number()
+    .int()
+    .min(1)
+    .max(10 * 1024 * 1024),
   sha256: z.string().regex(/^[a-f0-9]{64}$/),
 });
-const reviewSchema = z.discriminatedUnion('approve', [z.object({ approve: z.literal(true) }), z.object({ approve: z.literal(false), reason: z.string().trim().min(3).max(300) })]);
+const reviewSchema = z.discriminatedUnion('approve', [
+  z.object({ approve: z.literal(true) }),
+  z.object({ approve: z.literal(false), reason: z.string().trim().min(3).max(300) }),
+]);
 
 type Dealer = { dealerId: string; userId: string; role: 'dealer_owner' | 'dealer_staff' };
 
@@ -27,14 +34,20 @@ export class DealerDocumentsController {
   @Get()
   @Auth('dealer', 'dealer_owner')
   async list(@CurrentDealer() d: Dealer) {
-    return { items: await this.verification.list(d.dealerId), checklist: await this.verification.checklist(d.dealerId) };
+    return {
+      items: await this.verification.list(d.dealerId),
+      checklist: await this.verification.checklist(d.dealerId),
+    };
   }
 
   @Post('uploads')
   @Auth('dealer', 'dealer_owner')
   @Idempotent()
   @ZodBody(uploadSchema)
-  create(@CurrentDealer() d: Dealer, @Body(new ZodPipe(uploadSchema)) body: z.output<typeof uploadSchema>) {
+  create(
+    @CurrentDealer() d: Dealer,
+    @Body(new ZodPipe(uploadSchema)) body: z.output<typeof uploadSchema>,
+  ) {
     return this.verification.createUpload(d.dealerId, body, { userId: d.userId, role: d.role });
   }
 
@@ -54,21 +67,40 @@ export class AdminDocumentsController {
   @Get('dealers/:dealerId/documents')
   @AdminAuth('admin', 'moderator')
   async list(@Param('dealerId', ParseUUIDPipe) dealerId: string) {
-    return { items: await this.verification.list(dealerId), checklist: await this.verification.checklist(dealerId) };
+    return {
+      items: await this.verification.list(dealerId),
+      checklist: await this.verification.checklist(dealerId),
+    };
   }
 
   @Post('documents/:id/view')
   @HttpCode(200)
   @AdminAuth('admin', 'moderator')
-  view(@CurrentAuth() a: AuthContext, @Param('id', ParseUUIDPipe) id: string, @Client() c: ClientInfo) {
-    return this.verification.signedUrl(id, { userId: a.userId, role: a.roles[0] ?? 'moderator', ip: c.ip, requestId: c.requestId });
+  view(
+    @CurrentAuth() a: AuthContext,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Client() c: ClientInfo,
+  ) {
+    return this.verification.signedUrl(id, {
+      userId: a.userId,
+      role: a.roles[0] ?? 'moderator',
+      ip: c.ip,
+      requestId: c.requestId,
+    });
   }
 
   @Post('documents/:id/review')
   @HttpCode(200)
   @AdminAuth('admin', 'moderator')
   @ZodBody(reviewSchema)
-  review(@CurrentAuth() a: AuthContext, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodPipe(reviewSchema)) body: z.output<typeof reviewSchema>) {
-    return this.verification.review(id, body, { userId: a.userId, role: a.roles[0] ?? 'moderator' });
+  review(
+    @CurrentAuth() a: AuthContext,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodPipe(reviewSchema)) body: z.output<typeof reviewSchema>,
+  ) {
+    return this.verification.review(id, body, {
+      userId: a.userId,
+      role: a.roles[0] ?? 'moderator',
+    });
   }
 }

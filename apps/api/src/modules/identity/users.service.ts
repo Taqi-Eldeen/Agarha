@@ -57,7 +57,14 @@ export class UsersService {
   async basicByIds(ids: string[]) {
     if (!ids.length) return [];
     return this.db
-      .select({ id: users.id, phone: users.phoneE164, displayName: users.displayName, status: users.status, lastSignInAt: users.lastSignInAt, createdAt: users.createdAt })
+      .select({
+        id: users.id,
+        phone: users.phoneE164,
+        displayName: users.displayName,
+        status: users.status,
+        lastSignInAt: users.lastSignInAt,
+        createdAt: users.createdAt,
+      })
       .from(users)
       .where(inArray(users.id, ids));
   }
@@ -71,12 +78,19 @@ export class UsersService {
   }
 
   async platformRoles(userId: string): Promise<Role[]> {
-    const rows = await this.db.select({ role: userRoles.role }).from(userRoles).where(eq(userRoles.userId, userId));
+    const rows = await this.db
+      .select({ role: userRoles.role })
+      .from(userRoles)
+      .where(eq(userRoles.userId, userId));
     return rows.map((r) => r.role);
   }
 
   /** Re-derives session claims from current data. Returns null if the session must end. */
-  async claimsFor(userId: string, scope: SessionScope, dealerId: string | null = null): Promise<Claims | null> {
+  async claimsFor(
+    userId: string,
+    scope: SessionScope,
+    dealerId: string | null = null,
+  ): Promise<Claims | null> {
     const u = await this.findById(userId);
     if (!u || u.status !== 'active') return null;
     if (scope === 'customer') return { userId, scope, roles: ['customer'] };
@@ -90,12 +104,18 @@ export class UsersService {
     return { userId, scope, roles: [m.role], dealerId: m.dealerId };
   }
 
-  toSessionUser(u: { id: string; phoneE164: string | null; locale: Locale }, roles: Role[]): SessionUser {
+  toSessionUser(
+    u: { id: string; phoneE164: string | null; locale: Locale },
+    roles: Role[],
+  ): SessionUser {
     return { id: u.id, phone: u.phoneE164 ?? '', roles, locale: u.locale };
   }
 
   async credentials(userId: string) {
-    const [c] = await this.db.select().from(userCredentials).where(eq(userCredentials.userId, userId));
+    const [c] = await this.db
+      .select()
+      .from(userCredentials)
+      .where(eq(userCredentials.userId, userId));
     return c ?? null;
   }
 
@@ -114,16 +134,29 @@ export class UsersService {
     return i ?? null;
   }
 
-  async linkIdentity(userId: string, provider: 'google' | 'apple' | 'google_workspace', subject: string, email?: string) {
-    await this.db.insert(userIdentities).values({ userId, provider, subject, email: email ?? null }).onConflictDoNothing();
+  async linkIdentity(
+    userId: string,
+    provider: 'google' | 'apple' | 'google_workspace',
+    subject: string,
+    email?: string,
+  ) {
+    await this.db
+      .insert(userIdentities)
+      .values({ userId, provider, subject, email: email ?? null })
+      .onConflictDoNothing();
   }
 
   async grantRoles(userId: string, roles: Role[]) {
     if (!roles.length) return;
-    await this.db.insert(userRoles).values(roles.map((role) => ({ userId, role }))).onConflictDoNothing();
+    await this.db
+      .insert(userRoles)
+      .values(roles.map((role) => ({ userId, role })))
+      .onConflictDoNothing();
   }
 
   async revokeRoles(userId: string, roles: Role[]) {
-    await this.db.delete(userRoles).where(and(eq(userRoles.userId, userId), inArray(userRoles.role, roles)));
+    await this.db
+      .delete(userRoles)
+      .where(and(eq(userRoles.userId, userId), inArray(userRoles.role, roles)));
   }
 }

@@ -8,7 +8,14 @@ const WEB_HOST = process.env.EXPO_PUBLIC_WEB_HOST ?? 'agarha.com';
 const EAS_PROJECT_ID = process.env.EAS_PROJECT_ID;
 
 // Deep links: listing, dealer, search and landing pages open in the app (Android App Links + iOS Universal Links).
-const LINK_PREFIXES = ['/ar/cars', '/en/cars', '/ar/dealers', '/en/dealers', '/ar/search', '/en/search'];
+const LINK_PREFIXES = [
+  '/ar/cars',
+  '/en/cars',
+  '/ar/dealers',
+  '/en/dealers',
+  '/ar/search',
+  '/en/search',
+];
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
@@ -42,26 +49,66 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       NSPrivacyTracking: false,
       NSPrivacyTrackingDomains: [],
       NSPrivacyCollectedDataTypes: [
-        { NSPrivacyCollectedDataType: 'NSPrivacyCollectedDataTypePhoneNumber', NSPrivacyCollectedDataTypeLinked: true, NSPrivacyCollectedDataTypeTracking: false, NSPrivacyCollectedDataTypePurposes: ['NSPrivacyCollectedDataTypePurposeAppFunctionality'] },
-        { NSPrivacyCollectedDataType: 'NSPrivacyCollectedDataTypeCoarseLocation', NSPrivacyCollectedDataTypeLinked: false, NSPrivacyCollectedDataTypeTracking: false, NSPrivacyCollectedDataTypePurposes: ['NSPrivacyCollectedDataTypePurposeAppFunctionality'] },
-        { NSPrivacyCollectedDataType: 'NSPrivacyCollectedDataTypeProductInteraction', NSPrivacyCollectedDataTypeLinked: false, NSPrivacyCollectedDataTypeTracking: false, NSPrivacyCollectedDataTypePurposes: ['NSPrivacyCollectedDataTypePurposeAnalytics'] },
-        { NSPrivacyCollectedDataType: 'NSPrivacyCollectedDataTypeCrashData', NSPrivacyCollectedDataTypeLinked: false, NSPrivacyCollectedDataTypeTracking: false, NSPrivacyCollectedDataTypePurposes: ['NSPrivacyCollectedDataTypePurposeAppFunctionality'] },
+        {
+          NSPrivacyCollectedDataType: 'NSPrivacyCollectedDataTypePhoneNumber',
+          NSPrivacyCollectedDataTypeLinked: true,
+          NSPrivacyCollectedDataTypeTracking: false,
+          NSPrivacyCollectedDataTypePurposes: ['NSPrivacyCollectedDataTypePurposeAppFunctionality'],
+        },
+        {
+          NSPrivacyCollectedDataType: 'NSPrivacyCollectedDataTypeCoarseLocation',
+          NSPrivacyCollectedDataTypeLinked: false,
+          NSPrivacyCollectedDataTypeTracking: false,
+          NSPrivacyCollectedDataTypePurposes: ['NSPrivacyCollectedDataTypePurposeAppFunctionality'],
+        },
+        {
+          NSPrivacyCollectedDataType: 'NSPrivacyCollectedDataTypeProductInteraction',
+          NSPrivacyCollectedDataTypeLinked: false,
+          NSPrivacyCollectedDataTypeTracking: false,
+          NSPrivacyCollectedDataTypePurposes: ['NSPrivacyCollectedDataTypePurposeAnalytics'],
+        },
+        {
+          NSPrivacyCollectedDataType: 'NSPrivacyCollectedDataTypeCrashData',
+          NSPrivacyCollectedDataTypeLinked: false,
+          NSPrivacyCollectedDataTypeTracking: false,
+          NSPrivacyCollectedDataTypePurposes: ['NSPrivacyCollectedDataTypePurposeAppFunctionality'],
+        },
       ],
       NSPrivacyAccessedAPITypes: [
-        { NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryUserDefaults', NSPrivacyAccessedAPITypeReasons: ['CA92.1'] },
-        { NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryFileTimestamp', NSPrivacyAccessedAPITypeReasons: ['C617.1'] },
-        { NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategorySystemBootTime', NSPrivacyAccessedAPITypeReasons: ['35F9.1'] },
-        { NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryDiskSpace', NSPrivacyAccessedAPITypeReasons: ['E174.1'] },
+        {
+          NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryUserDefaults',
+          NSPrivacyAccessedAPITypeReasons: ['CA92.1'],
+        },
+        {
+          NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryFileTimestamp',
+          NSPrivacyAccessedAPITypeReasons: ['C617.1'],
+        },
+        {
+          NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategorySystemBootTime',
+          NSPrivacyAccessedAPITypeReasons: ['35F9.1'],
+        },
+        {
+          NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryDiskSpace',
+          NSPrivacyAccessedAPITypeReasons: ['E174.1'],
+        },
       ],
     },
   },
   android: {
     package: ID,
     versionCode: 1,
-    adaptiveIcon: { foregroundImage: './assets/adaptive-icon.png', monochromeImage: './assets/adaptive-icon-mono.png', backgroundColor: '#0F6E68' },
+    adaptiveIcon: {
+      foregroundImage: './assets/adaptive-icon.png',
+      monochromeImage: './assets/adaptive-icon-mono.png',
+      backgroundColor: '#0F6E68',
+    },
     // Coarse location only: "near me" needs the area, not the exact spot.
     permissions: ['ACCESS_COARSE_LOCATION'],
-    blockedPermissions: ['android.permission.ACCESS_FINE_LOCATION', 'android.permission.RECORD_AUDIO', 'android.permission.READ_CONTACTS'],
+    blockedPermissions: [
+      'android.permission.ACCESS_FINE_LOCATION',
+      'android.permission.RECORD_AUDIO',
+      'android.permission.READ_CONTACTS',
+    ],
     intentFilters: [
       {
         action: 'VIEW',
@@ -77,16 +124,50 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-secure-store',
     'expo-apple-authentication',
     'expo-web-browser',
-    ...(process.env.SENTRY_ORG ? [['@sentry/react-native/expo', { organization: process.env.SENTRY_ORG, project: process.env.SENTRY_PROJECT ?? 'agarha-mobile' }] as [string, object]] : []),
+    ...(process.env.SENTRY_ORG
+      ? [
+          [
+            '@sentry/react-native/expo',
+            {
+              organization: process.env.SENTRY_ORG,
+              project: process.env.SENTRY_PROJECT ?? 'agarha-mobile',
+            },
+          ] as [string, object],
+        ]
+      : []),
     'expo-localization',
     'expo-font',
-    ['expo-splash-screen', { image: './assets/splash-icon.png', imageWidth: 160, backgroundColor: '#F4F7F6', dark: { image: './assets/splash-icon.png', backgroundColor: '#0F1519' } }],
-    ['expo-notifications', { icon: './assets/notification-icon.png', color: '#0F6E68', defaultChannel: 'default' }],
-    ['expo-location', { locationWhenInUsePermission: 'Agarha uses your location only to show rental cars near you. / أجّرها بيستخدم موقعك بس عشان يوريك العربيات القريبة منك.' }],
-    ['expo-build-properties', { android: { minSdkVersion: 26 }, ios: { deploymentTarget: '16.4' } }],
+    [
+      'expo-splash-screen',
+      {
+        image: './assets/splash-icon.png',
+        imageWidth: 160,
+        backgroundColor: '#F4F7F6',
+        dark: { image: './assets/splash-icon.png', backgroundColor: '#0F1519' },
+      },
+    ],
+    [
+      'expo-notifications',
+      { icon: './assets/notification-icon.png', color: '#0F6E68', defaultChannel: 'default' },
+    ],
+    [
+      'expo-location',
+      {
+        locationWhenInUsePermission:
+          'Agarha uses your location only to show rental cars near you. / أجّرها بيستخدم موقعك بس عشان يوريك العربيات القريبة منك.',
+      },
+    ],
+    [
+      'expo-build-properties',
+      { android: { minSdkVersion: 26 }, ios: { deploymentTarget: '16.4' } },
+    ],
   ],
   experiments: { typedRoutes: true },
   runtimeVersion: { policy: 'appVersion' },
   ...(EAS_PROJECT_ID ? { updates: { url: `https://u.expo.dev/${EAS_PROJECT_ID}` } } : {}),
-  extra: { appEnv: APP_ENV, webHost: WEB_HOST, ...(EAS_PROJECT_ID ? { eas: { projectId: EAS_PROJECT_ID } } : {}) },
+  extra: {
+    appEnv: APP_ENV,
+    webHost: WEB_HOST,
+    ...(EAS_PROJECT_ID ? { eas: { projectId: EAS_PROJECT_ID } } : {}),
+  },
 });

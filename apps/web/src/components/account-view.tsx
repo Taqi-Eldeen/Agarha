@@ -41,9 +41,13 @@ export function AccountView() {
         />
         <p className="text-caption text-fg-secondary">
           {t('consent')}{' '}
-          <Link href="/legal/terms" className="underline">{tl('terms')}</Link>
+          <Link href="/legal/terms" className="underline">
+            {tl('terms')}
+          </Link>
           {' · '}
-          <Link href="/legal/privacy" className="underline">{tl('privacy')}</Link>
+          <Link href="/legal/privacy" className="underline">
+            {tl('privacy')}
+          </Link>
         </p>
       </div>
     );
@@ -58,12 +62,30 @@ export function AccountView() {
       <ReviewPrompts />
       <section className="flex flex-col gap-4 rounded-lg border border-border bg-card p-4">
         <h2 className="text-h2">{t('profile')}</h2>
-        <TextField label={t('displayName')} defaultValue={user.displayName ?? ''} onChange={(e) => setName(e.target.value)} maxLength={60} />
-        <Select label={t('language')} value={lang ?? user.locale} onValueChange={setLang} options={[{ value: 'ar', label: 'العربية' }, { value: 'en', label: 'English' }]} />
+        <TextField
+          label={t('displayName')}
+          defaultValue={user.displayName ?? ''}
+          onChange={(e) => setName(e.target.value)}
+          maxLength={60}
+        />
+        <Select
+          label={t('language')}
+          value={lang ?? user.locale}
+          onValueChange={setLang}
+          options={[
+            { value: 'ar', label: 'العربية' },
+            { value: 'en', label: 'English' },
+          ]}
+        />
         <Button
           className="self-start"
           onClick={async () => {
-            await api.PATCH('/v1/me', { body: { ...(name !== undefined ? { displayName: name || null } : {}), ...(lang ? { locale: lang as 'ar' | 'en' } : {}) } });
+            await api.PATCH('/v1/me', {
+              body: {
+                ...(name !== undefined ? { displayName: name || null } : {}),
+                ...(lang ? { locale: lang as 'ar' | 'en' } : {}),
+              },
+            });
             await qc.invalidateQueries({ queryKey: ['me'] });
             toast({ tone: 'success', text: t('saved') });
           }}
@@ -79,7 +101,9 @@ export function AccountView() {
           className="self-start"
           onClick={async () => {
             const { data } = await api.GET('/v1/me/export');
-            const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+            const url = URL.createObjectURL(
+              new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }),
+            );
             const a = document.createElement('a');
             a.href = url;
             a.download = 'agarha-my-data.json';

@@ -1,7 +1,18 @@
 type ColorKey =
-  | 'brandPrimary' | 'brandPressed' | 'brandSubtle' | 'accentFeatured' | 'accentOnFeatured'
-  | 'textPrimary' | 'textSecondary' | 'borderDefault' | 'surfacePage' | 'surfaceCard'
-  | 'statusAvailable' | 'statusStale' | 'statusDanger' | 'statusInfo';
+  | 'brandPrimary'
+  | 'brandPressed'
+  | 'brandSubtle'
+  | 'accentFeatured'
+  | 'accentOnFeatured'
+  | 'textPrimary'
+  | 'textSecondary'
+  | 'borderDefault'
+  | 'surfacePage'
+  | 'surfaceCard'
+  | 'statusAvailable'
+  | 'statusStale'
+  | 'statusDanger'
+  | 'statusInfo';
 
 interface TypeStyle {
   fontSize: number;

@@ -1,9 +1,12 @@
 import { z } from 'zod';
 
-const bool = z
-  .enum(['true', 'false', '1', '0'])
-  .transform((v) => v === 'true' || v === '1');
-const csv = z.string().transform((s) => s.split(',').map((x) => x.trim()).filter(Boolean));
+const bool = z.enum(['true', 'false', '1', '0']).transform((v) => v === 'true' || v === '1');
+const csv = z.string().transform((s) =>
+  s
+    .split(',')
+    .map((x) => x.trim())
+    .filter(Boolean),
+);
 
 /** Cloudflare's documented always-pass test secret. Rejected in production below. */
 export const TURNSTILE_TEST_SECRET = '1x0000000000000000000000000000000AA';
@@ -37,7 +40,9 @@ export const envSchema = z
     OTP_MAX_ATTEMPTS: z.coerce.number().int().default(5),
     OTP_RESEND_AFTER_SECONDS: z.coerce.number().int().default(60),
     /** Ordered failover list for SMS OTP. `console` logs the code and is local/test only. */
-    SMS_PROVIDERS: csv.pipe(z.array(z.enum(['twilio', 'vonage', 'console'])).min(1)).default(['console']),
+    SMS_PROVIDERS: csv
+      .pipe(z.array(z.enum(['twilio', 'vonage', 'console'])).min(1))
+      .default(['console']),
     /** WhatsApp as the OTP fallback channel (uses WHATSAPP_PROVIDER). */
     WHATSAPP_OTP_ENABLED: bool.default(true),
 
@@ -125,33 +130,87 @@ export const envSchema = z
       for (const k of keys)
         if (!env[k]) ctx.addIssue({ code: 'custom', path: [k], message: `required when ${why}` });
     };
-    need(env.SMS_PROVIDERS.includes('twilio'), ['TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_MESSAGING_SERVICE_SID'], 'SMS_PROVIDERS includes twilio');
-    need(env.SMS_PROVIDERS.includes('vonage'), ['VONAGE_API_KEY', 'VONAGE_API_SECRET'], 'SMS_PROVIDERS includes vonage');
-    need(env.WHATSAPP_PROVIDER === 'meta', ['WHATSAPP_PHONE_NUMBER_ID', 'WHATSAPP_ACCESS_TOKEN', 'WHATSAPP_APP_SECRET'], 'WHATSAPP_PROVIDER=meta');
+    need(
+      env.SMS_PROVIDERS.includes('twilio'),
+      ['TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_MESSAGING_SERVICE_SID'],
+      'SMS_PROVIDERS includes twilio',
+    );
+    need(
+      env.SMS_PROVIDERS.includes('vonage'),
+      ['VONAGE_API_KEY', 'VONAGE_API_SECRET'],
+      'SMS_PROVIDERS includes vonage',
+    );
+    need(
+      env.WHATSAPP_PROVIDER === 'meta',
+      ['WHATSAPP_PHONE_NUMBER_ID', 'WHATSAPP_ACCESS_TOKEN', 'WHATSAPP_APP_SECRET'],
+      'WHATSAPP_PROVIDER=meta',
+    );
     need(env.PUSH_PROVIDER === 'expo', ['EXPO_ACCESS_TOKEN'], 'PUSH_PROVIDER=expo');
     need(env.EMAIL_PROVIDER === 'resend', ['RESEND_API_KEY'], 'EMAIL_PROVIDER=resend');
     need(env.MAPS_PROVIDER === 'google', ['GOOGLE_MAPS_API_KEY'], 'MAPS_PROVIDER=google');
     need(env.MAPS_PROVIDER === 'mapbox', ['MAPBOX_ACCESS_TOKEN'], 'MAPS_PROVIDER=mapbox');
-    need(env.PAYMENT_GATEWAY === 'paymob', ['PAYMOB_SECRET_KEY', 'PAYMOB_PUBLIC_KEY', 'PAYMOB_HMAC_SECRET'], 'PAYMENT_GATEWAY=paymob');
+    need(
+      env.PAYMENT_GATEWAY === 'paymob',
+      ['PAYMOB_SECRET_KEY', 'PAYMOB_PUBLIC_KEY', 'PAYMOB_HMAC_SECRET'],
+      'PAYMENT_GATEWAY=paymob',
+    );
 
     if (env.APP_ENV === 'production') {
       if (env.SMS_PROVIDERS.includes('console'))
-        ctx.addIssue({ code: 'custom', path: ['SMS_PROVIDERS'], message: 'console provider is not allowed in production' });
+        ctx.addIssue({
+          code: 'custom',
+          path: ['SMS_PROVIDERS'],
+          message: 'console provider is not allowed in production',
+        });
       if (env.SMS_PROVIDERS.length < 2)
-        ctx.addIssue({ code: 'custom', path: ['SMS_PROVIDERS'], message: 'production needs two SMS providers for failover' });
+        ctx.addIssue({
+          code: 'custom',
+          path: ['SMS_PROVIDERS'],
+          message: 'production needs two SMS providers for failover',
+        });
       if (env.TURNSTILE_SECRET_KEY === TURNSTILE_TEST_SECRET)
-        ctx.addIssue({ code: 'custom', path: ['TURNSTILE_SECRET_KEY'], message: 'test secret is not allowed in production' });
+        ctx.addIssue({
+          code: 'custom',
+          path: ['TURNSTILE_SECRET_KEY'],
+          message: 'test secret is not allowed in production',
+        });
       if (env.ADMIN_DEV_LOGIN)
-        ctx.addIssue({ code: 'custom', path: ['ADMIN_DEV_LOGIN'], message: 'not allowed in production' });
+        ctx.addIssue({
+          code: 'custom',
+          path: ['ADMIN_DEV_LOGIN'],
+          message: 'not allowed in production',
+        });
       if (env.ADMIN_IP_ALLOWLIST.length === 0)
-        ctx.addIssue({ code: 'custom', path: ['ADMIN_IP_ALLOWLIST'], message: 'required in production' });
+        ctx.addIssue({
+          code: 'custom',
+          path: ['ADMIN_IP_ALLOWLIST'],
+          message: 'required in production',
+        });
       if (env.STORAGE_DRIVER === 'local')
-        ctx.addIssue({ code: 'custom', path: ['STORAGE_DRIVER'], message: 'local storage is not allowed in production' });
-      for (const [k, v] of [['WHATSAPP_PROVIDER', env.WHATSAPP_PROVIDER], ['PUSH_PROVIDER', env.PUSH_PROVIDER], ['EMAIL_PROVIDER', env.EMAIL_PROVIDER], ['PAYMENT_GATEWAY', env.PAYMENT_GATEWAY], ['MAPS_PROVIDER', env.MAPS_PROVIDER]] as const)
+        ctx.addIssue({
+          code: 'custom',
+          path: ['STORAGE_DRIVER'],
+          message: 'local storage is not allowed in production',
+        });
+      for (const [k, v] of [
+        ['WHATSAPP_PROVIDER', env.WHATSAPP_PROVIDER],
+        ['PUSH_PROVIDER', env.PUSH_PROVIDER],
+        ['EMAIL_PROVIDER', env.EMAIL_PROVIDER],
+        ['PAYMENT_GATEWAY', env.PAYMENT_GATEWAY],
+        ['MAPS_PROVIDER', env.MAPS_PROVIDER],
+      ] as const)
         if (v === 'console' || v === 'mock')
-          ctx.addIssue({ code: 'custom', path: [k], message: 'mock adapters are not allowed in production' });
+          ctx.addIssue({
+            code: 'custom',
+            path: [k],
+            message: 'mock adapters are not allowed in production',
+          });
       if (!env.COOKIE_SECURE)
-        ctx.addIssue({ code: 'custom', path: ['COOKIE_SECURE'], message: 'must be true in production' });
+        ctx.addIssue({
+          code: 'custom',
+          path: ['COOKIE_SECURE'],
+          message: 'must be true in production',
+        });
     }
   });
 

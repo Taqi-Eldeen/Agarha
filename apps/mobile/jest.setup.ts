@@ -8,15 +8,19 @@ jest.mock('expo-secure-store', () => {
     deleteItemAsync: jest.fn(async (k: string) => void store.delete(k)),
   };
 });
-// eslint-disable-next-line @typescript-eslint/no-require-imports -- jest.mock factories must be synchronous
-jest.mock('@react-native-async-storage/async-storage', () => require('@react-native-async-storage/async-storage/jest/async-storage-mock'));
+jest.mock('@react-native-async-storage/async-storage', () =>
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- jest.mock factories must be synchronous
+  require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
+);
 // react-native-maps is native-only; render its components as plain views in tests.
 // jest.mock factories can't reference imports, so types come from import() here.
 /* eslint-disable @typescript-eslint/consistent-type-imports */
 jest.mock('react-native-maps', () => {
   const { forwardRef, createElement } = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
-  const MapView = forwardRef((props: object, ref) => createElement(View, { ...props, ref } as object));
+  const MapView = forwardRef((props: object, ref) =>
+    createElement(View, { ...props, ref } as object),
+  );
   const Marker = (props: object) => createElement(View, props);
   return { __esModule: true, default: MapView, Marker };
 });

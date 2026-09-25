@@ -1,4 +1,3 @@
- 
 // Writes docs/api/openapi.json from the code (no server needed). CI diffs it against main (contract test).
 import 'reflect-metadata';
 import { writeFileSync } from 'node:fs';
@@ -20,7 +19,11 @@ async function main() {
     TURNSTILE_SECRET_KEY: 'x',
     LOG_LEVEL: 'fatal',
   });
-  const app = await NestFactory.create<NestExpressApplication>(AppModule.forRoot(env), { logger: false, abortOnError: false, preview: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule.forRoot(env), {
+    logger: false,
+    abortOnError: false,
+    preview: true,
+  });
   configureApp(app, env);
   const doc = openApiDocument(app);
   const out = join(__dirname, '..', '..', '..', 'docs', 'api', 'openapi.json');

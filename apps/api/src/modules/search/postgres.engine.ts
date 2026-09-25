@@ -37,7 +37,9 @@ export class PostgresSearchEngine implements SearchEngine {
       featuredUntil: doc.featuredUntil,
       lastConfirmedAt: doc.lastConfirmedAt,
       publishedAt: doc.publishedAt,
-      location: (doc.lat !== null && doc.lng !== null ? sql`ST_SetSRID(ST_MakePoint(${doc.lng}, ${doc.lat}), 4326)` : null) as never,
+      location: (doc.lat !== null && doc.lng !== null
+        ? sql`ST_SetSRID(ST_MakePoint(${doc.lng}, ${doc.lat}), 4326)`
+        : null) as never,
       searchText: doc.searchText,
       card: doc.card,
       indexedAt: new Date(),
@@ -75,9 +77,14 @@ export class PostgresSearchEngine implements SearchEngine {
       // word_similarity (<%): the query is matched against the closest run of words, so short typo'd queries still hit long documents.
       f.push(sql`(${n} <% ${d.searchText} OR ${d.searchText} LIKE ${'%' + n + '%'})`);
     }
-    if (q.bbox) f.push(sql`${d.location} && ST_MakeEnvelope(${q.bbox[0]}, ${q.bbox[1]}, ${q.bbox[2]}, ${q.bbox[3]}, 4326)`);
+    if (q.bbox)
+      f.push(
+        sql`${d.location} && ST_MakeEnvelope(${q.bbox[0]}, ${q.bbox[1]}, ${q.bbox[2]}, ${q.bbox[3]}, 4326)`,
+      );
     if (q.lat !== undefined && q.lng !== undefined)
-      f.push(sql`ST_DWithin(${d.location}::geography, ST_SetSRID(ST_MakePoint(${q.lng}, ${q.lat}), 4326)::geography, ${q.radiusKm * 1000})`);
+      f.push(
+        sql`ST_DWithin(${d.location}::geography, ST_SetSRID(ST_MakePoint(${q.lng}, ${q.lat}), 4326)::geography, ${q.radiusKm * 1000})`,
+      );
     return f;
   }
 
@@ -96,27 +103,50 @@ export class PostgresSearchEngine implements SearchEngine {
   async search(q: SearchQuery, now: Date): Promise<SearchResult> {
     const where = and(...this.filters(q));
     const price = this.priceCol(q.period);
-    const point = q.lat !== undefined && q.lng !== undefined ? sql`ST_SetSRID(ST_MakePoint(${q.lng}, ${q.lat}), 4326)::geography` : null;
-    const distance = point ? sql<number>`round((ST_Distance(${d.location}::geography, ${point}) / 1000)::numeric, 2)::float8` : sql<number>`0::float8`;
+    const point =
+      q.lat !== undefined && q.lng !== undefined
+        ? sql`ST_SetSRID(ST_MakePoint(${q.lng}, ${q.lat}), 4326)::geography`
+        : null;
+    const distance = point
+      ? sql<number>`round((ST_Distance(${d.location}::geography, ${point}) / 1000)::numeric, 2)::float8`
+      : sql<number>`0::float8`;
 
     type Key = { k: number | string; id: string };
     const sortKey: SQL<number | string> =
-      q.sort === 'price_asc' || q.sort === 'price_desc' ? sql<number>`${price}` : q.sort === 'newest' ? sql<string>`to_char(${d.publishedAt} AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US')` : q.sort === 'distance' && point ? distance : this.rank(q, now);
+      q.sort === 'price_asc' || q.sort === 'price_desc'
+        ? sql<number>`${price}`
+        : q.sort === 'newest'
+          ? sql<string>`to_char(${d.publishedAt} AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US')`
+          : q.sort === 'distance' && point
+            ? distance
+            : this.rank(q, now);
     const asc = q.sort === 'price_asc' || (q.sort === 'distance' && !!point);
     const c = decodeCursor<Key>(q.cursor);
-    const after = c ? (asc ? sql`(${sortKey}, ${d.listingId}) > (${c.k}, ${c.id}::uuid)` : sql`(${sortKey} < ${c.k} OR (${sortKey} = ${c.k} AND ${d.listingId} < ${c.id}::uuid))`) : undefined;
+    const after = c
+      ? asc
+        ? sql`(${sortKey}, ${d.listingId}) > (${c.k}, ${c.id}::uuid)`
+        : sql`(${sortKey} < ${c.k} OR (${sortKey} = ${c.k} AND ${d.listingId} < ${c.id}::uuid))`
+      : undefined;
 
     const rows = await this.db
       .select({ card: d.card, k: sortKey, id: d.listingId, distance })
       .from(d)
       .where(and(where, after))
-      .orderBy(asc ? sql`${sortKey} ASC, ${d.listingId} ASC` : sql`${sortKey} DESC, ${d.listingId} DESC`)
+      .orderBy(
+        asc ? sql`${sortKey} ASC, ${d.listingId} ASC` : sql`${sortKey} DESC, ${d.listingId} DESC`,
+      )
       .limit(q.limit + 1);
-    const [{ total } = { total: 0 }] = await this.db.select({ total: sql<number>`count(*)::int` }).from(d).where(where);
+    const [{ total } = { total: 0 }] = await this.db
+      .select({ total: sql<number>`count(*)::int` })
+      .from(d)
+      .where(where);
     const page = rows.slice(0, q.limit);
     const last = page.at(-1);
     return {
-      items: page.map((r) => ({ card: r.card as ListingCard, ...(point ? { distanceKm: r.distance } : {}) })),
+      items: page.map((r) => ({
+        card: r.card as ListingCard,
+        ...(point ? { distanceKm: r.distance } : {}),
+      })),
       nextCursor: rows.length > q.limit && last ? encodeCursor({ k: last.k, id: last.id }) : null,
       total,
     };
@@ -125,7 +155,13 @@ export class PostgresSearchEngine implements SearchEngine {
   async pins(q: SearchQuery): Promise<MapPin[]> {
     const price = this.priceCol(q.period);
     const rows = await this.db
-      .select({ id: d.listingId, lat: sql<number>`ST_Y(${d.location})`, lng: sql<number>`ST_X(${d.location})`, price, featured: sql<boolean>`${d.featuredUntil} > now()` })
+      .select({
+        id: d.listingId,
+        lat: sql<number>`ST_Y(${d.location})`,
+        lng: sql<number>`ST_X(${d.location})`,
+        price,
+        featured: sql<boolean>`${d.featuredUntil} > now()`,
+      })
       .from(d)
       .where(and(...this.filters(q), sql`${d.location} IS NOT NULL`))
       .limit(500);
@@ -133,7 +169,11 @@ export class PostgresSearchEngine implements SearchEngine {
   }
 
   async newSince(q: SearchQuery, since: Date): Promise<string[]> {
-    const rows = await this.db.select({ id: d.listingId }).from(d).where(and(...this.filters(q), sql`${d.publishedAt} > ${since.toISOString()}::timestamptz`)).limit(50);
+    const rows = await this.db
+      .select({ id: d.listingId })
+      .from(d)
+      .where(and(...this.filters(q), sql`${d.publishedAt} > ${since.toISOString()}::timestamptz`))
+      .limit(50);
     return rows.map((r) => r.id);
   }
 }

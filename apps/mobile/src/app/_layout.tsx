@@ -35,7 +35,15 @@ AppState.addEventListener('change', (s) => focusManager.setFocused(s === 'active
 export default wrapRoot(RootLayout);
 
 function RootLayout() {
-  const [fonts] = useFonts({ IBMPlexSansArabic_400Regular, IBMPlexSansArabic_500Medium, IBMPlexSansArabic_600SemiBold, IBMPlexSans_400Regular, IBMPlexSans_500Medium, IBMPlexSans_600SemiBold, Rubik_600SemiBold });
+  const [fonts] = useFonts({
+    IBMPlexSansArabic_400Regular,
+    IBMPlexSansArabic_500Medium,
+    IBMPlexSansArabic_600SemiBold,
+    IBMPlexSans_400Regular,
+    IBMPlexSans_500Medium,
+    IBMPlexSans_600SemiBold,
+    Rubik_600SemiBold,
+  });
   if (!fonts) return null;
   return (
     <SafeAreaProvider>
@@ -76,7 +84,9 @@ function RootStack() {
       screenOptions={{
         headerStyle: { backgroundColor: colors.surfaceCard },
         headerTintColor: colors.textPrimary,
-        headerTitleStyle: { fontFamily: locale === 'ar' ? 'IBMPlexSansArabic_600SemiBold' : 'IBMPlexSans_600SemiBold' },
+        headerTitleStyle: {
+          fontFamily: locale === 'ar' ? 'IBMPlexSansArabic_600SemiBold' : 'IBMPlexSans_600SemiBold',
+        },
         headerBackButtonDisplayMode: 'minimal',
         contentStyle: { backgroundColor: colors.surfacePage },
       }}
@@ -86,12 +96,21 @@ function RootStack() {
       <Stack.Screen name="cars/[id]" options={{ title: '' }} />
       <Stack.Screen name="dealers/[slug]" options={{ title: '' }} />
       <Stack.Screen name="sign-in" options={{ presentation: 'modal', title: t('common.signIn') }} />
-      <Stack.Screen name="report/[id]" options={{ presentation: 'modal', title: t('web.report.title') }} />
+      <Stack.Screen
+        name="report/[id]"
+        options={{ presentation: 'modal', title: t('web.report.title') }}
+      />
       <Stack.Screen name="legal/[doc]" options={{ title: '' }} />
       <Stack.Screen name="help" options={{ title: t('web.help.title') }} />
       <Stack.Screen name="onboarding" options={{ headerShown: false, gestureEnabled: false }} />
-      <Stack.Screen name="review/[leadId]" options={{ presentation: 'modal', title: t('web.review.rating') }} />
-      <Stack.Screen name="availability/[id]" options={{ presentation: 'modal', title: t('web.listing.requestAvailability') }} />
+      <Stack.Screen
+        name="review/[leadId]"
+        options={{ presentation: 'modal', title: t('web.review.rating') }}
+      />
+      <Stack.Screen
+        name="availability/[id]"
+        options={{ presentation: 'modal', title: t('web.listing.requestAvailability') }}
+      />
       <Stack.Screen name="storybook" options={{ headerShown: false }} />
     </Stack>
   );

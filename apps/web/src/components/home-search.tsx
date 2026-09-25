@@ -5,7 +5,11 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { useRouter } from '@/i18n/routing';
 
-export function HomeSearch({ cities }: { cities: { slug: string; nameAr: string; nameEn: string }[] }) {
+export function HomeSearch({
+  cities,
+}: {
+  cities: { slug: string; nameAr: string; nameEn: string }[];
+}) {
   const t = useTranslations('web.home');
   const tu = useTranslations('ui');
   const locale = useLocale();
@@ -21,8 +25,24 @@ export function HomeSearch({ cities }: { cities: { slug: string; nameAr: string;
         router.push(`/search?city=${city}${type !== 'any' ? `&type=${type}` : ''}`);
       }}
     >
-      <Select label={t('city')} value={city} onValueChange={setCity} options={cities.map((c) => ({ value: c.slug, label: locale === 'ar' ? c.nameAr : c.nameEn }))} />
-      <Select label={t('type')} value={type} onValueChange={setType} options={[{ value: 'any', label: t('anyType') }, ...CAR_BODY_TYPES.map((b) => ({ value: b, label: tu(`bodyTypes.${b}`) }))]} />
+      <Select
+        label={t('city')}
+        value={city}
+        onValueChange={setCity}
+        options={cities.map((c) => ({
+          value: c.slug,
+          label: locale === 'ar' ? c.nameAr : c.nameEn,
+        }))}
+      />
+      <Select
+        label={t('type')}
+        value={type}
+        onValueChange={setType}
+        options={[
+          { value: 'any', label: t('anyType') },
+          ...CAR_BODY_TYPES.map((b) => ({ value: b, label: tu(`bodyTypes.${b}`) })),
+        ]}
+      />
       <Button type="submit" size="lg">
         {t('cta')}
       </Button>

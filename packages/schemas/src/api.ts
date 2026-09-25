@@ -1,13 +1,26 @@
 // Response shapes shared by the API (OpenAPI annotations), the generated client, web and mobile.
 import { z } from 'zod';
-import { CAR_BODY_TYPES, DRIVER_OPTIONS, LEAD_CHANNELS, LISTING_STATUSES, REQUIRED_DOCS, TRANSMISSIONS } from './enums.js';
+import {
+  CAR_BODY_TYPES,
+  DRIVER_OPTIONS,
+  LEAD_CHANNELS,
+  LISTING_STATUSES,
+  REQUIRED_DOCS,
+  TRANSMISSIONS,
+} from './enums.js';
 
 const localized = z.object({ ar: z.string(), en: z.string() });
 
 export const listingCardSchema = z.object({
   id: z.uuid(),
   slug: z.string(),
-  photo: z.object({ url320: z.string().nullable(), url640: z.string().nullable(), blurhash: z.string().nullable() }).nullable(),
+  photo: z
+    .object({
+      url320: z.string().nullable(),
+      url640: z.string().nullable(),
+      blurhash: z.string().nullable(),
+    })
+    .nullable(),
   photoCount: z.number().int(),
   make: localized,
   model: localized,
@@ -16,7 +29,12 @@ export const listingCardSchema = z.object({
   transmission: z.enum(TRANSMISSIONS),
   seats: z.number().int(),
   driverOption: z.enum(DRIVER_OPTIONS),
-  prices: z.object({ day: z.number(), week: z.number().nullable(), month: z.number().nullable(), deposit: z.number() }),
+  prices: z.object({
+    day: z.number(),
+    week: z.number().nullable(),
+    month: z.number().nullable(),
+    deposit: z.number(),
+  }),
   requiredDocs: z.array(z.enum(REQUIRED_DOCS)),
   minAge: z.number().int(),
   kmLimitPerDay: z.number().int().nullable(),
@@ -24,7 +42,15 @@ export const listingCardSchema = z.object({
   lastConfirmedAt: z.string(),
   available: z.boolean(),
   featured: z.boolean(),
-  dealer: z.object({ id: z.uuid(), slug: z.string(), nameAr: z.string(), nameEn: z.string(), verified: z.boolean(), whatsapp: z.string(), phone: z.string() }),
+  dealer: z.object({
+    id: z.uuid(),
+    slug: z.string(),
+    nameAr: z.string(),
+    nameEn: z.string(),
+    verified: z.boolean(),
+    whatsapp: z.string(),
+    phone: z.string(),
+  }),
   area: z.object({ slug: z.string(), ar: z.string(), en: z.string() }),
   city: z.object({ slug: z.string(), ar: z.string(), en: z.string() }),
   location: z.object({ lat: z.number(), lng: z.number() }).nullable(),
@@ -38,7 +64,17 @@ export const searchResultSchema = z.object({
 });
 export type SearchResult = z.infer<typeof searchResultSchema>;
 
-export const mapPinsSchema = z.object({ items: z.array(z.object({ id: z.uuid(), lat: z.number(), lng: z.number(), price: z.number(), featured: z.boolean() })) });
+export const mapPinsSchema = z.object({
+  items: z.array(
+    z.object({
+      id: z.uuid(),
+      lat: z.number(),
+      lng: z.number(),
+      price: z.number(),
+      featured: z.boolean(),
+    }),
+  ),
+});
 export type MapPins = z.infer<typeof mapPinsSchema>;
 
 const photoSchema = z.object({
@@ -48,7 +84,9 @@ const photoSchema = z.object({
   width: z.number().nullable(),
   height: z.number().nullable(),
   blurhash: z.string().nullable(),
-  urls: z.record(z.enum(['webp', 'avif']), z.record(z.enum(['320', '640', '1280']), z.string())).nullable(),
+  urls: z
+    .record(z.enum(['webp', 'avif']), z.record(z.enum(['320', '640', '1280']), z.string()))
+    .nullable(),
 });
 export type ListingPhoto = z.infer<typeof photoSchema>;
 
@@ -82,12 +120,27 @@ export const listingSchema = z.object({
   hiddenReason: z.string().nullable(),
   publishedAt: z.string().nullable(),
   updatedAt: z.string(),
-  prices: z.object({ day: z.number(), week: z.number().nullable(), month: z.number().nullable(), deposit: z.number() }),
+  prices: z.object({
+    day: z.number(),
+    week: z.number().nullable(),
+    month: z.number().nullable(),
+    deposit: z.number(),
+  }),
   photos: z.array(photoSchema),
 });
 export type Listing = z.infer<typeof listingSchema>;
 
-const modelRef = z.object({ id: z.uuid(), slug: z.string(), nameAr: z.string(), nameEn: z.string(), bodyType: z.enum(CAR_BODY_TYPES), makeId: z.uuid(), makeSlug: z.string(), makeNameAr: z.string(), makeNameEn: z.string() });
+const modelRef = z.object({
+  id: z.uuid(),
+  slug: z.string(),
+  nameAr: z.string(),
+  nameEn: z.string(),
+  bodyType: z.enum(CAR_BODY_TYPES),
+  makeId: z.uuid(),
+  makeSlug: z.string(),
+  makeNameAr: z.string(),
+  makeNameEn: z.string(),
+});
 export type ModelRef = z.infer<typeof modelRef>;
 
 export const listingDetailSchema = z.object({
@@ -109,7 +162,14 @@ export const listingDetailSchema = z.object({
 });
 export type ListingDetail = z.infer<typeof listingDetailSchema>;
 
-export const reviewSchema = z.object({ id: z.uuid(), rating: z.number(), body: z.string().nullable(), dealerReply: z.string().nullable(), dealerRepliedAt: z.string().nullable(), createdAt: z.string() });
+export const reviewSchema = z.object({
+  id: z.uuid(),
+  rating: z.number(),
+  body: z.string().nullable(),
+  dealerReply: z.string().nullable(),
+  dealerRepliedAt: z.string().nullable(),
+  createdAt: z.string(),
+});
 export type Review = z.infer<typeof reviewSchema>;
 
 export const branchSchema = z.object({
@@ -129,9 +189,38 @@ export const branchSchema = z.object({
 export type Branch = z.infer<typeof branchSchema>;
 
 export const dealerProfileSchema = z.object({
-  dealer: z.object({ id: z.uuid(), slug: z.string(), nameAr: z.string(), nameEn: z.string(), descriptionAr: z.string().nullable(), descriptionEn: z.string().nullable(), verified: z.boolean(), verifiedAt: z.string().nullable(), memberSince: z.string(), whatsapp: z.string(), phone: z.string() }),
-  branches: z.array(branchSchema.extend({ area: z.object({ nameAr: z.string(), nameEn: z.string(), citySlug: z.string(), cityNameAr: z.string(), cityNameEn: z.string(), slug: z.string() }).nullable() })),
-  reviews: z.object({ count: z.number(), average: z.number().nullable(), latest: z.array(reviewSchema) }),
+  dealer: z.object({
+    id: z.uuid(),
+    slug: z.string(),
+    nameAr: z.string(),
+    nameEn: z.string(),
+    descriptionAr: z.string().nullable(),
+    descriptionEn: z.string().nullable(),
+    verified: z.boolean(),
+    verifiedAt: z.string().nullable(),
+    memberSince: z.string(),
+    whatsapp: z.string(),
+    phone: z.string(),
+  }),
+  branches: z.array(
+    branchSchema.extend({
+      area: z
+        .object({
+          nameAr: z.string(),
+          nameEn: z.string(),
+          citySlug: z.string(),
+          cityNameAr: z.string(),
+          cityNameEn: z.string(),
+          slug: z.string(),
+        })
+        .nullable(),
+    }),
+  ),
+  reviews: z.object({
+    count: z.number(),
+    average: z.number().nullable(),
+    latest: z.array(reviewSchema),
+  }),
   responseRate: z.number().nullable(),
   fleet: z.array(listingCardSchema),
   fleetTotal: z.number(),
@@ -139,17 +228,60 @@ export const dealerProfileSchema = z.object({
 export type DealerProfile = z.infer<typeof dealerProfileSchema>;
 
 export const dealerDirectorySchema = z.object({
-  items: z.array(z.object({ id: z.uuid(), slug: z.string(), nameAr: z.string(), nameEn: z.string(), verified: z.boolean(), branchCount: z.number(), reviews: z.object({ count: z.number(), average: z.number().nullable() }) })),
+  items: z.array(
+    z.object({
+      id: z.uuid(),
+      slug: z.string(),
+      nameAr: z.string(),
+      nameEn: z.string(),
+      verified: z.boolean(),
+      branchCount: z.number(),
+      reviews: z.object({ count: z.number(), average: z.number().nullable() }),
+    }),
+  ),
   nextCursor: z.string().nullable(),
 });
 
-export const leadResponseSchema = z.object({ leadId: z.uuid(), refCode: z.string(), channel: z.enum(LEAD_CHANNELS), url: z.string() });
+export const leadResponseSchema = z.object({
+  leadId: z.uuid(),
+  refCode: z.string(),
+  channel: z.enum(LEAD_CHANNELS),
+  url: z.string(),
+});
 export type LeadResponse = z.infer<typeof leadResponseSchema>;
 
-export const citySchema = z.object({ id: z.uuid(), slug: z.string(), nameAr: z.string(), nameEn: z.string(), isActive: z.boolean(), lat: z.number().nullable(), lng: z.number().nullable() });
-export const areaSchema = z.object({ id: z.uuid(), cityId: z.uuid(), slug: z.string(), nameAr: z.string(), nameEn: z.string(), lat: z.number().nullable(), lng: z.number().nullable() });
-export const makeSchema = z.object({ id: z.uuid(), slug: z.string(), nameAr: z.string(), nameEn: z.string() });
-export const modelSchema = z.object({ id: z.uuid(), makeId: z.uuid(), slug: z.string(), nameAr: z.string(), nameEn: z.string(), bodyType: z.enum(CAR_BODY_TYPES) });
+export const citySchema = z.object({
+  id: z.uuid(),
+  slug: z.string(),
+  nameAr: z.string(),
+  nameEn: z.string(),
+  isActive: z.boolean(),
+  lat: z.number().nullable(),
+  lng: z.number().nullable(),
+});
+export const areaSchema = z.object({
+  id: z.uuid(),
+  cityId: z.uuid(),
+  slug: z.string(),
+  nameAr: z.string(),
+  nameEn: z.string(),
+  lat: z.number().nullable(),
+  lng: z.number().nullable(),
+});
+export const makeSchema = z.object({
+  id: z.uuid(),
+  slug: z.string(),
+  nameAr: z.string(),
+  nameEn: z.string(),
+});
+export const modelSchema = z.object({
+  id: z.uuid(),
+  makeId: z.uuid(),
+  slug: z.string(),
+  nameAr: z.string(),
+  nameEn: z.string(),
+  bodyType: z.enum(CAR_BODY_TYPES),
+});
 export type City = z.infer<typeof citySchema>;
 export type Area = z.infer<typeof areaSchema>;
 export type Make = z.infer<typeof makeSchema>;
@@ -161,7 +293,12 @@ export const landingSchema = z.object({
   type: z.string().nullable(),
   areas: z.array(areaSchema.extend({ listings: z.number() })),
   types: z.array(z.object({ type: z.enum(CAR_BODY_TYPES), n: z.number(), min: z.number() })),
-  stats: z.object({ n: z.number(), min: z.number().nullable(), max: z.number().nullable(), median: z.number().nullable() }),
+  stats: z.object({
+    n: z.number(),
+    min: z.number().nullable(),
+    max: z.number().nullable(),
+    median: z.number().nullable(),
+  }),
   listings: z.array(listingCardSchema),
   total: z.number(),
 });
@@ -177,17 +314,51 @@ export const sitemapSchema = z.object({
 });
 export type SitemapData = z.infer<typeof sitemapSchema>;
 
-export const planSchema = z.object({ code: z.string(), nameAr: z.string(), nameEn: z.string(), priceMonthlyEgp: z.number(), maxLiveListings: z.number().nullable(), maxTeamMembers: z.number(), featuredCreditsPerMonth: z.number(), isActive: z.boolean(), sortOrder: z.number() });
+export const planSchema = z.object({
+  code: z.string(),
+  nameAr: z.string(),
+  nameEn: z.string(),
+  priceMonthlyEgp: z.number(),
+  maxLiveListings: z.number().nullable(),
+  maxTeamMembers: z.number(),
+  featuredCreditsPerMonth: z.number(),
+  isActive: z.boolean(),
+  sortOrder: z.number(),
+});
 export type Plan = z.infer<typeof planSchema>;
 
 export const dealerStatsSchema = z.object({
   days: z.number(),
-  totals: z.object({ views: z.number(), whatsapp: z.number(), calls: z.number(), conversion: z.number().nullable() }),
+  totals: z.object({
+    views: z.number(),
+    whatsapp: z.number(),
+    calls: z.number(),
+    conversion: z.number().nullable(),
+  }),
   freshnessScore: z.number().nullable(),
   daily: z.array(z.object({ day: z.string(), views: z.number(), contacts: z.number() })),
-  cars: z.array(z.object({ listingId: z.uuid(), nameAr: z.string(), nameEn: z.string(), year: z.number(), status: z.string(), views: z.number(), whatsapp: z.number(), calls: z.number(), conversion: z.number().nullable(), freshnessScore: z.number(), lastConfirmedAt: z.string() })),
+  cars: z.array(
+    z.object({
+      listingId: z.uuid(),
+      nameAr: z.string(),
+      nameEn: z.string(),
+      year: z.number(),
+      status: z.string(),
+      views: z.number(),
+      whatsapp: z.number(),
+      calls: z.number(),
+      conversion: z.number().nullable(),
+      freshnessScore: z.number(),
+      lastConfirmedAt: z.string(),
+    }),
+  ),
 });
 export type DealerStats = z.infer<typeof dealerStatsSchema>;
 
-export const presignedUploadSchema = z.object({ url: z.string(), method: z.literal('PUT'), headers: z.record(z.string(), z.string()), expiresAt: z.string() });
+export const presignedUploadSchema = z.object({
+  url: z.string(),
+  method: z.literal('PUT'),
+  headers: z.record(z.string(), z.string()),
+  expiresAt: z.string(),
+});
 export type PresignedUpload = z.infer<typeof presignedUploadSchema>;

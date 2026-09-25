@@ -15,13 +15,21 @@ async function load(city: string, slug: string) {
   return data;
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string; city: string; slug: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string; city: string; slug: string }>;
+}): Promise<Metadata> {
   const { locale, city, slug } = await params;
   const data = await load(city, slug);
   return data ? landingMeta(locale, data, `/${city}/${slug}`) : {};
 }
 
-export default async function AreaOrTypePage({ params }: { params: Promise<{ locale: string; city: string; slug: string }> }) {
+export default async function AreaOrTypePage({
+  params,
+}: {
+  params: Promise<{ locale: string; city: string; slug: string }>;
+}) {
   const { locale, city, slug } = await params;
   const data = await load(city, slug);
   if (!data) notFound();

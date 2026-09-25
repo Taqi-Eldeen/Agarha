@@ -29,7 +29,8 @@ export function webPathToAppPath(input: string): string | null {
   if (first === 'search') return `/search${url.search}`;
   if (['saved', 'account'].includes(first)) return `/${first}`;
   if (['help', 'legal', 'for-dealers', 'dealer'].includes(first)) return null;
-  if (/^[a-z-]+$/.test(first)) return `/search?city=${first}${second && /^[a-z-]+$/.test(second) && !third ? `&area=${second}` : ''}`;
+  if (/^[a-z-]+$/.test(first))
+    return `/search?city=${first}${second && /^[a-z-]+$/.test(second) && !third ? `&area=${second}` : ''}`;
   return null;
 }
 

@@ -3,7 +3,9 @@ export function encodeCursor(value: Record<string, unknown>): string {
   return Buffer.from(JSON.stringify(value)).toString('base64url');
 }
 
-export function decodeCursor<T extends Record<string, unknown>>(cursor: string | undefined): T | null {
+export function decodeCursor<T extends Record<string, unknown>>(
+  cursor: string | undefined,
+): T | null {
   if (!cursor) return null;
   try {
     const parsed: unknown = JSON.parse(Buffer.from(cursor, 'base64url').toString('utf8'));

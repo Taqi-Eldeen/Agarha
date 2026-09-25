@@ -21,7 +21,9 @@ export function FieldShell({ id, label, hint, error, optional, children }: Field
     <div className="flex flex-col gap-1">
       <label htmlFor={id} className="text-body font-medium text-fg">
         {label}
-        {optional ? <span className="ms-2 text-caption text-fg-secondary">{t.optional}</span> : null}
+        {optional ? (
+          <span className="ms-2 text-caption text-fg-secondary">{t.optional}</span>
+        ) : null}
       </label>
       {children}
       {hint && !error ? (
@@ -30,7 +32,11 @@ export function FieldShell({ id, label, hint, error, optional, children }: Field
         </p>
       ) : null}
       {error ? (
-        <p id={`${id}-error`} role="alert" className="flex items-center gap-1 text-caption text-danger">
+        <p
+          id={`${id}-error`}
+          role="alert"
+          className="flex items-center gap-1 text-caption text-danger"
+        >
           <AlertTriangle aria-hidden className="size-4 shrink-0" strokeWidth={1.75} />
           {error}
         </p>
@@ -49,25 +55,40 @@ export interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   optional?: boolean;
 }
 
-export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function TextField({ label, hint, error, optional, id, className, ...props }, ref) {
+export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function TextField(
+  { label, hint, error, optional, id, className, ...props },
+  ref,
+) {
   const auto = useId();
   const fid = id ?? auto;
   return (
     <FieldShell id={fid} label={label} hint={hint} error={error} optional={optional}>
-      <input ref={ref} id={fid} aria-invalid={!!error || undefined} aria-describedby={error ? `${fid}-error` : hint ? `${fid}-hint` : undefined} className={cn(inputClass, className)} {...props} />
+      <input
+        ref={ref}
+        id={fid}
+        aria-invalid={!!error || undefined}
+        aria-describedby={error ? `${fid}-error` : hint ? `${fid}-hint` : undefined}
+        className={cn(inputClass, className)}
+        {...props}
+      />
     </FieldShell>
   );
 });
 
 /** Egyptian mobile: accepts 01X…, +20…, 0020…, Arabic-Indic digits; always LTR. */
-export const PhoneField = forwardRef<HTMLInputElement, TextFieldProps>(function PhoneField({ label, hint, error, id, onChange, ...props }, ref) {
+export const PhoneField = forwardRef<HTMLInputElement, TextFieldProps>(function PhoneField(
+  { label, hint, error, id, onChange, ...props },
+  ref,
+) {
   const auto = useId();
   const fid = id ?? auto;
   const { t } = useUi();
   return (
     <FieldShell id={fid} label={label} hint={hint} error={error}>
       <div className="flex items-stretch gap-2" dir="ltr">
-        <span className="flex items-center rounded-md border border-border bg-page px-3 text-caption text-fg-secondary">{t.phonePrefix}</span>
+        <span className="flex items-center rounded-md border border-border bg-page px-3 text-caption text-fg-secondary">
+          {t.phonePrefix}
+        </span>
         <input
           ref={ref}
           id={fid}
@@ -100,7 +121,15 @@ export interface OTPFieldProps {
 }
 
 /** One input per digit, paste-friendly, autofills from SMS (autocomplete=one-time-code). Always LTR. */
-export function OTPField({ length = 6, value, onChange, onComplete, label, error, disabled }: OTPFieldProps) {
+export function OTPField({
+  length = 6,
+  value,
+  onChange,
+  onComplete,
+  label,
+  error,
+  disabled,
+}: OTPFieldProps) {
   const { f } = useUi();
   const refs = useRef<(HTMLInputElement | null)[]>([]);
   const id = useId();
@@ -138,7 +167,11 @@ export function OTPField({ length = 6, value, onChange, onComplete, label, error
         ))}
       </div>
       {error ? (
-        <p id={`${id}-error`} role="alert" className="flex items-center gap-1 text-caption text-danger">
+        <p
+          id={`${id}-error`}
+          role="alert"
+          className="flex items-center gap-1 text-caption text-danger"
+        >
           <AlertTriangle aria-hidden className="size-4 shrink-0" strokeWidth={1.75} />
           {error}
         </p>

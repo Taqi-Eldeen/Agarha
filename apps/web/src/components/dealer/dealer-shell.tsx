@@ -1,7 +1,17 @@
 'use client';
 import { useApi } from '@agarha/api-client';
 import { InlineAlert } from '@agarha/ui-web';
-import { BarChart3, Building2, CalendarClock, Car, CreditCard, FileUp, MessageSquare, Star, Users } from 'lucide-react';
+import {
+  BarChart3,
+  Building2,
+  CalendarClock,
+  Car,
+  CreditCard,
+  FileUp,
+  MessageSquare,
+  Star,
+  Users,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, type ReactNode } from 'react';
 import { Link, usePathname, useRouter } from '@/i18n/routing';
@@ -33,7 +43,8 @@ export function DealerShell({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (isSignedOut(me.error)) router.replace('/dealer/sign-in');
-    else if (me.isSuccess && me.data === null && !pathname.startsWith('/dealer/onboarding')) router.replace('/dealer/onboarding');
+    else if (me.isSuccess && me.data === null && !pathname.startsWith('/dealer/onboarding'))
+      router.replace('/dealer/onboarding');
   }, [me.error, me.isSuccess, me.data, pathname, router]);
 
   const role = me.data?.role;
@@ -47,7 +58,12 @@ export function DealerShell({ children }: { children: ReactNode }) {
         </div>
         <nav aria-label={tw('menu')} className="flex flex-col gap-1 p-2">
           {tabs.map((tab) => (
-            <Link key={tab.href} href={tab.href} aria-current={active(tab.href) ? 'page' : undefined} className="flex min-h-touch items-center gap-3 rounded-md px-3 hover:bg-brand-subtle aria-[current=page]:bg-brand-subtle aria-[current=page]:font-semibold aria-[current=page]:text-brand">
+            <Link
+              key={tab.href}
+              href={tab.href}
+              aria-current={active(tab.href) ? 'page' : undefined}
+              className="flex min-h-touch items-center gap-3 rounded-md px-3 hover:bg-brand-subtle aria-[current=page]:bg-brand-subtle aria-[current=page]:font-semibold aria-[current=page]:text-brand"
+            >
               <tab.icon aria-hidden className="size-5" strokeWidth={1.75} />
               {t(tab.key)}
             </Link>
@@ -63,17 +79,29 @@ export function DealerShell({ children }: { children: ReactNode }) {
           <LanguageSwitch label={tw('switchTo')} />
         </header>
         <main id="main" className="mx-auto w-full max-w-5xl flex-1 p-4 lg:p-6">
-          {me.data?.dealer.suspendedAt ? <InlineAlert tone="danger">{to('suspended')}</InlineAlert> : null}
+          {me.data?.dealer.suspendedAt ? (
+            <InlineAlert tone="danger">{to('suspended')}</InlineAlert>
+          ) : null}
           {children}
         </main>
       </div>
-      <nav aria-label={tw('menu')} className="fixed inset-x-0 bottom-0 z-sticky grid grid-cols-4 border-t border-border bg-card pb-[env(safe-area-inset-bottom)] lg:hidden">
-        {tabs.filter((tab) => tab.mobile).map((tab) => (
-          <Link key={tab.href} href={tab.href} aria-current={active(tab.href) ? 'page' : undefined} className="flex min-h-16 flex-col items-center justify-center gap-1 text-label text-fg-secondary aria-[current=page]:text-brand">
-            <tab.icon aria-hidden className="size-6" strokeWidth={1.75} />
-            {t(tab.key)}
-          </Link>
-        ))}
+      <nav
+        aria-label={tw('menu')}
+        className="fixed inset-x-0 bottom-0 z-sticky grid grid-cols-4 border-t border-border bg-card pb-[env(safe-area-inset-bottom)] lg:hidden"
+      >
+        {tabs
+          .filter((tab) => tab.mobile)
+          .map((tab) => (
+            <Link
+              key={tab.href}
+              href={tab.href}
+              aria-current={active(tab.href) ? 'page' : undefined}
+              className="flex min-h-16 flex-col items-center justify-center gap-1 text-label text-fg-secondary aria-[current=page]:text-brand"
+            >
+              <tab.icon aria-hidden className="size-6" strokeWidth={1.75} />
+              {t(tab.key)}
+            </Link>
+          ))}
       </nav>
     </div>
   );

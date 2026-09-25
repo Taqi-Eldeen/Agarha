@@ -10,11 +10,19 @@ const ALWAYS_OPEN = /^\/(ar|en)\/(dealer|for-dealers|legal|help)(\/|$)/;
 export default function middleware(req: NextRequest) {
   const res = intl(req);
   const path = req.nextUrl.pathname;
-  if (process.env.NEXT_PUBLIC_PUBLIC_SITE !== 'on' && /^\/(ar|en)(\/|$)/.test(path) && !ALWAYS_OPEN.test(path)) {
+  if (
+    process.env.NEXT_PUBLIC_PUBLIC_SITE !== 'on' &&
+    /^\/(ar|en)(\/|$)/.test(path) &&
+    !ALWAYS_OPEN.test(path)
+  ) {
     const locale = path.split('/')[1] ?? 'ar';
     return NextResponse.redirect(new URL(`/${locale}/for-dealers`, req.url));
   }
   return res;
 }
 
-export const config = { matcher: ['/((?!api|_next|.well-known|_vercel|sw.js|manifest.webmanifest|robots.txt|sitemap.xml|icons|.*\\..*).*)'] };
+export const config = {
+  matcher: [
+    '/((?!api|_next|.well-known|_vercel|sw.js|manifest.webmanifest|robots.txt|sitemap.xml|icons|.*\\..*).*)',
+  ],
+};

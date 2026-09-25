@@ -1,6 +1,14 @@
 import { keys } from '@agarha/api-client';
 import { useQueryClient } from '@tanstack/react-query';
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 import { identify } from './analytics';
 import { api } from './api';
 import { tokenStore } from './tokens';
@@ -8,7 +16,10 @@ import { tokenStore } from './tokens';
 interface Session {
   /** null while SecureStore is read at startup. */
   signedIn: boolean | null;
-  completeSignIn: (tokens: { accessToken: string; refreshToken: string }, userId: string) => Promise<void>;
+  completeSignIn: (
+    tokens: { accessToken: string; refreshToken: string },
+    userId: string,
+  ) => Promise<void>;
   signOut: () => Promise<void>;
 }
 const Ctx = createContext<Session | null>(null);
@@ -33,12 +44,17 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   );
   const signOut = useCallback(async () => {
     const t = await tokenStore.get();
-    await api.POST('/v1/auth/sign-out', { body: { refreshToken: t?.refreshToken, client: 'mobile' } }).catch(() => undefined);
+    await api
+      .POST('/v1/auth/sign-out', { body: { refreshToken: t?.refreshToken, client: 'mobile' } })
+      .catch(() => undefined);
     await tokenStore.set(null);
     identify(null);
     qc.clear();
   }, [qc]);
-  const value = useMemo(() => ({ signedIn, completeSignIn, signOut }), [signedIn, completeSignIn, signOut]);
+  const value = useMemo(
+    () => ({ signedIn, completeSignIn, signOut }),
+    [signedIn, completeSignIn, signOut],
+  );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

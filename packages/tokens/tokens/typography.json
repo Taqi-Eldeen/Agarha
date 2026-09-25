@@ -12,7 +12,12 @@
       "h1": { "$value": { "fontSize": 30, "lineHeight": 38, "fontWeight": 600 } },
       "h2": { "$value": { "fontSize": 24, "lineHeight": 32, "fontWeight": 600 } },
       "price": {
-        "$value": { "fontSize": 20, "lineHeight": 28, "fontWeight": 600, "fontVariantNumeric": "tabular-nums" }
+        "$value": {
+          "fontSize": 20,
+          "lineHeight": 28,
+          "fontWeight": 600,
+          "fontVariantNumeric": "tabular-nums"
+        }
       },
       "body": {
         "$value": { "fontSize": 16, "lineHeight": 24, "fontWeight": 400 },

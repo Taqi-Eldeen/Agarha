@@ -16,13 +16,19 @@ export class DevController {
   ) {}
 
   private guard() {
-    if (this.env.APP_ENV !== 'local' && this.env.NODE_ENV !== 'test') throw Errors.notFound('Route');
+    if (this.env.APP_ENV !== 'local' && this.env.NODE_ENV !== 'test')
+      throw Errors.notFound('Route');
   }
 
   @Get('outbox')
   outbox(@Query('to') to?: string) {
     this.guard();
-    return { items: Outbox.entries.filter((e) => !to || e.to === to).slice(-50).reverse() };
+    return {
+      items: Outbox.entries
+        .filter((e) => !to || e.to === to)
+        .slice(-50)
+        .reverse(),
+    };
   }
 
   /** E2E setup: clear rate-limit counters so repeated local runs don't hit 429s. */

@@ -16,7 +16,12 @@ export function totpUri(secret: string, account: string): string {
  * Verifies a code and returns the accepted time-step, or null.
  * The caller stores the step and rejects any code at or before it (replay protection).
  */
-export function verifyTotp(secret: string, code: string, lastStep: number | null, now = Date.now()): number | null {
+export function verifyTotp(
+  secret: string,
+  code: string,
+  lastStep: number | null,
+  now = Date.now(),
+): number | null {
   const delta = authenticator.checkDelta(code, secret);
   if (delta === null) return null;
   const step = Math.floor(now / 30_000) + delta;

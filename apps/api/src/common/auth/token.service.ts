@@ -44,9 +44,17 @@ export class TokenService {
     this.key = new TextEncoder().encode(env.JWT_SECRET);
   }
 
-  private async signAccess(c: SessionClaims, familyId: string): Promise<{ token: string; exp: Date }> {
+  private async signAccess(
+    c: SessionClaims,
+    familyId: string,
+  ): Promise<{ token: string; exp: Date }> {
     const exp = new Date(Date.now() + ACCESS_TTL_SECONDS * 1000);
-    const token = await new SignJWT({ scope: c.scope, roles: c.roles, did: c.dealerId, sid: familyId })
+    const token = await new SignJWT({
+      scope: c.scope,
+      roles: c.roles,
+      did: c.dealerId,
+      sid: familyId,
+    })
       .setProtectedHeader({ alg: 'HS256', typ: 'JWT' })
       .setSubject(c.userId)
       .setIssuer(this.env.JWT_ISSUER)
@@ -77,7 +85,11 @@ export class TokenService {
   }
 
   /** Short-lived signed statement, e.g. "this phone passed OTP" or "password ok, awaiting TOTP". */
-  async signProof(purpose: string, data: Record<string, unknown>, ttlSeconds = 600): Promise<string> {
+  async signProof(
+    purpose: string,
+    data: Record<string, unknown>,
+    ttlSeconds = 600,
+  ): Promise<string> {
     return new SignJWT(data)
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuer(this.env.JWT_ISSUER)
@@ -100,7 +112,10 @@ export class TokenService {
     }
   }
 
-  async issue(c: SessionClaims, meta: { userAgent?: string; ipHash?: string } = {}): Promise<IssuedTokens> {
+  async issue(
+    c: SessionClaims,
+    meta: { userAgent?: string; ipHash?: string } = {},
+  ): Promise<IssuedTokens> {
     const familyId = randomUUID();
     const familyExpiresAt = new Date(Date.now() + FAMILY_TTL_DAYS[c.scope] * DAY);
     return this.issueInFamily(c, familyId, familyExpiresAt, meta);
@@ -128,7 +143,12 @@ export class TokenService {
       ipHash: meta.ipHash ?? null,
     });
     const access = await this.signAccess(c, familyId);
-    return { accessToken: access.token, accessTokenExpiresAt: access.exp, refreshToken, refreshTokenExpiresAt };
+    return {
+      accessToken: access.token,
+      accessTokenExpiresAt: access.exp,
+      refreshToken,
+      refreshTokenExpiresAt,
+    };
   }
 
   /**
@@ -143,7 +163,11 @@ export class TokenService {
     const hash = sha256(presented);
     // Revocations must commit even though the request fails, so errors are thrown after the transaction.
     const outcome = await this.db.transaction(async (tx) => {
-      const [row] = await tx.select().from(refreshTokens).where(eq(refreshTokens.tokenHash, hash)).for('update');
+      const [row] = await tx
+        .select()
+        .from(refreshTokens)
+        .where(eq(refreshTokens.tokenHash, hash))
+        .for('update');
       if (!row || row.scope !== scope) return { error: 'unknown' as const };
       if (row.rotatedAt || row.revokedAt) {
         // Reuse of a rotated (or revoked) token: assume theft and kill the whole family.
@@ -154,17 +178,26 @@ export class TokenService {
         return { error: 'reused' as const };
       }
       const now = Date.now();
-      if (row.expiresAt.getTime() <= now || row.familyExpiresAt.getTime() <= now) return { error: 'expired' as const };
+      if (row.expiresAt.getTime() <= now || row.familyExpiresAt.getTime() <= now)
+        return { error: 'expired' as const };
 
       const claims = await resolveClaims(row.userId, row.dealerId);
       if (!claims) {
-        await tx.update(refreshTokens).set({ revokedAt: new Date(), revokedReason: 'user_inactive' }).where(eq(refreshTokens.familyId, row.familyId));
+        await tx
+          .update(refreshTokens)
+          .set({ revokedAt: new Date(), revokedReason: 'user_inactive' })
+          .where(eq(refreshTokens.familyId, row.familyId));
         return { error: 'inactive' as const };
       }
-      await tx.update(refreshTokens).set({ rotatedAt: new Date() }).where(eq(refreshTokens.id, row.id));
+      await tx
+        .update(refreshTokens)
+        .set({ rotatedAt: new Date() })
+        .where(eq(refreshTokens.id, row.id));
 
       const refreshToken = randomToken(32);
-      const refreshTokenExpiresAt = new Date(Math.min(now + REFRESH_TTL_DAYS[scope] * DAY, row.familyExpiresAt.getTime()));
+      const refreshTokenExpiresAt = new Date(
+        Math.min(now + REFRESH_TTL_DAYS[scope] * DAY, row.familyExpiresAt.getTime()),
+      );
       await tx.insert(refreshTokens).values({
         userId: row.userId,
         familyId: row.familyId,
@@ -177,11 +210,28 @@ export class TokenService {
         ipHash: meta.ipHash ?? null,
       });
       const access = await this.signAccess(claims, row.familyId);
-      return { userId: row.userId, accessToken: access.token, accessTokenExpiresAt: access.exp, refreshToken, refreshTokenExpiresAt };
+      return {
+        userId: row.userId,
+        accessToken: access.token,
+        accessTokenExpiresAt: access.exp,
+        refreshToken,
+        refreshTokenExpiresAt,
+      };
     });
     if ('error' in outcome) {
-      if (outcome.error === 'reused') throw new AppError(ERROR_CODES.refreshReused, HttpStatus.UNAUTHORIZED, 'Refresh token reuse detected');
-      throw Errors.unauthorized(outcome.error === 'expired' ? 'Refresh token expired' : outcome.error === 'inactive' ? 'Account is not active' : 'Unknown refresh token');
+      if (outcome.error === 'reused')
+        throw new AppError(
+          ERROR_CODES.refreshReused,
+          HttpStatus.UNAUTHORIZED,
+          'Refresh token reuse detected',
+        );
+      throw Errors.unauthorized(
+        outcome.error === 'expired'
+          ? 'Refresh token expired'
+          : outcome.error === 'inactive'
+            ? 'Account is not active'
+            : 'Unknown refresh token',
+      );
     }
     return outcome;
   }

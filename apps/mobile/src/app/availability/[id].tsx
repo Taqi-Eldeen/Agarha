@@ -31,13 +31,24 @@ export default function RequestAvailability() {
     setBusy(true);
     try {
       const endDate = cairoDate(duration - 1, new Date(`${start}T12:00:00+02:00`));
-      await api.POST('/v1/availability-requests', { body: { listingId: id, startDate: start, endDate, locale, ...(note.trim() ? { note: note.trim() } : {}) } });
+      await api.POST('/v1/availability-requests', {
+        body: {
+          listingId: id,
+          startDate: start,
+          endDate,
+          locale,
+          ...(note.trim() ? { note: note.trim() } : {}),
+        },
+      });
       track('availability_requested', { listing_id: id, days: duration });
       toast({ tone: 'success', text: t('web.listing.availabilitySent') });
       router.back();
     } catch (e) {
       const code = e instanceof ApiRequestError ? e.code : 'internal_error';
-      toast({ tone: 'danger', text: t.has(`errors.${code}`) ? t(`errors.${code}` as never) : t('errors.internal_error') });
+      toast({
+        tone: 'danger',
+        text: t.has(`errors.${code}`) ? t(`errors.${code}` as never) : t('errors.internal_error'),
+      });
     } finally {
       setBusy(false);
     }
@@ -45,9 +56,37 @@ export default function RequestAvailability() {
   return (
     <Screen edges={['bottom']}>
       <InlineAlert tone="info">{t('web.listing.availabilityHint')}</InlineAlert>
-      <ChipGroup label={t('app.availability.from')} single value={[start]} onChange={(v) => v[0] && setStart(v[0])} options={days.map((d) => ({ value: d, label: format.dateTime(new Date(`${d}T12:00:00+02:00`), { weekday: 'short', day: 'numeric', month: 'short' }) }))} />
-      <ChipGroup label={t('app.availability.duration')} single value={[String(duration)]} onChange={(v) => v[0] && setDuration(Number(v[0]))} options={DURATIONS.map((n) => ({ value: String(n), label: t('app.availability.days', { count: n }) }))} />
-      <TextField label={t('web.listing.availabilityNote')} value={note} onChangeText={setNote} maxLength={300} optional />
+      <ChipGroup
+        label={t('app.availability.from')}
+        single
+        value={[start]}
+        onChange={(v) => v[0] && setStart(v[0])}
+        options={days.map((d) => ({
+          value: d,
+          label: format.dateTime(new Date(`${d}T12:00:00+02:00`), {
+            weekday: 'short',
+            day: 'numeric',
+            month: 'short',
+          }),
+        }))}
+      />
+      <ChipGroup
+        label={t('app.availability.duration')}
+        single
+        value={[String(duration)]}
+        onChange={(v) => v[0] && setDuration(Number(v[0]))}
+        options={DURATIONS.map((n) => ({
+          value: String(n),
+          label: t('app.availability.days', { count: n }),
+        }))}
+      />
+      <TextField
+        label={t('web.listing.availabilityNote')}
+        value={note}
+        onChangeText={setNote}
+        maxLength={300}
+        optional
+      />
       <Button block loading={busy} onPress={() => void submit()}>
         {t('web.listing.requestAvailability')}
       </Button>

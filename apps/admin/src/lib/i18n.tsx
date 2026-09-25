@@ -4,7 +4,9 @@ import type { Locale } from '@agarha/schemas';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 type Admin = Messages['admin'];
-type Path<T, P extends string = ''> = { [K in keyof T & string]: T[K] extends string ? `${P}${K}` : Path<T[K], `${P}${K}.`> }[keyof T & string];
+type Path<T, P extends string = ''> = {
+  [K in keyof T & string]: T[K] extends string ? `${P}${K}` : Path<T[K], `${P}${K}.`>;
+}[keyof T & string];
 
 interface Ctx {
   locale: Locale;
@@ -26,7 +28,9 @@ export function AdminI18n({ children }: { children: ReactNode }) {
     localStorage.setItem('ag_admin_locale', locale);
   }, [locale]);
   const t: Ctx['t'] = (key, vars) => {
-    const v = key.split('.').reduce<unknown>((o, k) => (o as Record<string, unknown>)?.[k], messages[locale].admin);
+    const v = key
+      .split('.')
+      .reduce<unknown>((o, k) => (o as Record<string, unknown>)?.[k], messages[locale].admin);
     return typeof v === 'string' ? (vars ? interpolate(v, vars) : v) : key;
   };
   return <I18n.Provider value={{ locale, setLocale, t }}>{children}</I18n.Provider>;

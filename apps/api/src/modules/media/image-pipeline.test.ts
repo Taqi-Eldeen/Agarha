@@ -3,9 +3,16 @@ import { RejectedMedia, processListingPhoto, sanitiseDocument } from './image-pi
 import { sniff } from './magic';
 
 async function jpegWithGps(): Promise<Buffer> {
-  return sharp({ create: { width: 1600, height: 1200, channels: 3, background: { r: 15, g: 110, b: 104 } } })
+  return sharp({
+    create: { width: 1600, height: 1200, channels: 3, background: { r: 15, g: 110, b: 104 } },
+  })
     .jpeg()
-    .withMetadata({ exif: { IFD0: { Make: 'TestCam' }, IFD3: { GPSLatitudeRef: 'N', GPSLatitude: '30/1 2/1 0/1' } } })
+    .withMetadata({
+      exif: {
+        IFD0: { Make: 'TestCam' },
+        IFD3: { GPSLatitudeRef: 'N', GPSLatitude: '30/1 2/1 0/1' },
+      },
+    })
     .toBuffer();
 }
 
@@ -29,7 +36,9 @@ describe('image pipeline', () => {
   });
 
   it('rejects non-images disguised as images', async () => {
-    await expect(processListingPhoto(Buffer.from('GIF89a not really an image at all'))).rejects.toBeInstanceOf(RejectedMedia);
+    await expect(
+      processListingPhoto(Buffer.from('GIF89a not really an image at all')),
+    ).rejects.toBeInstanceOf(RejectedMedia);
   });
 
   it('accepts PDFs and re-encodes JPEG documents', async () => {

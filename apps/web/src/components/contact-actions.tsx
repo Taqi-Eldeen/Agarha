@@ -34,12 +34,47 @@ export function useContact(listingId: string, source: string) {
   return { contact, busy };
 }
 
-export function ListingContactBar({ listingId, prices, notice }: { listingId: string; prices: Prices; notice: ReactNode }) {
+export function ListingContactBar({
+  listingId,
+  prices,
+  notice,
+}: {
+  listingId: string;
+  prices: Prices;
+  notice: ReactNode;
+}) {
   const { contact, busy } = useContact(listingId, 'listing_page');
   return <ContactBar prices={prices} onContact={contact} contacting={busy} notice={notice} />;
 }
 
-export function ContactableCard({ card, href, period, priority, favorite }: { card: Card; href: string; period?: 'day' | 'week' | 'month'; priority?: boolean; favorite?: ReactNode }) {
+export function ContactableCard({
+  card,
+  href,
+  period,
+  priority,
+  favorite,
+}: {
+  card: Card;
+  href: string;
+  period?: 'day' | 'week' | 'month';
+  priority?: boolean;
+  favorite?: ReactNode;
+}) {
   const { contact, busy } = useContact(card.id, 'card');
-  return <ListingCard card={card} href={href} period={period} onContact={contact} contacting={busy} priority={priority} favorite={favorite} linkAs={({ href: h, className, children }) => <a href={h} className={className}>{children}</a>} />;
+  return (
+    <ListingCard
+      card={card}
+      href={href}
+      period={period}
+      onContact={contact}
+      contacting={busy}
+      priority={priority}
+      favorite={favorite}
+      linkAs={({ href: h, className, children }) => (
+        <a href={h} className={className}>
+          {children}
+        </a>
+      )}
+    />
+  );
 }

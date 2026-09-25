@@ -10,14 +10,18 @@ export const verificationDocs = pgTable(
   'verification_docs',
   {
     id: id(),
-    dealerId: uuid('dealer_id').notNull().references(() => dealers.id, { onDelete: 'cascade' }),
+    dealerId: uuid('dealer_id')
+      .notNull()
+      .references(() => dealers.id, { onDelete: 'cascade' }),
     type: verificationDocTypeEnum('type').notNull(),
     status: verificationDocStatusEnum('status').notNull().default('uploaded'),
     storageKey: text('storage_key').notNull(),
     mimeType: text('mime_type').notNull(),
     sizeBytes: bigint('size_bytes', { mode: 'number' }).notNull(),
     sha256: text('sha256').notNull(),
-    uploadedBy: uuid('uploaded_by').notNull().references(() => users.id),
+    uploadedBy: uuid('uploaded_by')
+      .notNull()
+      .references(() => users.id),
     reviewedBy: uuid('reviewed_by').references(() => users.id),
     reviewedAt: tstz('reviewed_at'),
     rejectionReason: text('rejection_reason'),
@@ -25,5 +29,8 @@ export const verificationDocs = pgTable(
     deleteAfter: tstz('delete_after'),
     createdAt: createdAt(),
   },
-  (t) => [index('verification_docs_dealer_idx').on(t.dealerId), index('verification_docs_status_idx').on(t.status)],
+  (t) => [
+    index('verification_docs_dealer_idx').on(t.dealerId),
+    index('verification_docs_status_idx').on(t.status),
+  ],
 );

@@ -26,14 +26,25 @@ export class AccountService {
   async export(userId: string) {
     const [u] = await this.db.select().from(users).where(eq(users.id, userId));
     const identities = await this.db
-      .select({ provider: userIdentities.provider, email: userIdentities.email, createdAt: userIdentities.createdAt })
+      .select({
+        provider: userIdentities.provider,
+        email: userIdentities.email,
+        createdAt: userIdentities.createdAt,
+      })
       .from(userIdentities)
       .where(eq(userIdentities.userId, userId));
     const sections: Record<string, unknown> = {};
     for (const c of this.privacy.list()) sections[c.name] = await c.export(userId);
     return {
       generatedAt: new Date().toISOString(),
-      account: u && { id: u.id, phone: u.phoneE164, displayName: u.displayName, locale: u.locale, createdAt: u.createdAt, lastSignInAt: u.lastSignInAt },
+      account: u && {
+        id: u.id,
+        phone: u.phoneE164,
+        displayName: u.displayName,
+        locale: u.locale,
+        createdAt: u.createdAt,
+        lastSignInAt: u.lastSignInAt,
+      },
       linkedSignIns: identities,
       ...sections,
     };
@@ -50,7 +61,13 @@ export class AccountService {
     await this.db.delete(userCredentials).where(eq(userCredentials.userId, userId));
     await this.db
       .update(users)
-      .set({ phoneE164: null, displayName: null, status: 'deleted', deletionRequestedAt: new Date(), deletedAt: new Date() })
+      .set({
+        phoneE164: null,
+        displayName: null,
+        status: 'deleted',
+        deletionRequestedAt: new Date(),
+        deletedAt: new Date(),
+      })
       .where(eq(users.id, userId));
     await this.events.publish('user.deleted', { userId });
   }

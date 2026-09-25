@@ -4,21 +4,21 @@ Copy lives in `packages/i18n/src/messages/app.ts` (`app.store`) so it is reviewe
 catalogue and never drifts between Arabic and English. This file holds everything else the App Store
 Connect and Google Play Console forms need.
 
-| Field | App Store | Google Play |
-| --- | --- | --- |
-| Name | أجّرها - إيجار عربيات / Agarha - Car Rental Egypt | same |
-| Subtitle / short description | `app.store.subtitle` (30 chars) | `app.store.subtitle` (80 chars) |
-| Description | `app.store.description` | `app.store.description` |
-| Keywords | `app.store.keywords` (100 chars) | n/a |
-| Primary category | Travel | Travel & Local |
-| Secondary category | Navigation | — |
-| Age rating | 4+ (no objectionable content, no user-generated media shown unmoderated) | Everyone |
-| Price | Free, no in-app purchases (dealers pay on the web) | Free, no IAP |
-| Support URL | https://agarha.com/ar/help | same |
-| Marketing URL | https://agarha.com | same |
-| Privacy policy | https://agarha.com/ar/legal/privacy | same |
-| Primary language | Arabic (Egypt) | ar-EG, with en-US |
-| Availability | Egypt at launch | Egypt at launch |
+| Field                        | App Store                                                                | Google Play                     |
+| ---------------------------- | ------------------------------------------------------------------------ | ------------------------------- |
+| Name                         | أجّرها - إيجار عربيات / Agarha - Car Rental Egypt                        | same                            |
+| Subtitle / short description | `app.store.subtitle` (30 chars)                                          | `app.store.subtitle` (80 chars) |
+| Description                  | `app.store.description`                                                  | `app.store.description`         |
+| Keywords                     | `app.store.keywords` (100 chars)                                         | n/a                             |
+| Primary category             | Travel                                                                   | Travel & Local                  |
+| Secondary category           | Navigation                                                               | —                               |
+| Age rating                   | 4+ (no objectionable content, no user-generated media shown unmoderated) | Everyone                        |
+| Price                        | Free, no in-app purchases (dealers pay on the web)                       | Free, no IAP                    |
+| Support URL                  | https://agarha.com/ar/help                                               | same                            |
+| Marketing URL                | https://agarha.com                                                       | same                            |
+| Privacy policy               | https://agarha.com/ar/legal/privacy                                      | same                            |
+| Primary language             | Arabic (Egypt)                                                           | ar-EG, with en-US               |
+| Availability                 | Egypt at launch                                                          | Egypt at launch                 |
 
 ## Screenshots (6.9", 6.5", 5.5" iPhone; Android phone)
 
@@ -43,11 +43,13 @@ Capture from a production build in both languages, light theme, with synthetic s
 ## Privacy — App Store "App Privacy" answers
 
 Data **linked** to the user:
+
 - Contact info → Phone number: App functionality (sign-in). Not used for tracking.
 - User content → Other (reviews, reports): App functionality.
 - Identifiers → User ID: App functionality.
 
 Data **not linked** to the user:
+
 - Location → Coarse location: App functionality ("near me", map). Only while in use; never stored.
 - Usage data → Product interaction: Analytics (PostHog, EU region, no IDFA).
 - Diagnostics → Crash data, performance data: App functionality.
@@ -57,13 +59,13 @@ The privacy manifest in `app.config.ts` (`ios.privacyManifests`) matches these a
 
 ## Privacy — Google Play "Data safety" answers
 
-| Data type | Collected | Shared | Optional | Purpose |
-| --- | --- | --- | --- | --- |
-| Phone number | Yes | No | Yes (only to sign in) | Account management |
-| Approximate location | Yes | No | Yes | App functionality |
-| App interactions | Yes | No | No | Analytics |
-| Crash logs / diagnostics | Yes | No | No | App functionality |
-| Other user-generated content (reviews, reports) | Yes | No | Yes | App functionality |
+| Data type                                       | Collected | Shared | Optional              | Purpose            |
+| ----------------------------------------------- | --------- | ------ | --------------------- | ------------------ |
+| Phone number                                    | Yes       | No     | Yes (only to sign in) | Account management |
+| Approximate location                            | Yes       | No     | Yes                   | App functionality  |
+| App interactions                                | Yes       | No     | No                    | Analytics          |
+| Crash logs / diagnostics                        | Yes       | No     | No                    | App functionality  |
+| Other user-generated content (reviews, reports) | Yes       | No     | Yes                   | App functionality  |
 
 - Data is encrypted in transit (TLS 1.2+).
 - Users can request deletion: in-app (Account → Delete my account) and at https://agarha.com/ar/account.

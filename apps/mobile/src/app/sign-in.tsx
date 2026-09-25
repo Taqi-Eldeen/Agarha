@@ -13,7 +13,9 @@ import { useLocale } from '@/lib/i18n';
 import { registerPush } from '@/lib/push';
 import { useSession } from '@/lib/session';
 
-type Step = { k: 'phone' } | { k: 'code'; challengeId: string; e164: string; channel: 'sms' | 'whatsapp'; resendAt: number };
+type Step =
+  | { k: 'phone' }
+  | { k: 'code'; challengeId: string; e164: string; channel: 'sms' | 'whatsapp'; resendAt: number };
 
 /** Customer sign-in: phone → Turnstile → OTP (SMS, WhatsApp fallback) → tokens in SecureStore. */
 export default function SignIn() {
@@ -48,8 +50,16 @@ export default function SignIn() {
     setBusy(true);
     setError(undefined);
     try {
-      const { data } = await api.POST('/v1/auth/otp/request', { body: { phone: e164, purpose: 'customer_sign_in', channel, locale, turnstileToken: token } });
-      setStep({ k: 'code', challengeId: data!.challengeId, e164, channel: data!.channel, resendAt: Date.now() + data!.resendAfterSeconds * 1000 });
+      const { data } = await api.POST('/v1/auth/otp/request', {
+        body: { phone: e164, purpose: 'customer_sign_in', channel, locale, turnstileToken: token },
+      });
+      setStep({
+        k: 'code',
+        challengeId: data!.challengeId,
+        e164,
+        channel: data!.channel,
+        resendAt: Date.now() + data!.resendAfterSeconds * 1000,
+      });
       setCode('');
       track('otp_requested', { channel });
     } catch (e) {
@@ -64,9 +74,19 @@ export default function SignIn() {
     setBusy(true);
     setError(undefined);
     try {
-      const verifyBody = { challengeId: step.challengeId, phone: step.e164, code: c, client: 'mobile' as const };
-      const { data } = linkToken ? await api.POST('/v1/auth/social/link', { body: { ...verifyBody, linkToken } }) : await api.POST('/v1/auth/otp/verify', { body: verifyBody });
-      const body = data as unknown as { user: { id: string }; tokens: { accessToken: string; refreshToken: string } };
+      const verifyBody = {
+        challengeId: step.challengeId,
+        phone: step.e164,
+        code: c,
+        client: 'mobile' as const,
+      };
+      const { data } = linkToken
+        ? await api.POST('/v1/auth/social/link', { body: { ...verifyBody, linkToken } })
+        : await api.POST('/v1/auth/otp/verify', { body: verifyBody });
+      const body = data as unknown as {
+        user: { id: string };
+        tokens: { accessToken: string; refreshToken: string };
+      };
       await completeSignIn(body.tokens, body.user.id);
       track('signed_in', { method: linkToken ? 'social_link' : 'otp' });
       void registerPush(locale).catch(() => undefined);
@@ -82,7 +102,9 @@ export default function SignIn() {
   return (
     <Screen edges={['bottom']}>
       <View className="gap-2">
-        <Text variant="h2" accessibilityRole="header">{t('web.account.signInTitle')}</Text>
+        <Text variant="h2" accessibilityRole="header">
+          {t('web.account.signInTitle')}
+        </Text>
         <Text tone="secondary">{t('web.account.signInBody')}</Text>
       </View>
       {step.k === 'phone' && !linkToken ? (
@@ -96,25 +118,59 @@ export default function SignIn() {
           onError={(m) => setError(m)}
         />
       ) : null}
-      {linkToken && step.k === 'phone' ? <InlineAlert tone="info">{t('app.auth.linkPhone')}</InlineAlert> : null}
+      {linkToken && step.k === 'phone' ? (
+        <InlineAlert tone="info">{t('app.auth.linkPhone')}</InlineAlert>
+      ) : null}
       {step.k === 'phone' ? (
         <View className="gap-4">
-          <PhoneField label={t('auth.phoneLabel')} hint={t('auth.phoneHint')} value={phone} onChangeText={setPhone} error={error} testID="phone-input" />
+          <PhoneField
+            label={t('auth.phoneLabel')}
+            hint={t('auth.phoneHint')}
+            value={phone}
+            onChangeText={setPhone}
+            error={error}
+            testID="phone-input"
+          />
           <Turnstile locale={locale} onToken={setToken} />
-          <Button block loading={busy} disabled={!token || phone.length < 10} onPress={() => void send('sms')}>
+          <Button
+            block
+            loading={busy}
+            disabled={!token || phone.length < 10}
+            onPress={() => void send('sms')}
+          >
             {token ? t('auth.sendCode') : t('web.account.captcha')}
           </Button>
-          <Text variant="caption" tone="secondary">{t('web.account.consent')}</Text>
+          <Text variant="caption" tone="secondary">
+            {t('web.account.consent')}
+          </Text>
         </View>
       ) : (
         <View className="gap-4">
-          <InlineAlert tone="info">{t(step.channel === 'sms' ? 'auth.codeSentSms' : 'auth.codeSentWhatsapp', { phone: step.e164 })}</InlineAlert>
-          <OTPField label={t('auth.codeLabel')} value={code} onChange={setCode} onComplete={(c) => void verify(c)} error={error} disabled={busy} />
-          <Button block loading={busy} disabled={code.length !== 6} onPress={() => void verify(code)}>
+          <InlineAlert tone="info">
+            {t(step.channel === 'sms' ? 'auth.codeSentSms' : 'auth.codeSentWhatsapp', {
+              phone: step.e164,
+            })}
+          </InlineAlert>
+          <OTPField
+            label={t('auth.codeLabel')}
+            value={code}
+            onChange={setCode}
+            onComplete={(c) => void verify(c)}
+            error={error}
+            disabled={busy}
+          />
+          <Button
+            block
+            loading={busy}
+            disabled={code.length !== 6}
+            onPress={() => void verify(code)}
+          >
             {t('auth.verify')}
           </Button>
           {now < step.resendAt ? (
-            <Text variant="caption" tone="secondary" className="text-center">{t('auth.resendIn', { seconds: Math.ceil((step.resendAt - now) / 1000) })}</Text>
+            <Text variant="caption" tone="secondary" className="text-center">
+              {t('auth.resendIn', { seconds: Math.ceil((step.resendAt - now) / 1000) })}
+            </Text>
           ) : (
             <View className="flex-row flex-wrap justify-center gap-2">
               <Button size="sm" variant="ghost" onPress={() => void send('sms')}>

@@ -10,7 +10,13 @@ export function startAnalytics() {
   if (ph || !env.NEXT_PUBLIC_POSTHOG_KEY || typeof window === 'undefined') return;
   const load = () =>
     void import('posthog-js').then(({ default: posthog }) => {
-      posthog.init(env.NEXT_PUBLIC_POSTHOG_KEY!, { api_host: env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://eu.i.posthog.com', capture_pageview: true, persistence: 'localStorage+cookie', disable_session_recording: true, mask_all_text: true });
+      posthog.init(env.NEXT_PUBLIC_POSTHOG_KEY!, {
+        api_host: env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://eu.i.posthog.com',
+        capture_pageview: true,
+        persistence: 'localStorage+cookie',
+        disable_session_recording: true,
+        mask_all_text: true,
+      });
       ph = posthog;
       for (const [e, p] of queue.splice(0)) posthog.capture(e, p);
     });
@@ -37,7 +43,10 @@ export type AnalyticsEvent =
   | 'dealer_confirm_all'
   | 'dealer_availability_toggled';
 
-export function track(event: AnalyticsEvent, props: Record<string, string | number | boolean | undefined> = {}) {
+export function track(
+  event: AnalyticsEvent,
+  props: Record<string, string | number | boolean | undefined> = {},
+) {
   if (!env.NEXT_PUBLIC_POSTHOG_KEY) {
     if (process.env.NODE_ENV === 'development') console.debug('[analytics]', event, props);
     return;

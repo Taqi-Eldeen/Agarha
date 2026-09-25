@@ -21,7 +21,13 @@ export function FilterChip({ label, selected, onToggle, onRemove, icon }: Filter
       <View className="h-10 flex-row items-center gap-1 rounded-full border border-brand bg-brand-subtle ps-3">
         {icon}
         <Text variant="caption">{label}</Text>
-        <Pressable accessibilityRole="button" accessibilityLabel={`${t.remove}: ${label}`} onPress={onRemove} hitSlop={4} className="size-10 items-center justify-center rounded-full">
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`${t.remove}: ${label}`}
+          onPress={onRemove}
+          hitSlop={4}
+          className="size-10 items-center justify-center rounded-full"
+        >
           <X size={16} color={colors.textPrimary} strokeWidth={1.75} />
         </Pressable>
       </View>
@@ -31,10 +37,23 @@ export function FilterChip({ label, selected, onToggle, onRemove, icon }: Filter
       accessibilityRole="button"
       accessibilityState={{ selected: !!selected }}
       onPress={onToggle}
-      className={cn('min-h-touch flex-row items-center gap-1 rounded-full border px-4', selected ? 'border-brand bg-brand' : 'border-border bg-card')}
+      className={cn(
+        'min-h-touch flex-row items-center gap-1 rounded-full border px-4',
+        selected ? 'border-brand bg-brand' : 'border-border bg-card',
+      )}
     >
       {icon}
-      <Text variant="caption" tone="inherit" style={{ color: selected ? (scheme === 'light' ? '#FFFFFF' : colors.surfacePage) : colors.textPrimary }}>
+      <Text
+        variant="caption"
+        tone="inherit"
+        style={{
+          color: selected
+            ? scheme === 'light'
+              ? '#FFFFFF'
+              : colors.surfacePage
+            : colors.textPrimary,
+        }}
+      >
         {label}
       </Text>
     </Pressable>
@@ -50,12 +69,39 @@ export interface ChipGroupProps<V extends string> {
   single?: boolean;
 }
 
-export function ChipGroup<V extends string>({ label, options, value, onChange, single }: ChipGroupProps<V>) {
+export function ChipGroup<V extends string>({
+  label,
+  options,
+  value,
+  onChange,
+  single,
+}: ChipGroupProps<V>) {
   return (
-    <View accessibilityRole={single ? 'radiogroup' : undefined} accessibilityLabel={label} className="flex-row flex-wrap gap-2">
+    <View
+      accessibilityRole={single ? 'radiogroup' : undefined}
+      accessibilityLabel={label}
+      className="flex-row flex-wrap gap-2"
+    >
       {options.map((o) => {
         const on = value.includes(o.value);
-        return <FilterChip key={o.value} label={o.label} selected={on} onToggle={() => onChange(single ? (on ? [] : [o.value]) : on ? value.filter((v) => v !== o.value) : [...value, o.value])} />;
+        return (
+          <FilterChip
+            key={o.value}
+            label={o.label}
+            selected={on}
+            onToggle={() =>
+              onChange(
+                single
+                  ? on
+                    ? []
+                    : [o.value]
+                  : on
+                    ? value.filter((v) => v !== o.value)
+                    : [...value, o.value],
+              )
+            }
+          />
+        );
       })}
     </View>
   );

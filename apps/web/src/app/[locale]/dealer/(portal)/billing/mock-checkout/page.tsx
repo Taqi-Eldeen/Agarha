@@ -26,7 +26,11 @@ function MockCheckout() {
   const [busy, setBusy] = useState(false);
   const pay = async (success: boolean) => {
     setBusy(true);
-    await fetch(`${env.NEXT_PUBLIC_API_URL}/v1/dev/payments/mock/${invoice}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ amountEgp: amount, success }) });
+    await fetch(`${env.NEXT_PUBLIC_API_URL}/v1/dev/payments/mock/${invoice}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ amountEgp: amount, success }),
+    });
     router.replace('/dealer/billing');
   };
   return (

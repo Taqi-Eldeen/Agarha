@@ -2,7 +2,30 @@ import type { ListingCard as Card } from '@agarha/schemas';
 import type { Meta, StoryObj } from '@storybook/react-native';
 import type { ReactNode } from 'react';
 import { ScrollView, View } from 'react-native';
-import { AvailabilitySwitch, Badge, Button, Cluster, Combobox, Pin, Select, ChipGroup, ContactBar, DealerCard, EmptyState, ErrorState, InlineAlert, ListingCard, ListingCardSkeleton, OTPField, PhoneField, PriceTag, RatingStars, RequirementList, Text, UiProvider } from '../index';
+import {
+  AvailabilitySwitch,
+  Badge,
+  Button,
+  Cluster,
+  Combobox,
+  Pin,
+  Select,
+  ChipGroup,
+  ContactBar,
+  DealerCard,
+  EmptyState,
+  ErrorState,
+  InlineAlert,
+  ListingCard,
+  ListingCardSkeleton,
+  OTPField,
+  PhoneField,
+  PriceTag,
+  RatingStars,
+  RequirementList,
+  Text,
+  UiProvider,
+} from '../index';
 
 /** Every story renders in Arabic/English × light/dark, like the web Storybook matrix. */
 function Matrix({ children }: { children: ReactNode }) {
@@ -44,7 +67,15 @@ const CARD = {
   lastConfirmedAt: new Date().toISOString(),
   available: true,
   featured: true,
-  dealer: { id: '00000000-0000-4000-8000-000000000002', slug: 'nile', nameAr: 'نايل لتأجير السيارات', nameEn: 'Nile Car Rental', verified: true, whatsapp: '+201000000001', phone: '+201000000001' },
+  dealer: {
+    id: '00000000-0000-4000-8000-000000000002',
+    slug: 'nile',
+    nameAr: 'نايل لتأجير السيارات',
+    nameEn: 'Nile Car Rental',
+    verified: true,
+    whatsapp: '+201000000001',
+    phone: '+201000000001',
+  },
   area: { slug: 'maadi', ar: 'المعادي', en: 'Maadi' },
   city: { slug: 'cairo', ar: 'القاهرة', en: 'Cairo' },
   location: null,
@@ -61,11 +92,21 @@ export const Buttons: Story = {
     children: (
       <View className="gap-2">
         <Button onPress={noop}>Primary</Button>
-        <Button variant="secondary" onPress={noop}>Secondary</Button>
-        <Button variant="whatsapp" onPress={noop}>WhatsApp</Button>
-        <Button variant="danger" onPress={noop}>Danger</Button>
-        <Button loading onPress={noop}>Loading</Button>
-        <Button disabled onPress={noop}>Disabled</Button>
+        <Button variant="secondary" onPress={noop}>
+          Secondary
+        </Button>
+        <Button variant="whatsapp" onPress={noop}>
+          WhatsApp
+        </Button>
+        <Button variant="danger" onPress={noop}>
+          Danger
+        </Button>
+        <Button loading onPress={noop}>
+          Loading
+        </Button>
+        <Button disabled onPress={noop}>
+          Disabled
+        </Button>
       </View>
     ),
   },
@@ -85,7 +126,9 @@ export const Badges: Story = {
   },
 };
 
-export const Prices: Story = { args: { children: <PriceTag prices={CARD.prices} period="week" showDeposit /> } };
+export const Prices: Story = {
+  args: { children: <PriceTag prices={CARD.prices} period="week" showDeposit /> },
+};
 
 export const Fields: Story = {
   args: {
@@ -99,31 +142,81 @@ export const Fields: Story = {
   },
 };
 
-export const Chips: Story = { args: { children: <ChipGroup label="Period" single value={['week']} onChange={noop} options={[{ value: 'day', label: 'Day' }, { value: 'week', label: 'Week' }, { value: 'month', label: 'Month' }]} /> } };
+export const Chips: Story = {
+  args: {
+    children: (
+      <ChipGroup
+        label="Period"
+        single
+        value={['week']}
+        onChange={noop}
+        options={[
+          { value: 'day', label: 'Day' },
+          { value: 'week', label: 'Week' },
+          { value: 'month', label: 'Month' },
+        ]}
+      />
+    ),
+  },
+};
 
 export const ListingCards: Story = {
   args: {
     children: (
       <View className="gap-3">
         <ListingCard card={CARD} onPress={noop} onContact={noop} />
-        <ListingCard card={{ ...CARD, featured: false, available: false }} variant="map-mini" onPress={noop} />
+        <ListingCard
+          card={{ ...CARD, featured: false, available: false }}
+          variant="map-mini"
+          onPress={noop}
+        />
         <ListingCardSkeleton />
       </View>
     ),
   },
 };
 
-export const Dealer: Story = { args: { children: <DealerCard name="Nile Car Rental" verified area="Maadi" reviews={{ count: 18, average: 4.4 }} responseRate={0.92} responseRateLabel="92%" onPress={noop} /> } };
+export const Dealer: Story = {
+  args: {
+    children: (
+      <DealerCard
+        name="Nile Car Rental"
+        verified
+        area="Maadi"
+        reviews={{ count: 18, average: 4.4 }}
+        responseRate={0.92}
+        responseRateLabel="92%"
+        onPress={noop}
+      />
+    ),
+  },
+};
 
-export const Requirements: Story = { args: { children: <RequirementList deposit={5000} minAge={23} requiredDocs={['national_id', 'egyptian_driving_licence']} kmLimitPerDay={250} airportPickup /> } };
+export const Requirements: Story = {
+  args: {
+    children: (
+      <RequirementList
+        deposit={5000}
+        minAge={23}
+        requiredDocs={['national_id', 'egyptian_driving_licence']}
+        kmLimitPerDay={250}
+        airportPickup
+      />
+    ),
+  },
+};
 
-export const Contact: Story = { args: { children: <ContactBar prices={CARD.prices} onContact={noop} contacting="whatsapp" /> } };
+export const Contact: Story = {
+  args: { children: <ContactBar prices={CARD.prices} onContact={noop} contacting="whatsapp" /> },
+};
 
 export const Feedback: Story = {
   args: {
     children: (
       <View className="gap-3">
-        <InlineAlert tone="warning" title="Never pay a deposit before seeing the car">Agarha never takes payments.</InlineAlert>
+        <InlineAlert tone="warning" title="Never pay a deposit before seeing the car">
+          Agarha never takes payments.
+        </InlineAlert>
         <EmptyState body="Try another area" />
         <ErrorState body="Could not load" onRetry={noop} requestId="req_123" />
         <RatingStars value={4} onChange={noop} />
@@ -136,14 +229,36 @@ export const Pickers: Story = {
   args: {
     children: (
       <View className="gap-3">
-        <Select label="City / المدينة" value="cairo" onValueChange={noop} options={[{ value: 'cairo', label: 'القاهرة' }, { value: 'giza', label: 'الجيزة' }]} />
-        <Combobox label="Model / الموديل" value={undefined} onValueChange={noop} options={[{ value: 'corolla', label: 'Corolla' }, { value: 'elantra', label: 'Elantra' }]} />
+        <Select
+          label="City / المدينة"
+          value="cairo"
+          onValueChange={noop}
+          options={[
+            { value: 'cairo', label: 'القاهرة' },
+            { value: 'giza', label: 'الجيزة' },
+          ]}
+        />
+        <Combobox
+          label="Model / الموديل"
+          value={undefined}
+          onValueChange={noop}
+          options={[
+            { value: 'corolla', label: 'Corolla' },
+            { value: 'elantra', label: 'Elantra' },
+          ]}
+        />
       </View>
     ),
   },
 };
 
-export const Availability: Story = { args: { children: <AvailabilitySwitch label="Corolla 2024" available onChange={async () => undefined} /> } };
+export const Availability: Story = {
+  args: {
+    children: (
+      <AvailabilitySwitch label="Corolla 2024" available onChange={async () => undefined} />
+    ),
+  },
+};
 
 export const MapMarkers: Story = {
   args: {

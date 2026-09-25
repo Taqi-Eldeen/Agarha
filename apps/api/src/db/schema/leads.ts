@@ -3,7 +3,12 @@ import { sql } from 'drizzle-orm';
 import { check, date, index, pgTable, text, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 import { createdAt, id, tstz } from './_columns';
 import { dealers } from './dealers';
-import { availabilityRequestStatusEnum, leadChannelEnum, leadOutcomeEnum, localeEnum } from './enums';
+import {
+  availabilityRequestStatusEnum,
+  leadChannelEnum,
+  leadOutcomeEnum,
+  localeEnum,
+} from './enums';
 import { users } from './identity';
 import { listings } from './listings';
 
@@ -13,8 +18,12 @@ export const leads = pgTable(
     id: id(),
     /** Human reference in the prefilled WhatsApp message, e.g. AG-7K2Q. */
     refCode: text('ref_code').notNull(),
-    listingId: uuid('listing_id').notNull().references(() => listings.id),
-    dealerId: uuid('dealer_id').notNull().references(() => dealers.id),
+    listingId: uuid('listing_id')
+      .notNull()
+      .references(() => listings.id),
+    dealerId: uuid('dealer_id')
+      .notNull()
+      .references(() => dealers.id),
     userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
     channel: leadChannelEnum('channel').notNull(),
     locale: localeEnum('locale').notNull(),

@@ -2,7 +2,11 @@ import type { Locale } from '@agarha/schemas';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { and, eq, gte, sql } from 'drizzle-orm';
 import { DB, type Database } from '../../db/db';
-import { notificationDeliveries, notificationPreferences, pushTokens } from '../../db/schema/notifications';
+import {
+  notificationDeliveries,
+  notificationPreferences,
+  pushTokens,
+} from '../../db/schema/notifications';
 import { Queues } from '../../infra/queue/queues';
 import {
   EMAIL_PROVIDER,
@@ -53,7 +57,13 @@ export class NotificationsService {
     const [pref] = await this.db
       .select({ enabled: notificationPreferences.enabled })
       .from(notificationPreferences)
-      .where(and(eq(notificationPreferences.userId, userId), eq(notificationPreferences.topic, topic), eq(notificationPreferences.channel, channel)));
+      .where(
+        and(
+          eq(notificationPreferences.userId, userId),
+          eq(notificationPreferences.topic, topic),
+          eq(notificationPreferences.channel, channel),
+        ),
+      );
     return pref ? !pref.enabled : false;
   }
 
@@ -61,7 +71,12 @@ export class NotificationsService {
   async notify(req: NotifyRequest): Promise<string[]> {
     const meta = TEMPLATE_TOPIC[req.template];
     for (const channel of req.channels) {
-      if (req.userId && !meta.transactional && (await this.optedOut(req.userId, meta.topic, channel))) continue;
+      if (
+        req.userId &&
+        !meta.transactional &&
+        (await this.optedOut(req.userId, meta.topic, channel))
+      )
+        continue;
       const recipients = await this.recipients(req, channel);
       if (!recipients.length) continue;
 
@@ -78,7 +93,12 @@ export class NotificationsService {
             status: 'queued',
             relatedType: req.related?.type ?? null,
             relatedId: req.related?.id ?? null,
-            payload: { template: req.template, locale: req.locale, vars: req.vars, ...(req.data ? { data: req.data } : {}) },
+            payload: {
+              template: req.template,
+              locale: req.locale,
+              vars: req.vars,
+              ...(req.data ? { data: req.data } : {}),
+            },
           })
           .returning({ id: notificationDeliveries.id });
         ids.push(row!.id);
@@ -97,13 +117,19 @@ export class NotificationsService {
     if (channel === 'whatsapp') return req.whatsappTo ? [req.whatsappTo] : [];
     if (channel === 'email') return req.emailTo ? [req.emailTo] : [];
     if (!req.userId) return [];
-    const rows = await this.db.select({ token: pushTokens.token }).from(pushTokens).where(eq(pushTokens.userId, req.userId));
+    const rows = await this.db
+      .select({ token: pushTokens.token })
+      .from(pushTokens)
+      .where(eq(pushTokens.userId, req.userId));
     return rows.map((r) => r.token);
   }
 
   /** Worker entry point. Throws on retryable failure so BullMQ backs off and retries. */
   async deliver(deliveryId: string, attempt: number): Promise<void> {
-    const [d] = await this.db.select().from(notificationDeliveries).where(eq(notificationDeliveries.id, deliveryId));
+    const [d] = await this.db
+      .select()
+      .from(notificationDeliveries)
+      .where(eq(notificationDeliveries.id, deliveryId));
     if (!d || d.status === 'sent' || d.status === 'delivered') return;
     const req = d.payload;
     if (!req) {
@@ -113,16 +139,39 @@ export class NotificationsService {
     const { title, body } = render(req.template, req.locale, req.vars);
     try {
       let result: { provider: string; providerMessageId?: string };
-      if (d.channel === 'push') result = await this.push.send({ to: d.recipient, title, body, ...(req.data ? { data: req.data } : {}) });
-      else if (d.channel === 'email') result = await this.email.send({ to: d.recipient, subject: title, text: body });
+      if (d.channel === 'push')
+        result = await this.push.send({
+          to: d.recipient,
+          title,
+          body,
+          ...(req.data ? { data: req.data } : {}),
+        });
+      else if (d.channel === 'email')
+        result = await this.email.send({ to: d.recipient, subject: title, text: body });
       else {
         const kind = (TEMPLATES[req.template] as { whatsapp?: 'lead' | 'nudge' }).whatsapp;
-        const template = kind === 'lead' ? this.env.WHATSAPP_LEAD_TEMPLATE : kind === 'nudge' ? this.env.WHATSAPP_NUDGE_TEMPLATE : req.template;
-        result = await this.whatsapp.sendTemplate({ to: d.recipient, template, locale: req.locale, params: Object.values(req.vars).map(String) });
+        const template =
+          kind === 'lead'
+            ? this.env.WHATSAPP_LEAD_TEMPLATE
+            : kind === 'nudge'
+              ? this.env.WHATSAPP_NUDGE_TEMPLATE
+              : req.template;
+        result = await this.whatsapp.sendTemplate({
+          to: d.recipient,
+          template,
+          locale: req.locale,
+          params: Object.values(req.vars).map(String),
+        });
       }
       await this.db
         .update(notificationDeliveries)
-        .set({ status: 'sent', provider: result.provider, providerMessageId: result.providerMessageId ?? null, attempts: attempt, lastError: null })
+        .set({
+          status: 'sent',
+          provider: result.provider,
+          providerMessageId: result.providerMessageId ?? null,
+          attempts: attempt,
+          lastError: null,
+        })
         .where(eq(notificationDeliveries.id, deliveryId));
     } catch (err) {
       const retryable = !(err instanceof ProviderError) || err.retryable;
@@ -136,9 +185,17 @@ export class NotificationsService {
   /** OTP send attempts in the last `minutes` (alarm: failures > 10%, docs/runbooks/otp-outage.md). */
   async otpDeliveryStats(minutes = 15): Promise<{ total: number; failed: number }> {
     const [r] = await this.db
-      .select({ total: sql<number>`count(*)::int`, failed: sql<number>`count(*) filter (where ${notificationDeliveries.status} = 'failed')::int` })
+      .select({
+        total: sql<number>`count(*)::int`,
+        failed: sql<number>`count(*) filter (where ${notificationDeliveries.status} = 'failed')::int`,
+      })
       .from(notificationDeliveries)
-      .where(and(eq(notificationDeliveries.template, 'otp'), gte(notificationDeliveries.createdAt, sql`now() - make_interval(mins => ${minutes})`)));
+      .where(
+        and(
+          eq(notificationDeliveries.template, 'otp'),
+          gte(notificationDeliveries.createdAt, sql`now() - make_interval(mins => ${minutes})`),
+        ),
+      );
     return { total: r?.total ?? 0, failed: r?.failed ?? 0 };
   }
 
@@ -147,14 +204,27 @@ export class NotificationsService {
   }
 
   private async mark(id: string, status: 'queued' | 'failed', attempts: number, error: string) {
-    await this.db.update(notificationDeliveries).set({ status, attempts, lastError: error.slice(0, 500) }).where(eq(notificationDeliveries.id, id));
+    await this.db
+      .update(notificationDeliveries)
+      .set({ status, attempts, lastError: error.slice(0, 500) })
+      .where(eq(notificationDeliveries.id, id));
   }
 
   /** Provider status callbacks (WhatsApp/SMS delivery reports). */
-  async applyDeliveryStatus(provider: string, providerMessageId: string, status: 'sent' | 'delivered' | 'failed', error?: string) {
+  async applyDeliveryStatus(
+    provider: string,
+    providerMessageId: string,
+    status: 'sent' | 'delivered' | 'failed',
+    error?: string,
+  ) {
     await this.db
       .update(notificationDeliveries)
       .set({ status, ...(error ? { lastError: error.slice(0, 500) } : {}) })
-      .where(and(eq(notificationDeliveries.provider, provider), eq(notificationDeliveries.providerMessageId, providerMessageId)));
+      .where(
+        and(
+          eq(notificationDeliveries.provider, provider),
+          eq(notificationDeliveries.providerMessageId, providerMessageId),
+        ),
+      );
   }
 }

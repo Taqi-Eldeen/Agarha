@@ -18,7 +18,13 @@ import { SearchService } from './search.service';
     {
       provide: SEARCH_ENGINES,
       inject: [PostgresSearchEngine, ENV],
-      useFactory: (postgres: PostgresSearchEngine, env: Env) => ({ postgres, meili: env.MEILI_HOST && env.MEILI_API_KEY ? new MeiliSearchEngine(env.MEILI_HOST, env.MEILI_API_KEY) : null }),
+      useFactory: (postgres: PostgresSearchEngine, env: Env) => ({
+        postgres,
+        meili:
+          env.MEILI_HOST && env.MEILI_API_KEY
+            ? new MeiliSearchEngine(env.MEILI_HOST, env.MEILI_API_KEY)
+            : null,
+      }),
     },
     SearchService,
   ],

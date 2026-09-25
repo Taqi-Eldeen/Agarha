@@ -25,7 +25,15 @@ export interface SelectProps {
  * Native <select> styled with tokens: the platform picker on phones (best on low-end Android), full
  * keyboard and screen-reader support, and no popper JS on public pages (listing-page budget).
  */
-export function Select({ label, options, value, onValueChange, placeholder, error, disabled }: SelectProps) {
+export function Select({
+  label,
+  options,
+  value,
+  onValueChange,
+  placeholder,
+  error,
+  disabled,
+}: SelectProps) {
   const id = useId();
   const { t } = useUi();
   return (
@@ -38,7 +46,10 @@ export function Select({ label, options, value, onValueChange, placeholder, erro
           disabled={disabled}
           aria-invalid={!!error || undefined}
           aria-describedby={error ? `${id}-error` : undefined}
-          className={cn('h-12 w-full appearance-none rounded-md border border-border bg-card pe-10 ps-3 text-body disabled:opacity-50 aria-[invalid=true]:border-danger', value ? 'text-fg' : 'text-fg-secondary')}
+          className={cn(
+            'h-12 w-full appearance-none rounded-md border border-border bg-card pe-10 ps-3 text-body disabled:opacity-50 aria-[invalid=true]:border-danger',
+            value ? 'text-fg' : 'text-fg-secondary',
+          )}
         >
           {!value ? (
             <option value="" disabled>
@@ -51,7 +62,11 @@ export function Select({ label, options, value, onValueChange, placeholder, erro
             </option>
           ))}
         </select>
-        <ChevronDown aria-hidden className="pointer-events-none absolute end-3 top-1/2 size-5 -translate-y-1/2 text-fg-secondary" strokeWidth={1.75} />
+        <ChevronDown
+          aria-hidden
+          className="pointer-events-none absolute end-3 top-1/2 size-5 -translate-y-1/2 text-fg-secondary"
+          strokeWidth={1.75}
+        />
       </div>
     </FieldShell>
   );

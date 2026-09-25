@@ -10,7 +10,9 @@ import { WorkerModule } from './worker.module';
 export async function startWorker() {
   const env = loadEnv();
   await startObservability(env, 'worker');
-  const app = await NestFactory.createApplicationContext(WorkerModule.forRoot(env), { bufferLogs: true });
+  const app = await NestFactory.createApplicationContext(WorkerModule.forRoot(env), {
+    bufferLogs: true,
+  });
   app.useLogger(app.get(Logger));
   app.enableShutdownHooks();
   return app;
@@ -21,7 +23,9 @@ async function cli() {
   const [cmd, job] = process.argv.slice(2);
   if (cmd === 'run' && job) {
     const env = loadEnv();
-    const app = await NestFactory.createApplicationContext(WorkerModule.forRoot(env), { logger: ['error', 'warn'] });
+    const app = await NestFactory.createApplicationContext(WorkerModule.forRoot(env), {
+      logger: ['error', 'warn'],
+    });
     const result = await app.get(Processors, { strict: false }).runScheduled(job as never);
     console.log(JSON.stringify(result));
     await app.close();

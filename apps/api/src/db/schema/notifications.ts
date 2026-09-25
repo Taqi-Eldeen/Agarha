@@ -1,8 +1,23 @@
 import type { TemplateId } from '../../modules/notifications/templates';
 // Owned by the notifications module: one row per send attempt chain, with delivery status.
-import { boolean, index, jsonb, pgTable, primaryKey, smallint, text, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  index,
+  jsonb,
+  pgTable,
+  primaryKey,
+  smallint,
+  text,
+  uniqueIndex,
+  uuid,
+} from 'drizzle-orm/pg-core';
 import { createdAt, id, tstz, updatedAt } from './_columns';
-import { deliveryStatusEnum, devicePlatformEnum, localeEnum, notificationChannelEnum } from './enums';
+import {
+  deliveryStatusEnum,
+  devicePlatformEnum,
+  localeEnum,
+  notificationChannelEnum,
+} from './enums';
 import { users } from './identity';
 
 export const notificationDeliveries = pgTable(
@@ -24,7 +39,12 @@ export const notificationDeliveries = pgTable(
     relatedType: text('related_type'),
     relatedId: uuid('related_id'),
     /** Template id, locale and variables, so the worker can render the message. */
-    payload: jsonb('payload').$type<{ template: TemplateId; locale: 'ar' | 'en'; vars: Record<string, string | number>; data?: Record<string, string> }>(),
+    payload: jsonb('payload').$type<{
+      template: TemplateId;
+      locale: 'ar' | 'en';
+      vars: Record<string, string | number>;
+      data?: Record<string, string>;
+    }>(),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -48,7 +68,10 @@ export const pushTokens = pgTable(
     lastSeenAt: tstz('last_seen_at').notNull().defaultNow(),
     createdAt: createdAt(),
   },
-  (t) => [uniqueIndex('push_tokens_token_key').on(t.token), index('push_tokens_user_idx').on(t.userId)],
+  (t) => [
+    uniqueIndex('push_tokens_token_key').on(t.token),
+    index('push_tokens_user_idx').on(t.userId),
+  ],
 );
 
 /** Per-user, per-topic, per-channel opt-in. Missing row = default (on). */

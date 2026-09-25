@@ -9,6 +9,10 @@ import { Processors } from './processors';
 @Module({})
 export class WorkerModule {
   static forRoot(env: Env): DynamicModule {
-    return { module: WorkerModule, imports: [LoggerModule.forRoot(loggerParams(env)), ...coreImports(env), ...domainModules], providers: [Processors, MetricsReporter] };
+    return {
+      module: WorkerModule,
+      imports: [LoggerModule.forRoot(loggerParams(env)), ...coreImports(env), ...domainModules],
+      providers: [Processors, MetricsReporter],
+    };
   }
 }

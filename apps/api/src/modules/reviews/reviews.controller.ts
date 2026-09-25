@@ -10,9 +10,16 @@ import { FLAGS, FlagsService } from '../../infra/flags';
 import { ReviewsService } from './reviews.service';
 
 type Dealer = { dealerId: string; userId: string; role: 'dealer_owner' | 'dealer_staff' };
-const createSchema = z.object({ leadId: z.uuid(), rating: z.number().int().min(1).max(5), body: z.string().trim().min(3).max(1000).optional() });
+const createSchema = z.object({
+  leadId: z.uuid(),
+  rating: z.number().int().min(1).max(5),
+  body: z.string().trim().min(3).max(1000).optional(),
+});
 const replySchema = z.object({ text: z.string().trim().min(2).max(1000) });
-const moderateSchema = z.object({ approve: z.boolean(), reason: z.string().trim().max(300).optional() });
+const moderateSchema = z.object({
+  approve: z.boolean(),
+  reason: z.string().trim().max(300).optional(),
+});
 
 @ApiTags('reviews')
 @Controller()
@@ -30,7 +37,10 @@ export class ReviewsController {
   @Auth('customer')
   @Idempotent()
   @ZodBody(createSchema)
-  async create(@CurrentAuth() a: AuthContext, @Body(new ZodPipe(createSchema)) b: z.output<typeof createSchema>) {
+  async create(
+    @CurrentAuth() a: AuthContext,
+    @Body(new ZodPipe(createSchema)) b: z.output<typeof createSchema>,
+  ) {
     await this.gate();
     return this.reviews.create(a.userId, b);
   }
@@ -44,14 +54,21 @@ export class ReviewsController {
   @Get('dealer/reviews')
   @Auth('dealer', 'dealer_owner', 'dealer_staff')
   async mine(@CurrentDealer() d: Dealer) {
-    return { items: await this.reviews.dealerReviews(d.dealerId), summary: await this.reviews.summary(d.dealerId) };
+    return {
+      items: await this.reviews.dealerReviews(d.dealerId),
+      summary: await this.reviews.summary(d.dealerId),
+    };
   }
 
   @Post('dealer/reviews/:id/reply')
   @HttpCode(200)
   @Auth('dealer', 'dealer_owner', 'dealer_staff')
   @ZodBody(replySchema)
-  reply(@CurrentDealer() d: Dealer, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodPipe(replySchema)) b: z.output<typeof replySchema>) {
+  reply(
+    @CurrentDealer() d: Dealer,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodPipe(replySchema)) b: z.output<typeof replySchema>,
+  ) {
     return this.reviews.reply(d.dealerId, id, b.text, d);
   }
 
@@ -65,7 +82,16 @@ export class ReviewsController {
   @HttpCode(200)
   @AdminAuth('admin', 'moderator')
   @ZodBody(moderateSchema)
-  moderate(@CurrentAuth() a: AuthContext, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodPipe(moderateSchema)) b: z.output<typeof moderateSchema>) {
-    return this.reviews.moderate(id, b.approve, { userId: a.userId, role: a.roles.includes('admin') ? 'admin' : 'moderator' }, b.reason);
+  moderate(
+    @CurrentAuth() a: AuthContext,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodPipe(moderateSchema)) b: z.output<typeof moderateSchema>,
+  ) {
+    return this.reviews.moderate(
+      id,
+      b.approve,
+      { userId: a.userId, role: a.roles.includes('admin') ? 'admin' : 'moderator' },
+      b.reason,
+    );
   }
 }

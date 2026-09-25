@@ -7,7 +7,7 @@
 //   - Arabic-Indic digits -> 0-9
 //   - lowercases Latin
 const TASHKEEL = /[ً-ْٰـ]/g;
-const MAP: Record<string, string> = { 'أ': 'ا', 'إ': 'ا', 'آ': 'ا', 'ٱ': 'ا', 'ى': 'ي', 'ة': 'ه' };
+const MAP: Record<string, string> = { أ: 'ا', إ: 'ا', آ: 'ا', ٱ: 'ا', ى: 'ي', ة: 'ه' };
 
 export function normalizeArabic(input: string): string {
   return input

@@ -1,5 +1,17 @@
 import { listingSchema, modelSchema } from '@agarha/schemas';
-import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post, Put, Query, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Put,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { z } from 'zod';
@@ -11,7 +23,17 @@ import { ZodBody, ZodPipe, ZodQuery, ZodResponse } from '../../common/zod';
 import { FLAGS, FlagsService } from '../../infra/flags';
 import { CatalogService } from '../catalog';
 import { ImportService } from './import.service';
-import { adminListingQuerySchema, availabilitySchema, createListingSchema, fleetQuerySchema, moderationSchema, photoUploadSchema, reorderSchema, updateListingSchema, type CreateListing } from './listings.schemas';
+import {
+  adminListingQuerySchema,
+  availabilitySchema,
+  createListingSchema,
+  fleetQuerySchema,
+  moderationSchema,
+  photoUploadSchema,
+  reorderSchema,
+  updateListingSchema,
+  type CreateListing,
+} from './listings.schemas';
 import { ListingsService } from './listings.service';
 
 type Dealer = { dealerId: string; userId: string; role: 'dealer_owner' | 'dealer_staff' };
@@ -31,8 +53,24 @@ export class DealerListingsController {
   @Get()
   @Auth('dealer', 'dealer_owner', 'dealer_staff')
   @ZodQuery(fleetQuerySchema)
-  @ZodResponse(200, z.object({ items: z.array(listingSchema.extend({ model: modelSchema.extend({ makeSlug: z.string(), makeNameAr: z.string(), makeNameEn: z.string() }).nullable() })), nextCursor: z.string().nullable(), counts: z.record(z.string(), z.number()) }))
-  fleet(@CurrentDealer() d: Dealer, @Query(new ZodPipe(fleetQuerySchema)) q: z.output<typeof fleetQuerySchema>) {
+  @ZodResponse(
+    200,
+    z.object({
+      items: z.array(
+        listingSchema.extend({
+          model: modelSchema
+            .extend({ makeSlug: z.string(), makeNameAr: z.string(), makeNameEn: z.string() })
+            .nullable(),
+        }),
+      ),
+      nextCursor: z.string().nullable(),
+      counts: z.record(z.string(), z.number()),
+    }),
+  )
+  fleet(
+    @CurrentDealer() d: Dealer,
+    @Query(new ZodPipe(fleetQuerySchema)) q: z.output<typeof fleetQuerySchema>,
+  ) {
     return this.listings.fleet(d.dealerId, q);
   }
 
@@ -77,13 +115,21 @@ export class DealerListingsController {
   async get(@CurrentDealer() d: Dealer, @Param('id', ParseUUIDPipe) id: string) {
     const l = await this.listings.one(id);
     if (l.dealerId !== d.dealerId) throw Errors.notFound('Listing');
-    return { ...l, photos: await this.listings.photos(d.dealerId, id), model: await this.catalog.model(l.carModelId) };
+    return {
+      ...l,
+      photos: await this.listings.photos(d.dealerId, id),
+      model: await this.catalog.model(l.carModelId),
+    };
   }
 
   @Put(':id')
   @Auth('dealer', 'dealer_owner', 'dealer_staff')
   @ZodBody(updateListingSchema)
-  update(@CurrentDealer() d: Dealer, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodPipe(updateListingSchema)) b: CreateListing) {
+  update(
+    @CurrentDealer() d: Dealer,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodPipe(updateListingSchema)) b: CreateListing,
+  ) {
     return this.listings.update(d.dealerId, id, b, actor(d));
   }
 
@@ -109,10 +155,17 @@ export class DealerListingsController {
   }
 
   @Put(':id/availability')
-  @ApiOperation({ summary: 'One-tap availability switch (also confirms freshness). Client updates optimistically with undo.' })
+  @ApiOperation({
+    summary:
+      'One-tap availability switch (also confirms freshness). Client updates optimistically with undo.',
+  })
   @Auth('dealer', 'dealer_owner', 'dealer_staff')
   @ZodBody(availabilitySchema)
-  availability(@CurrentDealer() d: Dealer, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodPipe(availabilitySchema)) b: z.output<typeof availabilitySchema>) {
+  availability(
+    @CurrentDealer() d: Dealer,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodPipe(availabilitySchema)) b: z.output<typeof availabilitySchema>,
+  ) {
     return this.listings.setAvailability(d.dealerId, id, b.available, actor(d));
   }
 
@@ -123,32 +176,50 @@ export class DealerListingsController {
   }
 
   @Post(':id/photos')
-  @ApiOperation({ summary: 'Presigned PUT for one photo (type and size locked). Max 12 per car, 10 MB each.' })
+  @ApiOperation({
+    summary: 'Presigned PUT for one photo (type and size locked). Max 12 per car, 10 MB each.',
+  })
   @Auth('dealer', 'dealer_owner', 'dealer_staff')
   @Idempotent()
   @ZodBody(photoUploadSchema)
-  photoUpload(@CurrentDealer() d: Dealer, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodPipe(photoUploadSchema)) b: z.output<typeof photoUploadSchema>) {
+  photoUpload(
+    @CurrentDealer() d: Dealer,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodPipe(photoUploadSchema)) b: z.output<typeof photoUploadSchema>,
+  ) {
     return this.listings.createPhotoUpload(d.dealerId, id, b);
   }
 
   @Post(':id/photos/:photoId/complete')
   @HttpCode(200)
   @Auth('dealer', 'dealer_owner', 'dealer_staff')
-  completePhoto(@CurrentDealer() d: Dealer, @Param('id', ParseUUIDPipe) id: string, @Param('photoId', ParseUUIDPipe) photoId: string) {
+  completePhoto(
+    @CurrentDealer() d: Dealer,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('photoId', ParseUUIDPipe) photoId: string,
+  ) {
     return this.listings.completePhoto(d.dealerId, id, photoId);
   }
 
   @Put(':id/photos/order')
   @Auth('dealer', 'dealer_owner', 'dealer_staff')
   @ZodBody(reorderSchema)
-  async reorder(@CurrentDealer() d: Dealer, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodPipe(reorderSchema)) b: z.output<typeof reorderSchema>) {
+  async reorder(
+    @CurrentDealer() d: Dealer,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodPipe(reorderSchema)) b: z.output<typeof reorderSchema>,
+  ) {
     return { items: await this.listings.reorderPhotos(d.dealerId, id, b.photoIds) };
   }
 
   @Delete(':id/photos/:photoId')
   @HttpCode(204)
   @Auth('dealer', 'dealer_owner', 'dealer_staff')
-  async deletePhoto(@CurrentDealer() d: Dealer, @Param('id', ParseUUIDPipe) id: string, @Param('photoId', ParseUUIDPipe) photoId: string) {
+  async deletePhoto(
+    @CurrentDealer() d: Dealer,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('photoId', ParseUUIDPipe) photoId: string,
+  ) {
     await this.listings.deletePhoto(d.dealerId, id, photoId);
   }
 }
@@ -169,8 +240,15 @@ export class AdminListingsController {
   @HttpCode(200)
   @AdminAuth('admin', 'moderator')
   @ZodBody(moderationSchema)
-  moderate(@CurrentAuth() a: AuthContext, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodPipe(moderationSchema)) b: z.output<typeof moderationSchema>) {
-    return this.listings.moderate(id, b, { userId: a.userId, role: a.roles.includes('admin') ? 'admin' : 'moderator' });
+  moderate(
+    @CurrentAuth() a: AuthContext,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodPipe(moderationSchema)) b: z.output<typeof moderationSchema>,
+  ) {
+    return this.listings.moderate(id, b, {
+      userId: a.userId,
+      role: a.roles.includes('admin') ? 'admin' : 'moderator',
+    });
   }
 
   /** A4: ops staff create listings on a dealer's behalf (audited as the staff member). */
@@ -178,15 +256,29 @@ export class AdminListingsController {
   @AdminAuth('admin', 'support')
   @Idempotent()
   @ZodBody(createListingSchema)
-  onBehalf(@CurrentAuth() a: AuthContext, @Param('dealerId', ParseUUIDPipe) dealerId: string, @Body(new ZodPipe(createListingSchema)) b: CreateListing) {
-    return this.listings.create(dealerId, b, { userId: a.userId, role: a.roles.includes('admin') ? 'admin' : 'support' });
+  onBehalf(
+    @CurrentAuth() a: AuthContext,
+    @Param('dealerId', ParseUUIDPipe) dealerId: string,
+    @Body(new ZodPipe(createListingSchema)) b: CreateListing,
+  ) {
+    return this.listings.create(dealerId, b, {
+      userId: a.userId,
+      role: a.roles.includes('admin') ? 'admin' : 'support',
+    });
   }
 
   @Post('on-behalf/:dealerId/:id/publish')
   @HttpCode(200)
   @AdminAuth('admin', 'support')
-  publishOnBehalf(@CurrentAuth() a: AuthContext, @Param('dealerId', ParseUUIDPipe) dealerId: string, @Param('id', ParseUUIDPipe) id: string) {
-    return this.listings.publish(dealerId, id, { userId: a.userId, role: a.roles.includes('admin') ? 'admin' : 'support' });
+  publishOnBehalf(
+    @CurrentAuth() a: AuthContext,
+    @Param('dealerId', ParseUUIDPipe) dealerId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.listings.publish(dealerId, id, {
+      userId: a.userId,
+      role: a.roles.includes('admin') ? 'admin' : 'support',
+    });
   }
 }
 

@@ -6,3 +6,11 @@ coverage
 packages/tokens/build
 apps/api/drizzle/meta
 docs/api/openapi.json
+packages/api-client/src/openapi.d.ts
+apps/mobile/.rnstorybook/storybook.requires.ts
+**/storybook-static
+**/playwright-report
+**/test-results
+**/.terraform
+apps/api/.storage
+.storage

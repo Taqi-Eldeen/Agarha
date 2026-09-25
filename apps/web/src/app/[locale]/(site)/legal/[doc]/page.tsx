@@ -5,20 +5,32 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { alternates } from '@/lib/seo';
 
-const TITLE: Record<LegalDoc, 'terms' | 'privacy' | 'dealerTerms'> = { terms: 'terms', privacy: 'privacy', 'dealer-terms': 'dealerTerms' };
+const TITLE: Record<LegalDoc, 'terms' | 'privacy' | 'dealerTerms'> = {
+  terms: 'terms',
+  privacy: 'privacy',
+  'dealer-terms': 'dealerTerms',
+};
 
 export function generateStaticParams() {
   return LEGAL_DOCS.map((doc) => ({ doc }));
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string; doc: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string; doc: string }>;
+}): Promise<Metadata> {
   const { locale, doc } = await params;
   if (!LEGAL_DOCS.includes(doc as LegalDoc)) return {};
   const t = await getTranslations({ locale, namespace: 'web.legal' });
   return { title: t(TITLE[doc as LegalDoc]), alternates: alternates(locale, `/legal/${doc}`) };
 }
 
-export default async function LegalPage({ params }: { params: Promise<{ locale: string; doc: string }> }) {
+export default async function LegalPage({
+  params,
+}: {
+  params: Promise<{ locale: string; doc: string }>;
+}) {
   const { locale, doc } = await params;
   setRequestLocale(locale);
   if (!LEGAL_DOCS.includes(doc as LegalDoc)) notFound();

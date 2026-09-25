@@ -17,7 +17,8 @@ type Json = Record<string, unknown>;
 export const jsonSchema = (schema: z.ZodType, io: 'input' | 'output' = 'input'): Json =>
   z.toJSONSchema(schema, { io, unrepresentable: 'any', target: 'openapi-3.0' }) as Json;
 
-export const ZodBody = (schema: z.ZodType) => applyDecorators(ApiBody({ schema: jsonSchema(schema) }));
+export const ZodBody = (schema: z.ZodType) =>
+  applyDecorators(ApiBody({ schema: jsonSchema(schema) }));
 
 export const ZodResponse = (status: number, schema: z.ZodType, description = '') =>
   applyDecorators(ApiResponse({ status, description, schema: jsonSchema(schema, 'output') }));
@@ -25,7 +26,11 @@ export const ZodResponse = (status: number, schema: z.ZodType, description = '')
 /** Documents each top-level key of an object schema as a query parameter. */
 export function ZodQuery(schema: z.ZodObject) {
   const decorators = Object.entries(schema.shape).map(([name, s]) =>
-    ApiQuery({ name, required: !(s as z.ZodType).safeParse(undefined).success, schema: jsonSchema(s as z.ZodType) }),
+    ApiQuery({
+      name,
+      required: !(s as z.ZodType).safeParse(undefined).success,
+      schema: jsonSchema(s as z.ZodType),
+    }),
   );
   return applyDecorators(...decorators);
 }

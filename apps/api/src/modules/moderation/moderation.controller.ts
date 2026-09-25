@@ -9,7 +9,10 @@ import { ZodBody, ZodPipe } from '../../common/zod';
 import { ModerationService } from './moderation.service';
 
 const reportSchema = reportInputSchema;
-const resolveSchema = z.object({ action: z.enum(['dismiss', 'hide_listing', 'suspend_dealer']), note: z.string().trim().min(3).max(500) });
+const resolveSchema = z.object({
+  action: z.enum(['dismiss', 'hide_listing', 'suspend_dealer']),
+  note: z.string().trim().min(3).max(500),
+});
 
 @ApiTags('reports')
 @Controller()
@@ -20,7 +23,10 @@ export class ModerationController {
   @Auth('customer')
   @Idempotent()
   @ZodBody(reportSchema)
-  report(@CurrentAuth() a: AuthContext, @Body(new ZodPipe(reportSchema)) b: z.output<typeof reportSchema>) {
+  report(
+    @CurrentAuth() a: AuthContext,
+    @Body(new ZodPipe(reportSchema)) b: z.output<typeof reportSchema>,
+  ) {
     return this.moderation.report(a.userId, b);
   }
 
@@ -34,7 +40,14 @@ export class ModerationController {
   @HttpCode(200)
   @AdminAuth('admin', 'moderator')
   @ZodBody(resolveSchema)
-  resolve(@CurrentAuth() a: AuthContext, @Param('id', ParseUUIDPipe) id: string, @Body(new ZodPipe(resolveSchema)) b: z.output<typeof resolveSchema>) {
-    return this.moderation.resolve(id, b.action, b.note, { userId: a.userId, role: a.roles.includes('admin') ? 'admin' : 'moderator' });
+  resolve(
+    @CurrentAuth() a: AuthContext,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodPipe(resolveSchema)) b: z.output<typeof resolveSchema>,
+  ) {
+    return this.moderation.resolve(id, b.action, b.note, {
+      userId: a.userId,
+      role: a.roles.includes('admin') ? 'admin' : 'moderator',
+    });
   }
 }

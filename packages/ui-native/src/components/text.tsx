@@ -15,12 +15,46 @@ const SIZE: Record<Variant, string> = {
 };
 
 /** Text with the locale's font family, token type scale and text/primary colour by default. */
-export function Text({ variant = 'body', weight, tone = 'primary', className, children, ...props }: TextProps & { variant?: Variant; weight?: 'regular' | 'medium' | 'semibold'; tone?: 'primary' | 'secondary' | 'brand' | 'danger' | 'inherit'; className?: string; children?: ReactNode }) {
+export function Text({
+  variant = 'body',
+  weight,
+  tone = 'primary',
+  className,
+  children,
+  ...props
+}: TextProps & {
+  variant?: Variant;
+  weight?: 'regular' | 'medium' | 'semibold';
+  tone?: 'primary' | 'secondary' | 'brand' | 'danger' | 'inherit';
+  className?: string;
+  children?: ReactNode;
+}) {
   const { font } = useUi();
-  const w = weight ?? (variant === 'h1' || variant === 'h2' || variant === 'price' ? 'semibold' : variant === 'label' ? 'medium' : 'regular');
-  const color = { primary: 'text-fg', secondary: 'text-fg-secondary', brand: 'text-brand', danger: 'text-danger', inherit: '' }[tone];
+  const w =
+    weight ??
+    (variant === 'h1' || variant === 'h2' || variant === 'price'
+      ? 'semibold'
+      : variant === 'label'
+        ? 'medium'
+        : 'regular');
+  const color = {
+    primary: 'text-fg',
+    secondary: 'text-fg-secondary',
+    brand: 'text-brand',
+    danger: 'text-danger',
+    inherit: '',
+  }[tone];
   return (
-    <RNText className={cn(SIZE[variant], variant === 'display' ? 'font-display' : font(w), color, 'text-start', className)} {...props}>
+    <RNText
+      className={cn(
+        SIZE[variant],
+        variant === 'display' ? 'font-display' : font(w),
+        color,
+        'text-start',
+        className,
+      )}
+      {...props}
+    >
       {children}
     </RNText>
   );

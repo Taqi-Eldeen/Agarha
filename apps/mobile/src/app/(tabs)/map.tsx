@@ -12,7 +12,12 @@ import { SearchResultCard } from '@/components/search-result-card';
 import { track } from '@/lib/analytics';
 import { bboxOf } from '@/lib/geo';
 
-const CAIRO: Region = { latitude: 30.0444, longitude: 31.2357, latitudeDelta: 0.25, longitudeDelta: 0.25 };
+const CAIRO: Region = {
+  latitude: 30.0444,
+  longitude: 31.2357,
+  latitudeDelta: 0.25,
+  longitudeDelta: 0.25,
+};
 
 /** Full-screen map: clustered price pins, "search this area", "near me" (permission asked on tap only). */
 export default function MapTab() {
@@ -33,7 +38,12 @@ export default function MapTab() {
     if (status !== 'granted') return setDenied(true);
     setDenied(false);
     const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-    const next = { latitude: pos.coords.latitude, longitude: pos.coords.longitude, latitudeDelta: 0.08, longitudeDelta: 0.08 };
+    const next = {
+      latitude: pos.coords.latitude,
+      longitude: pos.coords.longitude,
+      latitudeDelta: 0.08,
+      longitudeDelta: 0.08,
+    };
     map.current?.animateToRegion(next, 400);
     setQuery({ bbox: bboxOf(next) });
     track('map_located');
@@ -70,14 +80,26 @@ export default function MapTab() {
         {denied ? <InlineAlert tone="warning">{t('permissionDenied')}</InlineAlert> : null}
       </View>
       <View className="absolute bottom-4 gap-2 px-4" style={{ end: 0 }}>
-        <IconButton label={t('locate')} variant="secondary" className="rounded-full" icon={<LocateFixed size={22} color={colors.textPrimary} strokeWidth={1.75} />} onPress={() => void locate()} />
+        <IconButton
+          label={t('locate')}
+          variant="secondary"
+          className="rounded-full"
+          icon={<LocateFixed size={22} color={colors.textPrimary} strokeWidth={1.75} />}
+          onPress={() => void locate()}
+        />
       </View>
       {selected && detail.data ? (
         <View className="absolute inset-x-0 bottom-20 flex-row items-start gap-2 px-4">
           <View className="flex-1">
             <SearchResultCard card={detail.data.card} source="map" variant="map-mini" />
           </View>
-          <IconButton label={tu('close')} variant="secondary" className="rounded-full" icon={<X size={20} color={colors.textPrimary} strokeWidth={1.75} />} onPress={() => setSelected(null)} />
+          <IconButton
+            label={tu('close')}
+            variant="secondary"
+            className="rounded-full"
+            icon={<X size={20} color={colors.textPrimary} strokeWidth={1.75} />}
+            onPress={() => setSelected(null)}
+          />
         </View>
       ) : null}
     </SafeAreaView>

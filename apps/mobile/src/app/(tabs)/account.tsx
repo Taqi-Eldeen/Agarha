@@ -29,9 +29,15 @@ export default function Account() {
 
   return (
     <Screen>
-      <Text variant="h1" accessibilityRole="header">{t('web.account.title')}</Text>
+      <Text variant="h1" accessibilityRole="header">
+        {t('web.account.title')}
+      </Text>
       {signedIn ? (
-        me.data ? <Text tone="secondary">{t('web.account.signedInAs', { phone: formatPhone(me.data.phone) })}</Text> : null
+        me.data ? (
+          <Text tone="secondary">
+            {t('web.account.signedInAs', { phone: formatPhone(me.data.phone) })}
+          </Text>
+        ) : null
       ) : (
         <View className="gap-3 rounded-lg border border-border bg-card p-4">
           <Text weight="semibold">{t('web.account.signInTitle')}</Text>
@@ -42,22 +48,53 @@ export default function Account() {
 
       <View className="gap-2">
         <Text variant="h2">{t('app.account.language')}</Text>
-        <ChipGroup label={t('app.account.language')} single value={[locale]} onChange={(v) => v[0] && v[0] !== locale && void setLocale(v[0] as 'ar' | 'en')} options={[{ value: 'ar', label: t('app.onboarding.arabic') }, { value: 'en', label: t('app.onboarding.english') }]} />
-        <Text variant="caption" tone="secondary">{t('app.account.languageRestart')}</Text>
+        <ChipGroup
+          label={t('app.account.language')}
+          single
+          value={[locale]}
+          onChange={(v) => v[0] && v[0] !== locale && void setLocale(v[0] as 'ar' | 'en')}
+          options={[
+            { value: 'ar', label: t('app.onboarding.arabic') },
+            { value: 'en', label: t('app.onboarding.english') },
+          ]}
+        />
+        <Text variant="caption" tone="secondary">
+          {t('app.account.languageRestart')}
+        </Text>
       </View>
 
       {signedIn ? <ReviewPrompts /> : null}
       {signedIn ? <Notifications /> : null}
 
       <View className="gap-1">
-        <Row label={t('web.legal.terms')} onPress={() => router.push('/legal/terms')} color={colors.textSecondary} />
-        <Row label={t('web.legal.privacy')} onPress={() => router.push('/legal/privacy')} color={colors.textSecondary} />
-        <Row label={t('web.nav.help')} onPress={() => router.push('/help')} color={colors.textSecondary} />
-        <Row label={t('app.account.rate')} onPress={() => void StoreReview.requestReview()} color={colors.textSecondary} />
+        <Row
+          label={t('web.legal.terms')}
+          onPress={() => router.push('/legal/terms')}
+          color={colors.textSecondary}
+        />
+        <Row
+          label={t('web.legal.privacy')}
+          onPress={() => router.push('/legal/privacy')}
+          color={colors.textSecondary}
+        />
+        <Row
+          label={t('web.nav.help')}
+          onPress={() => router.push('/help')}
+          color={colors.textSecondary}
+        />
+        <Row
+          label={t('app.account.rate')}
+          onPress={() => void StoreReview.requestReview()}
+          color={colors.textSecondary}
+        />
       </View>
 
       {signedIn ? <DataControls onSignOut={signOut} /> : null}
-      <Text variant="caption" tone="secondary" className="text-center">{t('app.account.version', { version: `${Application.nativeApplicationVersion ?? '1.0.0'} (${Application.nativeBuildVersion ?? '1'})` })}</Text>
+      <Text variant="caption" tone="secondary" className="text-center">
+        {t('app.account.version', {
+          version: `${Application.nativeApplicationVersion ?? '1.0.0'} (${Application.nativeBuildVersion ?? '1'})`,
+        })}
+      </Text>
     </Screen>
   );
 }
@@ -65,7 +102,11 @@ export default function Account() {
 function Row({ label, onPress, color }: { label: string; onPress: () => void; color: string }) {
   const { dir } = useUi();
   return (
-    <Pressable accessibilityRole="link" onPress={onPress} className="min-h-touch flex-row items-center justify-between border-b border-border">
+    <Pressable
+      accessibilityRole="link"
+      onPress={onPress}
+      className="min-h-touch flex-row items-center justify-between border-b border-border"
+    >
       <Text>{label}</Text>
       <View style={{ transform: [{ scaleX: dir === 'rtl' ? -1 : 1 }] }}>
         <ChevronRight size={20} color={color} strokeWidth={1.75} />
@@ -80,26 +121,54 @@ function Notifications() {
   const qc = useQueryClient();
   const { locale } = useLocale();
   const [push, setPush] = useState<PushState | null>(null);
-  useEffect(() => void registerPush(locale, false).then(setPush).catch(() => setPush('unsupported')), [locale]);
-  const prefs = useQuery({ queryKey: ['notification-preferences'], queryFn: async () => ((await api.GET('/v1/me/notification-preferences')).data as unknown as { preferences: Pref[] }).preferences });
-  const enabled = (topic: string) => prefs.data?.find((p) => p.topic === topic && p.channel === 'push')?.enabled ?? true;
+  useEffect(
+    () =>
+      void registerPush(locale, false)
+        .then(setPush)
+        .catch(() => setPush('unsupported')),
+    [locale],
+  );
+  const prefs = useQuery({
+    queryKey: ['notification-preferences'],
+    queryFn: async () =>
+      (
+        (await api.GET('/v1/me/notification-preferences')).data as unknown as {
+          preferences: Pref[];
+        }
+      ).preferences,
+  });
+  const enabled = (topic: string) =>
+    prefs.data?.find((p) => p.topic === topic && p.channel === 'push')?.enabled ?? true;
   const set = async (topic: (typeof TOPICS)[number], on: boolean) => {
     if (on && push !== 'granted') setPush(await registerPush(locale, true));
-    await api.PUT('/v1/me/notification-preferences', { body: { preferences: [{ topic, channel: 'push', enabled: on }] } });
+    await api.PUT('/v1/me/notification-preferences', {
+      body: { preferences: [{ topic, channel: 'push', enabled: on }] },
+    });
     await qc.invalidateQueries({ queryKey: ['notification-preferences'] });
   };
   return (
     <View className="gap-2">
       <Text variant="h2">{t('notifications')}</Text>
       {push === 'denied' ? (
-        <InlineAlert tone="info" action={<Button size="sm" variant="ghost" onPress={() => void Linking.openSettings()}>{t('openSettings')}</Button>}>
+        <InlineAlert
+          tone="info"
+          action={
+            <Button size="sm" variant="ghost" onPress={() => void Linking.openSettings()}>
+              {t('openSettings')}
+            </Button>
+          }
+        >
           {t('pushOff')}
         </InlineAlert>
       ) : null}
       {TOPICS.map((topic) => (
         <View key={topic} className="min-h-touch flex-row items-center justify-between">
           <Text>{t(`pushTopics.${topic}`)}</Text>
-          <Switch accessibilityLabel={t(`pushTopics.${topic}`)} value={enabled(topic)} onValueChange={(v) => void set(topic, v)} />
+          <Switch
+            accessibilityLabel={t(`pushTopics.${topic}`)}
+            value={enabled(topic)}
+            onValueChange={(v) => void set(topic, v)}
+          />
         </View>
       ))}
     </View>
@@ -121,7 +190,8 @@ function DataControls({ onSignOut }: { onSignOut: () => Promise<void> }) {
       file.create();
       file.write(JSON.stringify(data, null, 2));
       toast({ tone: 'success', text: t('app.account.exportSent') });
-      if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(file.uri, { mimeType: 'application/json' });
+      if (await Sharing.isAvailableAsync())
+        await Sharing.shareAsync(file.uri, { mimeType: 'application/json' });
     } catch {
       toast({ tone: 'danger', text: t('errors.internal_error') });
     } finally {
@@ -145,14 +215,18 @@ function DataControls({ onSignOut }: { onSignOut: () => Promise<void> }) {
     <View className="gap-4">
       <View className="gap-2">
         <Text weight="semibold">{t('web.account.exportTitle')}</Text>
-        <Text variant="caption" tone="secondary">{t('web.account.exportBody')}</Text>
+        <Text variant="caption" tone="secondary">
+          {t('web.account.exportBody')}
+        </Text>
         <Button variant="secondary" loading={busy && !confirm} onPress={() => void exportData()}>
           {t('web.account.exportButton')}
         </Button>
       </View>
       <View className="gap-2">
         <Text weight="semibold">{t('web.account.deleteTitle')}</Text>
-        <Text variant="caption" tone="secondary">{t('web.account.deleteBody')}</Text>
+        <Text variant="caption" tone="secondary">
+          {t('web.account.deleteBody')}
+        </Text>
         <Button variant="danger" onPress={() => setConfirm(true)}>
           {t('web.account.deleteButton')}
         </Button>
@@ -169,7 +243,12 @@ function DataControls({ onSignOut }: { onSignOut: () => Promise<void> }) {
             <Button className="flex-1" variant="secondary" onPress={() => setConfirm(false)}>
               {t('ui.close')}
             </Button>
-            <Button className="flex-1" variant="danger" loading={busy} onPress={() => void deleteAccount()}>
+            <Button
+              className="flex-1"
+              variant="danger"
+              loading={busy}
+              onPress={() => void deleteAccount()}
+            >
               {t('web.account.deleteButton')}
             </Button>
           </View>
@@ -188,13 +267,26 @@ function ReviewPrompts() {
   const t = useTranslations('web.review');
   const api = useApi();
   const router = useRouter();
-  const q = useQuery({ queryKey: ['reviewable'], queryFn: async () => ((await api.GET('/v1/me/reviewable')).data as unknown as { items: Reviewable[] }).items });
+  const q = useQuery({
+    queryKey: ['reviewable'],
+    queryFn: async () =>
+      ((await api.GET('/v1/me/reviewable')).data as unknown as { items: Reviewable[] }).items,
+  });
   if (!q.data?.length) return null;
   return (
     <View className="gap-2 rounded-lg border border-border bg-card p-4">
       <Text weight="semibold">{t('pending')}</Text>
       {q.data.slice(0, 3).map((r) => (
-        <ReviewPromptRow key={r.leadId} r={r} onPress={() => router.push({ pathname: '/review/[leadId]', params: { leadId: r.leadId, listingId: r.listingId } })} />
+        <ReviewPromptRow
+          key={r.leadId}
+          r={r}
+          onPress={() =>
+            router.push({
+              pathname: '/review/[leadId]',
+              params: { leadId: r.leadId, listingId: r.listingId },
+            })
+          }
+        />
       ))}
     </View>
   );
@@ -204,7 +296,11 @@ function ReviewPromptRow({ r, onPress }: { r: Reviewable; onPress: () => void })
   const listing = useListing(r.listingId);
   const { locale } = useUi();
   const t = useTranslations('web.review');
-  const dealer = listing.data ? (locale === 'ar' ? listing.data.dealer.nameAr : listing.data.dealer.nameEn) : '…';
+  const dealer = listing.data
+    ? locale === 'ar'
+      ? listing.data.dealer.nameAr
+      : listing.data.dealer.nameEn
+    : '…';
   return (
     <Button size="sm" variant="secondary" onPress={onPress}>
       {t('title', { dealer })}

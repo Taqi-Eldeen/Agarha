@@ -1,4 +1,11 @@
-import { dir as dirOf, formatEgp, formatRelative, interpolate, uiMessages, type Messages } from '@agarha/i18n';
+import {
+  dir as dirOf,
+  formatEgp,
+  formatRelative,
+  interpolate,
+  uiMessages,
+  type Messages,
+} from '@agarha/i18n';
 import type { Locale } from '@agarha/schemas';
 import { theme } from '@agarha/tokens/native';
 import { vars } from 'nativewind';
@@ -50,11 +57,21 @@ export function hexToChannels(hex: string): string {
 /** Token CSS variables for a scheme, applied at the root with NativeWind's vars(). */
 export function themeVars(scheme: Scheme): Record<string, string> {
   const c = theme.colors[scheme];
-  return Object.fromEntries((Object.keys(VAR) as (keyof Colors)[]).map((k) => [VAR[k], hexToChannels(c[k])]));
+  return Object.fromEntries(
+    (Object.keys(VAR) as (keyof Colors)[]).map((k) => [VAR[k], hexToChannels(c[k])]),
+  );
 }
 
 /** Wrap the app once: strings, formatters, RTL and the light/dark token variables. */
-export function UiProvider({ locale, scheme = 'light', children }: { locale: Locale; scheme?: Scheme; children: ReactNode }) {
+export function UiProvider({
+  locale,
+  scheme = 'light',
+  children,
+}: {
+  locale: Locale;
+  scheme?: Scheme;
+  children: ReactNode;
+}) {
   const value = useMemo<Ui>(() => {
     const t = uiMessages[locale];
     const family = locale === 'ar' ? 'ar' : 'en';

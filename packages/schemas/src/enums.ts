@@ -14,7 +14,14 @@ export const ROLES = [
 ] as const;
 export type Role = (typeof ROLES)[number];
 
-export const LISTING_STATUSES = ['draft', 'pending', 'live', 'paused', 'hidden', 'archived'] as const;
+export const LISTING_STATUSES = [
+  'draft',
+  'pending',
+  'live',
+  'paused',
+  'hidden',
+  'archived',
+] as const;
 export type ListingStatus = (typeof LISTING_STATUSES)[number];
 
 export const DRIVER_OPTIONS = ['self', 'driver', 'both'] as const;
@@ -57,7 +64,13 @@ export type CarBodyType = (typeof CAR_BODY_TYPES)[number];
 export const LEAD_CHANNELS = ['whatsapp', 'call'] as const;
 export type LeadChannel = (typeof LEAD_CHANNELS)[number];
 
-export const LEAD_OUTCOMES = ['unknown', 'from_agarha', 'rented', 'not_rented', 'no_reply'] as const;
+export const LEAD_OUTCOMES = [
+  'unknown',
+  'from_agarha',
+  'rented',
+  'not_rented',
+  'no_reply',
+] as const;
 export type LeadOutcome = (typeof LEAD_OUTCOMES)[number];
 
 export const OTP_CHANNELS = ['sms', 'whatsapp'] as const;
@@ -66,7 +79,13 @@ export type OtpChannel = (typeof OTP_CHANNELS)[number];
 export const OTP_PURPOSES = ['customer_sign_in', 'dealer_sign_in', 'dealer_sign_up'] as const;
 export type OtpPurpose = (typeof OTP_PURPOSES)[number];
 
-export const DEALER_STATUSES = ['onboarding', 'pending_review', 'verified', 'rejected', 'suspended'] as const;
+export const DEALER_STATUSES = [
+  'onboarding',
+  'pending_review',
+  'verified',
+  'rejected',
+  'suspended',
+] as const;
 export type DealerStatus = (typeof DEALER_STATUSES)[number];
 
 export const VERIFICATION_DOC_TYPES = [

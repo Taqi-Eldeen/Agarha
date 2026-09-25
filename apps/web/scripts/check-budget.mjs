@@ -16,13 +16,16 @@ const build = JSON.parse(readFileSync(join(NEXT, 'build-manifest.json'), 'utf8')
 const app = JSON.parse(readFileSync(join(NEXT, 'app-build-manifest.json'), 'utf8'));
 const sizeCache = new Map();
 const gz = (f) => {
-  if (!sizeCache.has(f)) sizeCache.set(f, gzipSync(readFileSync(join(NEXT, f)), { level: 9 }).length);
+  if (!sizeCache.has(f))
+    sizeCache.set(f, gzipSync(readFileSync(join(NEXT, f)), { level: 9 }).length);
   return sizeCache.get(f);
 };
 
 let failed = false;
 for (const [route, budget] of Object.entries(BUDGETS_KB)) {
-  const files = new Set([...build.rootMainFiles, ...(app.pages[route] ?? [])].filter((f) => f.endsWith('.js')));
+  const files = new Set(
+    [...build.rootMainFiles, ...(app.pages[route] ?? [])].filter((f) => f.endsWith('.js')),
+  );
   if (!app.pages[route]) {
     console.error(`✗ ${route}: not in the build`);
     failed = true;

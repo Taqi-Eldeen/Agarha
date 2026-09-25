@@ -8,18 +8,42 @@ import { Button } from './button';
 import { Text } from './text';
 
 type Tone = 'info' | 'success' | 'warning' | 'danger';
-const TONE: Record<Tone, { cls: string; Icon: typeof Info; color: 'statusInfo' | 'statusAvailable' | 'statusStale' | 'statusDanger' }> = {
+const TONE: Record<
+  Tone,
+  {
+    cls: string;
+    Icon: typeof Info;
+    color: 'statusInfo' | 'statusAvailable' | 'statusStale' | 'statusDanger';
+  }
+> = {
   info: { cls: 'border-info/40 bg-info/10', Icon: Info, color: 'statusInfo' },
-  success: { cls: 'border-available/40 bg-available/10', Icon: CheckCircle2, color: 'statusAvailable' },
+  success: {
+    cls: 'border-available/40 bg-available/10',
+    Icon: CheckCircle2,
+    color: 'statusAvailable',
+  },
   warning: { cls: 'border-stale/40 bg-stale/10', Icon: AlertTriangle, color: 'statusStale' },
   danger: { cls: 'border-danger/40 bg-danger/10', Icon: XCircle, color: 'statusDanger' },
 };
 
-export function InlineAlert({ tone = 'info', title, children, action }: { tone?: Tone; title?: string; children: ReactNode; action?: ReactNode }) {
+export function InlineAlert({
+  tone = 'info',
+  title,
+  children,
+  action,
+}: {
+  tone?: Tone;
+  title?: string;
+  children: ReactNode;
+  action?: ReactNode;
+}) {
   const { colors } = useUi();
   const { cls, Icon, color } = TONE[tone];
   return (
-    <View accessibilityRole={tone === 'danger' ? 'alert' : 'summary'} className={cn('flex-row gap-3 rounded-md border p-3', cls)}>
+    <View
+      accessibilityRole={tone === 'danger' ? 'alert' : 'summary'}
+      className={cn('flex-row gap-3 rounded-md border p-3', cls)}
+    >
       <Icon size={20} color={colors[color]} strokeWidth={1.75} />
       <View className="flex-1 gap-1">
         {title ? <Text weight="semibold">{title}</Text> : null}
@@ -31,25 +55,54 @@ export function InlineAlert({ tone = 'info', title, children, action }: { tone?:
 }
 
 /** Every empty state suggests a next action. */
-export function EmptyState({ title, body, action, icon }: { title?: string; body: string; action?: ReactNode; icon?: ReactNode }) {
+export function EmptyState({
+  title,
+  body,
+  action,
+  icon,
+}: {
+  title?: string;
+  body: string;
+  action?: ReactNode;
+  icon?: ReactNode;
+}) {
   const { t, colors } = useUi();
   return (
     <View className="items-center gap-3 rounded-lg border border-dashed border-border p-8">
       {icon ?? <SearchX size={40} color={colors.textSecondary} strokeWidth={1.5} />}
-      <Text variant="h2" className="text-center">{title ?? t.emptyTitle}</Text>
-      <Text tone="secondary" className="text-center">{body}</Text>
+      <Text variant="h2" className="text-center">
+        {title ?? t.emptyTitle}
+      </Text>
+      <Text tone="secondary" className="text-center">
+        {body}
+      </Text>
       {action}
     </View>
   );
 }
 
-export function ErrorState({ body, onRetry, requestId }: { body: string; onRetry?: () => void; requestId?: string }) {
+export function ErrorState({
+  body,
+  onRetry,
+  requestId,
+}: {
+  body: string;
+  onRetry?: () => void;
+  requestId?: string;
+}) {
   const { t, colors } = useUi();
   return (
-    <View accessibilityRole="alert" className="items-center gap-3 rounded-lg border border-danger/30 bg-danger/5 p-8">
+    <View
+      accessibilityRole="alert"
+      className="items-center gap-3 rounded-lg border border-danger/30 bg-danger/5 p-8"
+    >
       <XCircle size={40} color={colors.statusDanger} strokeWidth={1.5} />
-      <Text variant="h2" className="text-center">{t.errorTitle}</Text>
-      <Text tone="secondary" className="text-center">{body}</Text>
+      <Text variant="h2" className="text-center">
+        {t.errorTitle}
+      </Text>
+      <Text tone="secondary" className="text-center">
+        {body}
+      </Text>
       {onRetry ? (
         <Button variant="secondary" onPress={onRetry}>
           {t.retry}
@@ -81,7 +134,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastCtx.Provider value={push}>
       {children}
-      <View pointerEvents="box-none" className="absolute inset-x-0 items-center gap-2 px-4" style={{ bottom: insets.bottom + 72 }}>
+      <View
+        pointerEvents="box-none"
+        className="absolute inset-x-0 items-center gap-2 px-4"
+        style={{ bottom: insets.bottom + 72 }}
+      >
         {items.map((m) => (
           <ToastItem key={m.id} msg={m} onDone={() => remove(m.id)} />
         ))}
@@ -98,7 +155,14 @@ function ToastItem({ msg, onDone }: { msg: ToastMsg; onDone: () => void }) {
   }, [onDone]);
   const { cls, Icon, color } = TONE[msg.tone];
   return (
-    <View accessibilityRole={msg.tone === 'danger' ? 'alert' : 'text'} accessibilityLiveRegion="polite" className={cn('w-full max-w-md flex-row items-center gap-3 rounded-md border bg-card p-3 shadow-md', cls)}>
+    <View
+      accessibilityRole={msg.tone === 'danger' ? 'alert' : 'text'}
+      accessibilityLiveRegion="polite"
+      className={cn(
+        'w-full max-w-md flex-row items-center gap-3 rounded-md border bg-card p-3 shadow-md',
+        cls,
+      )}
+    >
       <Icon size={20} color={colors[color]} strokeWidth={1.75} />
       <Text className="flex-1">{msg.text}</Text>
       {msg.action ? (

@@ -8,7 +8,10 @@ import { OtpSignIn } from '@/components/otp-sign-in';
 import { Link, useRouter } from '@/i18n/routing';
 import { track } from '@/lib/analytics';
 
-type Step = { k: 'phone' } | { k: 'details'; proof: string } | { k: 'totp'; setupToken: string; uri: string; secret: string };
+type Step =
+  | { k: 'phone' }
+  | { k: 'details'; proof: string }
+  | { k: 'totp'; setupToken: string; uri: string; secret: string };
 
 export default function DealerSignUp() {
   const t = useTranslations('dealer.auth');
@@ -32,7 +35,9 @@ export default function DealerSignUp() {
             setStep({ k: 'details', proof: phoneProof! });
           }}
         />
-        <Link href="/dealer/sign-in" className="text-brand underline">{t('haveAccount')}</Link>
+        <Link href="/dealer/sign-in" className="text-brand underline">
+          {t('haveAccount')}
+        </Link>
       </div>
     );
 
@@ -45,9 +50,19 @@ export default function DealerSignUp() {
           setBusy(true);
           setError(undefined);
           try {
-            const { data } = await api.POST('/v1/auth/dealer/register', { body: { phoneProof: step.proof, password, displayName: name } });
-            const r = data as unknown as { setupToken: string; totp: { uri: string; secret: string } };
-            setStep({ k: 'totp', setupToken: r.setupToken, uri: r.totp.uri, secret: r.totp.secret });
+            const { data } = await api.POST('/v1/auth/dealer/register', {
+              body: { phoneProof: step.proof, password, displayName: name },
+            });
+            const r = data as unknown as {
+              setupToken: string;
+              totp: { uri: string; secret: string };
+            };
+            setStep({
+              k: 'totp',
+              setupToken: r.setupToken,
+              uri: r.totp.uri,
+              secret: r.totp.secret,
+            });
           } catch (err) {
             const e2 = err as ApiRequestError;
             setError(e2.message || te('internal_error'));
@@ -57,8 +72,25 @@ export default function DealerSignUp() {
         }}
       >
         <h1 className="text-h1">{t('signUpTitle')}</h1>
-        <TextField label={t('name')} value={name} onChange={(e) => setName(e.target.value)} required minLength={2} autoComplete="name" />
-        <TextField label={t('password')} hint={t('passwordHint')} type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={10} autoComplete="new-password" error={error} />
+        <TextField
+          label={t('name')}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+          minLength={2}
+          autoComplete="name"
+        />
+        <TextField
+          label={t('password')}
+          hint={t('passwordHint')}
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          minLength={10}
+          autoComplete="new-password"
+          error={error}
+        />
         <Button type="submit" loading={busy} block>
           {t('signUp')}
         </Button>
@@ -75,7 +107,9 @@ export default function DealerSignUp() {
         setBusy(true);
         setError(undefined);
         try {
-          await api.POST('/v1/auth/dealer/totp/confirm', { body: { setupToken: step.setupToken, code, client: 'web' } });
+          await api.POST('/v1/auth/dealer/totp/confirm', {
+            body: { setupToken: step.setupToken, code, client: 'web' },
+          });
           router.replace('/dealer/onboarding');
         } catch {
           setError(te('otp_invalid'));

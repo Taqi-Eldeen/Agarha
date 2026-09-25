@@ -31,7 +31,9 @@ export class Outbox {
     if (Outbox.entries.length > 500) Outbox.entries.shift();
   }
   static latestTo(to: string, channel?: OutboxEntry['channel']): OutboxEntry | undefined {
-    return [...Outbox.entries].reverse().find((e) => e.to === to && (!channel || e.channel === channel));
+    return [...Outbox.entries]
+      .reverse()
+      .find((e) => e.to === to && (!channel || e.channel === channel));
   }
   static clear(): void {
     Outbox.entries.length = 0;
@@ -61,7 +63,12 @@ export class ConsoleWhatsAppProvider implements WhatsAppProvider {
   readonly name = 'console-whatsapp';
   async sendTemplate(msg: WhatsAppTemplateMessage): Promise<SendResult> {
     if (Outbox.shouldFail(this.name)) throw new Error(`${this.name}: simulated failure`);
-    Outbox.record({ channel: 'whatsapp', to: msg.to, body: msg.params.join(' | '), meta: { template: msg.template } });
+    Outbox.record({
+      channel: 'whatsapp',
+      to: msg.to,
+      body: msg.params.join(' | '),
+      meta: { template: msg.template },
+    });
     logger.log(`WhatsApp ${msg.template} to ${msg.to}: ${msg.params.join(' | ')}`);
     return ok(this.name);
   }
@@ -70,7 +77,12 @@ export class ConsoleWhatsAppProvider implements WhatsAppProvider {
 export class ConsolePushProvider implements PushProvider {
   readonly name = 'console-push';
   async send(msg: PushMessage): Promise<SendResult> {
-    Outbox.record({ channel: 'push', to: msg.to, body: `${msg.title}: ${msg.body}`, meta: msg.data });
+    Outbox.record({
+      channel: 'push',
+      to: msg.to,
+      body: `${msg.title}: ${msg.body}`,
+      meta: msg.data,
+    });
     return ok(this.name);
   }
 }

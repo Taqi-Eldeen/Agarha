@@ -1,4 +1,10 @@
-import { Inject, Injectable, Logger, type OnApplicationBootstrap, type OnApplicationShutdown } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  type OnApplicationBootstrap,
+  type OnApplicationShutdown,
+} from '@nestjs/common';
 import { Worker, type Job } from 'bullmq';
 import { lt, sql } from 'drizzle-orm';
 import type Redis from 'ioredis';
@@ -45,11 +51,17 @@ export class Processors implements OnApplicationBootstrap, OnApplicationShutdown
       case 'saved_search_matching':
         return this.search.runSavedSearchMatching();
       case 'sitemap':
-        return { ...(await this.search.reindexAll()), sitemap: !!(await this.search.rebuildSitemap()) };
+        return {
+          ...(await this.search.reindexAll()),
+          sitemap: !!(await this.search.rebuildSitemap()),
+        };
       case 'retention': {
         const leads = await this.leads.purgeExpired();
         const docs = await this.verification.purgeExpired();
-        const deliveries = await this.db.delete(notificationDeliveries).where(lt(notificationDeliveries.createdAt, sql`now() - interval '90 days'`)).returning({ id: notificationDeliveries.id });
+        const deliveries = await this.db
+          .delete(notificationDeliveries)
+          .where(lt(notificationDeliveries.createdAt, sql`now() - interval '90 days'`))
+          .returning({ id: notificationDeliveries.id });
         return { leads, docs, deliveries: deliveries.length };
       }
       case 'subscription_renewals':
@@ -62,30 +74,57 @@ export class Processors implements OnApplicationBootstrap, OnApplicationShutdown
   async onApplicationBootstrap() {
     const connection = this.redis;
     const scheduled = this.queues.get(QUEUE.scheduled);
-    for (const s of SCHEDULES) await scheduled.upsertJobScheduler(s.job, { pattern: s.pattern, tz: 'Africa/Cairo' }, { name: s.job, data: { job: s.job } });
+    for (const s of SCHEDULES)
+      await scheduled.upsertJobScheduler(
+        s.job,
+        { pattern: s.pattern, tz: 'Africa/Cairo' },
+        { name: s.job, data: { job: s.job } },
+      );
 
     this.workers.push(
-      new Worker<JobPayloads['notifications']>(QUEUE.notifications, async (job) => this.notifications.deliver(job.data.deliveryId, job.attemptsMade + 1), { connection, concurrency: 10 }),
+      new Worker<JobPayloads['notifications']>(
+        QUEUE.notifications,
+        async (job) => this.notifications.deliver(job.data.deliveryId, job.attemptsMade + 1),
+        { connection, concurrency: 10 },
+      ),
       new Worker<JobPayloads['media']>(
         QUEUE.media,
-        async (job) => (job.data.kind === 'listing_photo' ? this.listings.processPhoto(job.data.photoId) : this.verification.process(job.data.docId)),
+        async (job) =>
+          job.data.kind === 'listing_photo'
+            ? this.listings.processPhoto(job.data.photoId)
+            : this.verification.process(job.data.docId),
         { connection, concurrency: 2 },
       ),
-      new Worker<JobPayloads['scheduled']>(QUEUE.scheduled, async (job) => this.runScheduled(job.data.job), { connection, concurrency: 1 }),
+      new Worker<JobPayloads['scheduled']>(
+        QUEUE.scheduled,
+        async (job) => this.runScheduled(job.data.job),
+        { connection, concurrency: 1 },
+      ),
       new Worker<JobPayloads['events']>(
         QUEUE.events,
         async (job) => {
           // Domain events -> product analytics (no PII: ids only).
-          this.flags.capture({ event: job.data.name.replace('.', '_'), distinctId: 'server', properties: job.data.payload });
+          this.flags.capture({
+            event: job.data.name.replace('.', '_'),
+            distinctId: 'server',
+            properties: job.data.payload,
+          });
         },
         { connection, concurrency: 5 },
       ),
     );
     for (const w of this.workers) {
       w.on('failed', (job: Job | undefined, err) => {
-        this.logger.error({ queue: w.name, jobId: job?.id, attempts: job?.attemptsMade, err: err.message }, 'job failed');
+        this.logger.error(
+          { queue: w.name, jobId: job?.id, attempts: job?.attemptsMade, err: err.message },
+          'job failed',
+        );
         if (job && w.name === QUEUE.notifications && job.attemptsMade >= (job.opts.attempts ?? 1))
-          void this.notifications.markFinalFailure((job.data as { deliveryId: string }).deliveryId, job.attemptsMade, err.message);
+          void this.notifications.markFinalFailure(
+            (job.data as { deliveryId: string }).deliveryId,
+            job.attemptsMade,
+            err.message,
+          );
         captureException(err);
       });
     }

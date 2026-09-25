@@ -1,4 +1,3 @@
- 
 import { runMigrations } from '../scripts/migrate';
 
 /**
@@ -11,7 +10,11 @@ export default async function setup(): Promise<void> {
   if (!db || !redis) {
     const { PostgreSqlContainer } = await import('@testcontainers/postgresql');
     const { RedisContainer } = await import('@testcontainers/redis');
-    const pg = await new PostgreSqlContainer('postgis/postgis:16-3.4').withDatabase('agarha_test').withUsername('agarha').withPassword('agarha').start();
+    const pg = await new PostgreSqlContainer('postgis/postgis:16-3.5')
+      .withDatabase('agarha_test')
+      .withUsername('agarha')
+      .withPassword('agarha')
+      .start();
     const rd = await new RedisContainer('redis:7-alpine').start();
     db = pg.getConnectionUri();
     redis = rd.getConnectionUrl();

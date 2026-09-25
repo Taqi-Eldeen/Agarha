@@ -8,7 +8,11 @@ export default function NotFound() {
   const router = useRouter();
   return (
     <Screen>
-      <EmptyState title={t('title')} body={t('body')} action={<Button onPress={() => router.replace('/')}>{t('home')}</Button>} />
+      <EmptyState
+        title={t('title')}
+        body={t('body')}
+        action={<Button onPress={() => router.replace('/')}>{t('home')}</Button>}
+      />
     </Screen>
   );
 }

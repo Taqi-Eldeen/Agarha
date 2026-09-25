@@ -13,7 +13,12 @@ export interface AvailabilitySwitchProps {
 }
 
 /** One-tap availability with optimistic update, rollback on failure and undo. */
-export function AvailabilitySwitch({ available, onChange, onChanged, label }: AvailabilitySwitchProps) {
+export function AvailabilitySwitch({
+  available,
+  onChange,
+  onChanged,
+  label,
+}: AvailabilitySwitchProps) {
   const { t, colors } = useUi();
   const [value, setValue] = useState(available);
   const [busy, setBusy] = useState(false);
@@ -32,8 +37,19 @@ export function AvailabilitySwitch({ available, onChange, onChanged, label }: Av
   };
   return (
     <View className="min-h-touch flex-row items-center gap-3">
-      <Switch accessibilityLabel={label} value={value} disabled={busy} onValueChange={(v) => void apply(v, true)} trackColor={{ true: colors.statusAvailable, false: colors.borderDefault }} thumbColor="#FFFFFF" />
-      <Text variant="caption" weight="medium" style={{ color: value ? colors.statusAvailable : colors.textSecondary }}>
+      <Switch
+        accessibilityLabel={label}
+        value={value}
+        disabled={busy}
+        onValueChange={(v) => void apply(v, true)}
+        trackColor={{ true: colors.statusAvailable, false: colors.borderDefault }}
+        thumbColor="#FFFFFF"
+      />
+      <Text
+        variant="caption"
+        weight="medium"
+        style={{ color: value ? colors.statusAvailable : colors.textSecondary }}
+      >
         {value ? t.available : t.unavailable}
       </Text>
     </View>

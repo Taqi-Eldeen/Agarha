@@ -1,6 +1,16 @@
 // Owned by the search module.
 
-import { boolean, geometry, index, integer, jsonb, pgTable, smallint, text, uuid } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  geometry,
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  smallint,
+  text,
+  uuid,
+} from 'drizzle-orm/pg-core';
 import { createdAt, id, tstz } from './_columns';
 import { carBodyTypeEnum, driverOptionEnum, fuelEnum, transmissionEnum } from './enums';
 import { users } from './identity';
@@ -67,4 +77,3 @@ export const searchDocuments = pgTable(
     index('search_documents_dealer_idx').on(t.dealerId),
   ],
 );
-

@@ -9,7 +9,9 @@ const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
 function Inner({ children }: { children: ReactNode }) {
   const { locale } = useT();
-  const [client] = useState(() => createApiClient({ baseUrl: API, scope: 'admin', locale: () => locale }));
+  const [client] = useState(() =>
+    createApiClient({ baseUrl: API, scope: 'admin', locale: () => locale }),
+  );
   return (
     <ApiProvider client={client}>
       <UiProvider locale={locale}>
@@ -20,7 +22,12 @@ function Inner({ children }: { children: ReactNode }) {
 }
 
 export function AdminProviders({ children }: { children: ReactNode }) {
-  const [qc] = useState(() => new QueryClient({ defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false } } }));
+  const [qc] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false } },
+      }),
+  );
   return (
     <QueryClientProvider client={qc}>
       <AdminI18n>
