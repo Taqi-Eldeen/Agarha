@@ -22,11 +22,13 @@ const plex = IBM_Plex_Sans({
   variable: '--font-plex',
   display: 'swap',
 });
+// Headings are usually the LCP element: 'optional' uses Rubik only if it arrives within the first
+// ~100 ms (it is preloaded), so there is never a late swap that repaints the heading.
 const rubik = Rubik({
   subsets: ['arabic', 'latin'],
   weight: ['500', '600'],
   variable: '--font-rubik',
-  display: 'swap',
+  display: 'optional',
 });
 
 export function generateStaticParams() {

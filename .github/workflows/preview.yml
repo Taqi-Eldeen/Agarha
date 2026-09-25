@@ -1,0 +1,84 @@
+# Preview per PR (section 10): images → a branch database on the staging instance (created,
+# migrated, seeded with synthetic data) → api + web services at pr-<n>.agarha.com → URL on the PR.
+# Torn down when the PR closes. Runs only when the staging account is configured.
+name: Preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+concurrency:
+  group: preview-${{ github.event.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: write
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION || 'eu-central-1' }}
+  PR: ${{ github.event.number }}
+
+jobs:
+  up:
+    if: github.event.action != 'closed' && vars.PREVIEWS_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - name: Build preview images (api, migrate, web)
+        run: |
+          TAG="pr-$PR-${GITHUB_SHA::8}"
+          REG="${{ steps.ecr.outputs.registry }}/agarha"
+          docker buildx build --platform linux/arm64 --push -f apps/api/Dockerfile --target api -t "$REG/api:$TAG" .
+          docker buildx build --platform linux/arm64 --push -f apps/api/Dockerfile --target migrate -t "$REG/migrate:$TAG" .
+          docker buildx build --platform linux/arm64 --push -f apps/web/Dockerfile -t "$REG/web:$TAG" \
+            --build-arg NEXT_PUBLIC_API_URL="https://pr-$PR-api.${{ vars.DOMAIN }}" \
+            --build-arg NEXT_PUBLIC_SITE_URL="https://pr-$PR.${{ vars.DOMAIN }}" \
+            --build-arg NEXT_PUBLIC_MEDIA_URL="${{ vars.STAGING_MEDIA_URL }}" \
+            --build-arg NEXT_PUBLIC_TURNSTILE_SITE_KEY="${{ vars.STAGING_TURNSTILE_SITE_KEY }}" \
+            --build-arg NEXT_PUBLIC_PUBLIC_SITE=on .
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+      - name: Branch database + services + routing
+        run: scripts/ci/preview.sh up "$PR" "$TAG"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ vars.CLOUDFLARE_ZONE_ID }}
+          DOMAIN: ${{ vars.DOMAIN }}
+      - name: Post the preview URL
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const url = `https://pr-${process.env.PR}.${{ vars.DOMAIN }}`;
+            const body = `Preview: ${url} (API https://pr-${process.env.PR}-api.${{ vars.DOMAIN }}), synthetic data, updated for ${context.sha.slice(0, 8)}.`;
+            const { data } = await github.rest.issues.listComments({ ...context.repo, issue_number: context.issue.number });
+            const mine = data.find((c) => c.body?.startsWith('Preview: '));
+            if (mine) await github.rest.issues.updateComment({ ...context.repo, comment_id: mine.id, body });
+            else await github.rest.issues.createComment({ ...context.repo, issue_number: context.issue.number, body });
+
+  down:
+    if: github.event.action == 'closed' && vars.PREVIEWS_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - run: scripts/ci/preview.sh down "$PR"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ vars.CLOUDFLARE_ZONE_ID }}
+          DOMAIN: ${{ vars.DOMAIN }}

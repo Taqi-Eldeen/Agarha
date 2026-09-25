@@ -14,3 +14,4 @@ apps/mobile/.rnstorybook/storybook.requires.ts
 **/.terraform
 apps/api/.storage
 .storage
+apps/web/public/vendor

@@ -1,0 +1,13 @@
+# One approval per PR; two for auth, billing or security code (section 10). Branch protection on
+# main requires code-owner review, so these paths need both teams listed below to approve.
+*                                   @agarha/engineering
+
+apps/api/src/modules/identity/      @agarha/engineering @agarha/security-reviewers
+apps/api/src/common/auth/           @agarha/engineering @agarha/security-reviewers
+apps/api/src/modules/billing/       @agarha/engineering @agarha/security-reviewers
+apps/api/src/config/env.ts          @agarha/engineering @agarha/security-reviewers
+apps/api/drizzle/                   @agarha/engineering @agarha/security-reviewers
+infra/                              @agarha/engineering @agarha/security-reviewers
+.github/workflows/                  @agarha/engineering @agarha/security-reviewers
+.gitleaks.toml                      @agarha/security-reviewers
+.semgrep.yml                        @agarha/security-reviewers

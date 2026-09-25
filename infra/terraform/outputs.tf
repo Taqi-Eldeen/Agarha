@@ -30,3 +30,16 @@ output "turnstile_site_key" {
 output "secrets" {
   value = { infra = aws_secretsmanager_secret.infra.name, keys = aws_secretsmanager_secret.keys.name }
 }
+
+# Used by scripts/ci/preview.sh (staging) to attach per-PR services.
+output "https_listener_arn" {
+  value = aws_lb_listener.https.arn
+}
+
+output "alb_dns_name" {
+  value = aws_lb.main.dns_name
+}
+
+output "vpc_id" {
+  value = module.vpc.vpc_id
+}

@@ -1,0 +1,161 @@
+# Merge to main → full CI → images tagged by commit SHA → staging (terraform) → migrations → E2E smoke.
+name: Deploy staging
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write # OIDC to AWS (no long-lived keys)
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION || 'eu-central-1' }}
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  images:
+    needs: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment: staging
+    strategy:
+      matrix:
+        # API images are environment-agnostic. web/admin inline NEXT_PUBLIC_* at build time, so both
+        # environment variants are built here from the same commit; release.yml promotes them as-is.
+        include:
+          - { name: api, dockerfile: apps/api/Dockerfile, target: api, suffix: '', env: staging }
+          - {
+              name: worker,
+              dockerfile: apps/api/Dockerfile,
+              target: worker,
+              suffix: '',
+              env: staging,
+            }
+          - {
+              name: migrate,
+              dockerfile: apps/api/Dockerfile,
+              target: migrate,
+              suffix: '',
+              env: staging,
+            }
+          - {
+              name: web,
+              dockerfile: apps/web/Dockerfile,
+              target: runtime,
+              suffix: -staging,
+              env: staging,
+            }
+          - {
+              name: admin,
+              dockerfile: apps/admin/Dockerfile,
+              target: runtime,
+              suffix: -staging,
+              env: staging,
+            }
+          - {
+              name: web,
+              dockerfile: apps/web/Dockerfile,
+              target: runtime,
+              suffix: -production,
+              env: production,
+            }
+          - {
+              name: admin,
+              dockerfile: apps/admin/Dockerfile,
+              target: runtime,
+              suffix: -production,
+              env: production,
+            }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          target: ${{ matrix.target }}
+          platforms: linux/arm64
+          push: true
+          provenance: true
+          sbom: true
+          tags: ${{ steps.ecr.outputs.registry }}/agarha/${{ matrix.name }}:${{ env.IMAGE_TAG }}${{ matrix.suffix }}
+          cache-from: type=gha,scope=${{ matrix.name }}${{ matrix.suffix }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}${{ matrix.suffix }}
+          # Per-environment public config (GitHub environment variables of matrix.env).
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ matrix.env == 'production' && vars.PRODUCTION_API_URL || vars.STAGING_API_URL }}
+            NEXT_PUBLIC_SITE_URL=${{ matrix.env == 'production' && vars.PRODUCTION_WEB_URL || vars.STAGING_WEB_URL }}
+            NEXT_PUBLIC_MEDIA_URL=${{ matrix.env == 'production' && vars.PRODUCTION_MEDIA_URL || vars.STAGING_MEDIA_URL }}
+            NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ matrix.env == 'production' && vars.PRODUCTION_TURNSTILE_SITE_KEY || vars.STAGING_TURNSTILE_SITE_KEY }}
+            NEXT_PUBLIC_MAP_STYLE_URL=${{ vars.MAP_STYLE_URL }}
+            NEXT_PUBLIC_POSTHOG_KEY=${{ matrix.env == 'production' && vars.PRODUCTION_POSTHOG_KEY || vars.STAGING_POSTHOG_KEY }}
+            NEXT_PUBLIC_SENTRY_DSN=${{ matrix.env == 'production' && vars.PRODUCTION_SENTRY_DSN_WEB || vars.STAGING_SENTRY_DSN_WEB }}
+            NEXT_PUBLIC_PUBLIC_SITE=${{ matrix.env == 'production' && vars.PRODUCTION_PUBLIC_SITE || 'on' }}
+            NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ matrix.env == 'production' && vars.PRODUCTION_ADMIN_GOOGLE_CLIENT_ID || vars.STAGING_ADMIN_GOOGLE_CLIENT_ID }}
+      - name: Scan the image (Trivy, fail on high/critical)
+        run: docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image --severity HIGH,CRITICAL --exit-code 1 --ignore-unfixed "${{ steps.ecr.outputs.registry }}/agarha/${{ matrix.name }}:${{ env.IMAGE_TAG }}${{ matrix.suffix }}"
+
+  deploy:
+    needs: images
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment:
+      name: staging
+      url: ${{ vars.STAGING_WEB_URL }}
+    env:
+      TF_VAR_image_tag: ${{ github.sha }}
+      TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      TF_VAR_cloudflare_account_id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      TF_VAR_cloudflare_zone_id: ${{ vars.CLOUDFLARE_ZONE_ID }}
+      TF_VAR_admin_ip_allowlist: ${{ vars.ADMIN_IP_ALLOWLIST }}
+      TF_VAR_alert_emails: ${{ vars.ALERT_EMAILS }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: 1.16.4 }
+      - name: Terraform apply (staging)
+        working-directory: infra/terraform
+        run: |
+          terraform init -input=false -backend-config=envs/staging.backend.hcl
+          terraform apply -input=false -auto-approve -var-file=envs/staging.tfvars
+      - name: Migrations (expand) before the new code serves traffic
+        run: scripts/ci/run-migrations.sh staging
+      - name: Wait for a healthy rollout (circuit breaker rolls back on failed health checks)
+        run: aws ecs wait services-stable --cluster agarha-staging --services api worker web admin
+
+  smoke:
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: HTTP smoke
+        run: scripts/ci/smoke.sh "${{ vars.STAGING_WEB_URL }}" "${{ vars.STAGING_API_URL }}"
+      - name: E2E smoke against staging (search → listing → contact, a11y)
+        run: |
+          pnpm exec playwright install --with-deps chromium
+          pnpm --filter @agarha/web exec playwright test e2e/customer.spec.ts --project=desktop --grep "finds a car|axe"
+        env:
+          WEB_URL: ${{ vars.STAGING_WEB_URL }}
+          API_URL: ${{ vars.STAGING_API_URL }}
+          E2E_REMOTE: '1'

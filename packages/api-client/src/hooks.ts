@@ -55,11 +55,13 @@ export const keys = {
 };
 
 /** Infinite, cursor-paginated search results. */
-export function useSearch(params: SearchParams, enabled = true) {
+export function useSearch(params: SearchParams, enabled = true, initial?: SearchResult) {
   const api = useApi();
   return useInfiniteQuery({
     queryKey: keys.search(params),
     enabled,
+    // Server-rendered first page (web): hydrates the cache so results are in the initial HTML.
+    ...(initial ? { initialData: { pages: [initial], pageParams: [undefined] }, initialDataUpdatedAt: Date.now() } : {}),
     initialPageParam: undefined as string | undefined,
     queryFn: async ({ pageParam, signal }) => {
       const { data } = await api.GET('/v1/search', {

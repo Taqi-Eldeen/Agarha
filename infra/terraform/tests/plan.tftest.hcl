@@ -127,3 +127,31 @@ run "rejects_a_single_api_instance" {
   }
   expect_failures = [var.api_min_instances]
 }
+
+# Apply against the mocks so computed values (image URIs in task definitions) are known.
+run "image_tags" {
+  command = apply
+  override_resource {
+    target = random_password.redis_auth
+    values = { result = "mockredisauthtoken0123456789abcdef" }
+  }
+  override_resource {
+    target = random_password.db
+    values = { result = "mockdbpassword0123456789" }
+  }
+  override_resource {
+    target = aws_acm_certificate.main
+    values = {
+      arn = "arn:aws:acm:eu-central-1:123456789012:certificate/test"
+      domain_validation_options = [
+        { domain_name = "agarha.com", resource_record_name = "_a.agarha.com.", resource_record_type = "CNAME", resource_record_value = "_a.acm-validations.aws." },
+        { domain_name = "api.agarha.com", resource_record_name = "_b.api.agarha.com.", resource_record_type = "CNAME", resource_record_value = "_b.acm-validations.aws." },
+        { domain_name = "admin.agarha.com", resource_record_name = "_c.admin.agarha.com.", resource_record_type = "CNAME", resource_record_value = "_c.acm-validations.aws." },
+      ]
+    }
+  }
+  assert {
+    condition     = strcontains(aws_ecs_task_definition.app["web"].container_definitions, ":0123abc-production") && strcontains(aws_ecs_task_definition.app["api"].container_definitions, ":0123abc\"")
+    error_message = "API images are environment-agnostic; web/admin use the environment's build variant."
+  }
+}

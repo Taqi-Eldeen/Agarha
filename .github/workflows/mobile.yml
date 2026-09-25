@@ -1,0 +1,137 @@
+# Mobile (section 10): EAS build on release tags → TestFlight / Play internal track; staged Play
+# rollout 10% → 50% → 100% on demand; JS-only hotfixes via EAS Update (runtimeVersion = app version).
+name: Mobile
+
+on:
+  push:
+    tags: ['v*.*.*']
+  workflow_dispatch:
+    inputs:
+      action:
+        description: build | rollout | hotfix | e2e
+        required: true
+        default: build
+        type: choice
+        options: [build, rollout, hotfix, e2e]
+      rollout:
+        description: Play production rollout fraction (rollout action)
+        required: false
+        default: '0.1'
+        type: choice
+        options: ['0.1', '0.5', '1.0']
+      message:
+        description: Update message (hotfix action)
+        required: false
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: apps/mobile
+
+jobs:
+  build-and-submit:
+    if: github.event_name == 'push' || inputs.action == 'build'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment: mobile-production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - name: Google Play service account for eas submit
+        run: mkdir -p secrets && printf '%s' '${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}' > secrets/google-play-service-account.json
+      - name: Signed store builds + submit (TestFlight, Play internal track)
+        run: eas build --platform all --profile production --non-interactive --auto-submit --wait
+        env:
+          EXPO_APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.EXPO_APPLE_APP_SPECIFIC_PASSWORD }}
+          EAS_PROJECT_ID: ${{ vars.EAS_PROJECT_ID }}
+          EXPO_OWNER: ${{ vars.EXPO_OWNER }}
+          GOOGLE_MAPS_ANDROID_API_KEY: ${{ secrets.GOOGLE_MAPS_ANDROID_API_KEY }}
+          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+
+  rollout:
+    if: github.event_name == 'workflow_dispatch' && inputs.action == 'rollout'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: mobile-production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with: { ruby-version: '3.3' }
+      - name: Promote the latest internal build to production at the requested fraction
+        run: |
+          gem install fastlane --no-document
+          printf '%s' '${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}' > /tmp/play.json
+          fastlane run upload_to_play_store package_name:com.agarha.app json_key:/tmp/play.json \
+            track:internal track_promote_to:production rollout:${{ inputs.rollout }} \
+            skip_upload_apk:true skip_upload_aab:true skip_upload_metadata:true skip_upload_images:true skip_upload_screenshots:true
+
+  hotfix:
+    if: github.event_name == 'workflow_dispatch' && inputs.action == 'hotfix'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: mobile-production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - name: JS-only update to the production channel (same runtime version only)
+        run: eas update --channel production --environment production --message "${{ inputs.message || 'hotfix' }}" --non-interactive
+        env:
+          APP_ENV: production
+          EXPO_PUBLIC_API_URL: ${{ vars.PRODUCTION_API_URL }}
+          EAS_PROJECT_ID: ${{ vars.EAS_PROJECT_ID }}
+
+  e2e-android:
+    # Maestro flows on an Android emulator against a local seeded stack (release tags + on demand).
+    if: github.event_name == 'push' || inputs.action == 'e2e'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: .
+    services:
+      postgres:
+        image: postgis/postgis:16-3.5
+        env: { POSTGRES_USER: agarha, POSTGRES_PASSWORD: agarha, POSTGRES_DB: agarha }
+        ports: ['5432:5432']
+        options: --health-cmd "pg_isready -U agarha" --health-interval 5s --health-retries 20
+      redis:
+        image: redis:7.4-alpine
+        ports: ['6379:6379']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - run: cp apps/api/.env.example apps/api/.env && cp apps/web/.env.example apps/web/.env.local && cp apps/admin/.env.example apps/admin/.env.local
+      - run: pnpm turbo run build --filter=@agarha/api... --filter=@agarha/web... --filter=@agarha/admin...
+      - run: scripts/ci/e2e-stack.sh
+      - name: Release APK pointing at the emulator host (10.0.2.2)
+        working-directory: apps/mobile
+        env: { APP_ENV: development, EXPO_PUBLIC_API_URL: 'http://10.0.2.2:4000' }
+        run: |
+          npx expo prebuild --platform android --no-install
+          cd android && ./gradlew assembleRelease --no-daemon
+      - run: curl -Ls "https://get.maestro.mobile.dev" | bash
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          script: |
+            adb install apps/mobile/android/app/build/outputs/apk/release/app-release.apk
+            "$HOME/.maestro/bin/maestro" test -e APP_ID=com.agarha.app.development -e API_URL=http://10.0.2.2:4000 apps/mobile/.maestro

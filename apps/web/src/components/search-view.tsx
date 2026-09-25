@@ -1,6 +1,6 @@
 'use client';
 import { useMapPins, useSearch, type SearchParams } from '@agarha/api-client';
-import type { PricePeriod } from '@agarha/schemas';
+import type { PricePeriod, SearchResult } from '@agarha/schemas';
 import { CAR_BODY_TYPES } from '@agarha/schemas/enums';
 import {
   Button,
@@ -20,6 +20,7 @@ import { List, Map as MapIcon, SlidersHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
+import { paramsFrom } from '@/lib/search-params';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useApi, useMe } from '@agarha/api-client';
 import { usePathname, useRouter } from '@/i18n/routing';
@@ -35,25 +36,17 @@ const MapView = dynamic(() => import('@agarha/ui-web/map'), {
   loading: () => <div className="size-full animate-pulse rounded-lg bg-brand-subtle" />,
 });
 
-const NUM = ['priceMin', 'priceMax', 'seatsMin', 'lat', 'lng', 'radiusKm'] as const;
-
-function paramsFrom(sp: URLSearchParams): SearchParams {
-  const p: Record<string, unknown> = {};
-  for (const [k, v] of sp.entries()) {
-    if (!v) continue;
-    p[k] = (NUM as readonly string[]).includes(k) ? Number(v) : k === 'airport' ? v === 'true' : v;
-  }
-  return p as SearchParams;
-}
-
 type AreaOpt = { slug: string; nameAr: string; nameEn: string };
 
 export function SearchView({
   areasByCity,
   cities,
+  initial,
 }: {
   areasByCity: Record<string, AreaOpt[]>;
   cities: { slug: string; nameAr: string; nameEn: string }[];
+  /** First page rendered on the server for these exact params (no empty-then-pop-in on load). */
+  initial?: SearchResult | null;
 }) {
   const t = useTranslations('web.search');
   const tu = useTranslations('ui');
@@ -68,7 +61,13 @@ export function SearchView({
   const [view, setView] = useState<'list' | 'map'>('list');
   const [pendingBbox, setPendingBbox] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
-  const q = useSearch({ ...params, limit: 20 });
+  // The server-rendered page only seeds the query for the params it was rendered with.
+  const [initialKey] = useState(() => JSON.stringify(params));
+  const q = useSearch(
+    { ...params, limit: 20 },
+    true,
+    initial && JSON.stringify(params) === initialKey ? initial : undefined,
+  );
   const [wide, setWide] = useState(false);
   useEffect(() => {
     const m = window.matchMedia('(min-width: 1280px)');

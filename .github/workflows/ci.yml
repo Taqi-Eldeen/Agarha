@@ -1,0 +1,192 @@
+# Section 10 CI: every PR and every push to main. Also called by deploy.yml before images are built.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_call:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  TURBO_TELEMETRY_DISABLED: 1
+  NEXT_TELEMETRY_DISABLED: 1
+
+jobs:
+  quality:
+    name: Lint, typecheck, unit + component tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: pnpm format:check
+      - run: pnpm turbo run lint typecheck
+      - name: Unit + component tests (coverage thresholds enforced per package)
+        run: pnpm turbo run test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: '**/coverage/**'
+          if-no-files-found: ignore
+
+  integration:
+    name: Integration (PostGIS + Redis)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgis/postgis:16-3.5
+        env: { POSTGRES_USER: agarha, POSTGRES_PASSWORD: agarha, POSTGRES_DB: agarha_test }
+        ports: ['5432:5432']
+        options: --health-cmd "pg_isready -U agarha" --health-interval 5s --health-retries 20
+      redis:
+        image: redis:7.4-alpine
+        ports: ['6379:6379']
+        options: --health-cmd "redis-cli ping" --health-interval 5s --health-retries 20
+    env:
+      TEST_DATABASE_URL: postgres://agarha:agarha@localhost:5432/agarha_test
+      TEST_REDIS_URL: redis://localhost:6379
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: pnpm turbo run build --filter=@agarha/api^...
+      - run: pnpm --filter @agarha/api test:integration --coverage --coverageDirectory=coverage-integration
+
+  contract:
+    name: OpenAPI contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: ./.github/actions/setup
+      - run: pnpm turbo run build --filter=@agarha/api^...
+      - name: docs/api/openapi.json is up to date with the code
+        run: |
+          pnpm --filter @agarha/api openapi
+          git diff --exit-code docs/api/openapi.json || { echo "::error::Run 'pnpm --filter @agarha/api openapi' and commit docs/api/openapi.json"; exit 1; }
+      - name: No breaking /v1 changes against the base branch
+        run: |
+          BASE="${{ github.event.pull_request.base.sha || github.event.before }}"
+          if git cat-file -e "$BASE:docs/api/openapi.json" 2>/dev/null; then
+            git show "$BASE:docs/api/openapi.json" > /tmp/openapi-base.json
+            node scripts/openapi-diff.mjs /tmp/openapi-base.json docs/api/openapi.json
+          else
+            echo "no base OpenAPI document to compare"
+          fi
+      - name: Generated client matches the document
+        run: |
+          pnpm --filter @agarha/api-client generate
+          git diff --exit-code packages/api-client/src/openapi.d.ts
+
+  e2e-web:
+    name: Build, E2E (web + admin), a11y, budgets, Lighthouse
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgis/postgis:16-3.5
+        env: { POSTGRES_USER: agarha, POSTGRES_PASSWORD: agarha, POSTGRES_DB: agarha }
+        ports: ['5432:5432']
+        options: --health-cmd "pg_isready -U agarha" --health-interval 5s --health-retries 20
+      redis:
+        image: redis:7.4-alpine
+        ports: ['6379:6379']
+        options: --health-cmd "redis-cli ping" --health-interval 5s --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Env files from the examples (NEXT_PUBLIC_* are inlined at build time)
+        run: |
+          cp apps/api/.env.example apps/api/.env
+          cp apps/web/.env.example apps/web/.env.local
+          cp apps/admin/.env.example apps/admin/.env.local
+      - name: Build everything (production builds)
+        run: pnpm turbo run build
+      - name: Performance budget (initial JS per route, gzipped)
+        run: pnpm --filter @agarha/web budget
+      - name: Start API, worker, web and admin
+        run: scripts/ci/e2e-stack.sh
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      - name: E2E web (customer, dealer, visual ar/en x light/dark, axe WCAG 2.2 AA)
+        run: pnpm --filter @agarha/web e2e
+      - name: E2E admin (verification, moderation, axe)
+        run: pnpm --filter @agarha/admin e2e
+      - name: Lighthouse CI (LCP, CLS, TBT on mid-range mobile)
+        run: |
+          CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")"
+          export CHROME_PATH
+          npx --yes @lhci/cli@0.15.x autorun --config=lighthouserc.json
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-reports
+          path: |
+            apps/*/playwright-report
+            apps/*/test-results
+            .e2e-logs
+            .lighthouseci
+
+  mobile:
+    name: Mobile bundle (iOS + Android)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: pnpm turbo run build --filter=@agarha/mobile^...
+      - name: Metro bundles for both platforms (catches native-module and import errors)
+        run: pnpm --filter @agarha/mobile bundle:check
+        env: { CI: '1' }
+
+  security:
+    name: Security scans
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Secrets (gitleaks, full history)
+        run: docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest git /repo --no-banner --redact --config /repo/.gitleaks.toml
+      - name: SAST (Semgrep project rules + registry packs)
+        run: |
+          docker run --rm -v "$PWD:/src" semgrep/semgrep semgrep scan --error --metrics=off --quiet \
+            --config /src/.semgrep.yml --config p/typescript --config p/nodejs --config p/react --config p/secrets \
+            --exclude node_modules --exclude '*.test.ts' --exclude '*.test.tsx' --exclude e2e /src
+      - name: Dependencies (OSV, fail on high/critical)
+        run: |
+          docker run --rm -v "$PWD:/repo" ghcr.io/google/osv-scanner:latest scan --lockfile=/repo/pnpm-lock.yaml --format json > osv.json || true
+          node -e "const r=require('./osv.json');const bad=(r.results||[]).flatMap(x=>x.packages).flatMap(p=>(p.groups||[]).filter(g=>parseFloat(g.max_severity)>=7).map(g=>p.package.name+' '+g.ids.join(',')));if(bad.length){console.error('High/critical:',bad);process.exit(1)}console.log('OSV: no high/critical')"
+      - name: Dependencies + IaC + Dockerfiles (Trivy)
+        run: |
+          docker run --rm -v "$PWD:/repo" aquasec/trivy:latest fs --scanners vuln --severity HIGH,CRITICAL --exit-code 1 /repo/pnpm-lock.yaml
+          docker run --rm -v "$PWD:/repo" aquasec/trivy:latest config --severity HIGH,CRITICAL --exit-code 1 --skip-dirs /repo/node_modules /repo
+
+  terraform:
+    name: Terraform
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: infra/terraform
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: 1.16.4 }
+      - run: terraform fmt -check -recursive
+      - run: terraform init -backend=false -input=false
+      - run: terraform validate
+      - name: Plan-level tests against mock providers
+        run: terraform test

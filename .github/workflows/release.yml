@@ -1,0 +1,143 @@
+# Tag vX.Y.Z on a commit already deployed to staging → manual approval → the same images promoted to
+# production → migrations → smoke tests → automatic rollback to the previous release on failure.
+name: Release production
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION || 'eu-central-1' }}
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.sha.outputs.sha }}
+      previous_sha: ${{ steps.prev.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - id: sha
+        run: echo "sha=$(git rev-list -n 1 "$GITHUB_REF_NAME")" >> "$GITHUB_OUTPUT"
+      - name: The tagged commit must be on main (and therefore already built and deployed to staging)
+        run: git merge-base --is-ancestor "${{ steps.sha.outputs.sha }}" origin/main
+      - id: prev
+        name: Previous release (rollback target)
+        run: |
+          PREV_TAG="$(git describe --tags --abbrev=0 --match 'v*.*.*' "$GITHUB_REF_NAME^" 2>/dev/null || true)"
+          echo "sha=${PREV_TAG:+$(git rev-list -n 1 "$PREV_TAG")}" >> "$GITHUB_OUTPUT"
+          echo "previous release: ${PREV_TAG:-none}"
+
+  promote:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production # required reviewers = the manual approval gate
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log in to the staging registry (source)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_STAGING_READ_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - id: src
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Log in to the production registry (destination)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - id: dst
+        uses: aws-actions/amazon-ecr-login@v2
+      - uses: docker/setup-buildx-action@v3
+      - name: Copy the exact images by digest (no rebuild)
+        env:
+          SHA: ${{ needs.prepare.outputs.sha }}
+          SRC: ${{ steps.src.outputs.registry }}
+          DST: ${{ steps.dst.outputs.registry }}
+        run: |
+          for image in api worker migrate web:-production admin:-production; do
+            name="${image%%:*}"; suffix="${image#*:}"; [ "$suffix" = "$image" ] && suffix=""
+            docker buildx imagetools create --tag "$DST/agarha/$name:$SHA$suffix" "$SRC/agarha/$name:$SHA$suffix"
+          done
+
+  deploy:
+    needs: [prepare, promote]
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment:
+      name: production-deploy
+      url: ${{ vars.PRODUCTION_WEB_URL }}
+    env:
+      TF_VAR_image_tag: ${{ needs.prepare.outputs.sha }}
+      TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      TF_VAR_cloudflare_account_id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      TF_VAR_cloudflare_zone_id: ${{ vars.CLOUDFLARE_ZONE_ID }}
+      TF_VAR_admin_ip_allowlist: ${{ vars.ADMIN_IP_ALLOWLIST }}
+      TF_VAR_alert_emails: ${{ vars.ALERT_EMAILS }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: 1.16.4 }
+      - name: Terraform apply (production)
+        working-directory: infra/terraform
+        run: |
+          terraform init -input=false -backend-config=envs/production.backend.hcl
+          terraform apply -input=false -auto-approve -var-file=envs/production.tfvars
+      - name: Migrations (expand only; contract ships in a later release)
+        run: scripts/ci/run-migrations.sh production
+      - name: Wait for healthy tasks (ECS circuit breaker rolls back failed health checks)
+        run: aws ecs wait services-stable --cluster agarha-production --services api worker web admin
+
+  smoke:
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: scripts/ci/smoke.sh "${{ vars.PRODUCTION_WEB_URL }}" "${{ vars.PRODUCTION_API_URL }}"
+
+  rollback:
+    needs: [prepare, deploy, smoke]
+    if: failure() && needs.prepare.outputs.previous_sha != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment: production-deploy
+    env:
+      TF_VAR_image_tag: ${{ needs.prepare.outputs.previous_sha }}
+      TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      TF_VAR_cloudflare_account_id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      TF_VAR_cloudflare_zone_id: ${{ vars.CLOUDFLARE_ZONE_ID }}
+      TF_VAR_admin_ip_allowlist: ${{ vars.ADMIN_IP_ALLOWLIST }}
+      TF_VAR_alert_emails: ${{ vars.ALERT_EMAILS }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: '${{ needs.prepare.outputs.previous_sha }}' }
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: 1.16.4 }
+      - name: Re-apply the previous release (its images are still in ECR; migrations were expand-only)
+        working-directory: infra/terraform
+        run: |
+          terraform init -input=false -backend-config=envs/production.backend.hcl
+          terraform apply -input=false -auto-approve -var-file=envs/production.tfvars
+      - run: aws ecs wait services-stable --cluster agarha-production --services api worker web admin
+      - run: scripts/ci/smoke.sh "${{ vars.PRODUCTION_WEB_URL }}" "${{ vars.PRODUCTION_API_URL }}"
+      - name: Summary
+        run: echo "### Rolled back to ${{ needs.prepare.outputs.previous_sha }} (see docs/runbooks/rollback.md)" >> "$GITHUB_STEP_SUMMARY"

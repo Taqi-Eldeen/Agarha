@@ -1,0 +1,64 @@
+# Weekly and on demand: DAST against staging (ZAP baseline + API scan from the OpenAPI document),
+# Lighthouse against staging, and a Trivy scan of the images currently deployed.
+name: Security (staging)
+
+on:
+  schedule:
+    - cron: '17 3 * * 1' # Mondays 05:17 Cairo
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  zap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: ZAP baseline (web)
+        run: |
+          docker run --rm -v "$PWD/.zap:/zap/wrk:rw" zaproxy/zap-stable zap-baseline.py \
+            -t "${{ vars.STAGING_WEB_URL }}/ar" -c rules.tsv -m 5 -r zap-web.html -I
+      - name: ZAP API scan (OpenAPI)
+        run: |
+          cp docs/api/openapi.json .zap/openapi.json
+          docker run --rm -v "$PWD/.zap:/zap/wrk:rw" zaproxy/zap-stable zap-api-scan.py \
+            -t openapi.json -f openapi -O "${{ vars.STAGING_API_URL }}" -c rules.tsv -r zap-api.html -I
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: zap-reports
+          path: .zap/*.html
+
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lighthouse against staging (same budgets as CI)
+        run: |
+          sed "s#http://localhost:3000#${{ vars.STAGING_WEB_URL }}#g" lighthouserc.json > /tmp/lhrc.json
+          npx --yes @lhci/cli@0.15.x autorun --config=/tmp/lhrc.json
+
+  images:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+    environment: staging
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'eu-central-1' }}
+      - id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Trivy on the images running in staging (new CVEs since they were built)
+        run: |
+          for svc in api worker web admin; do
+            image="$(aws ecs describe-task-definition --task-definition "agarha-staging-$svc" --query 'taskDefinition.containerDefinitions[0].image' --output text)"
+            docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image --severity HIGH,CRITICAL --exit-code 1 --ignore-unfixed "$image"
+          done

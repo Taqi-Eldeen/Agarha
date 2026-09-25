@@ -32,3 +32,6 @@ apps/*/test-results
 crash.log
 apps/web/public/vendor/
 dist-tools
+.e2e-logs/
+.lighthouseci/
+osv.json

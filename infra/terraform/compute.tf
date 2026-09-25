@@ -116,8 +116,9 @@ resource "aws_ecs_task_definition" "app" {
     operating_system_family = "LINUX"
   }
   container_definitions = jsonencode([{
-    name                   = each.key
-    image                  = "${aws_ecr_repository.app[each.key].repository_url}:${var.image_tag}"
+    name = each.key
+    # web/admin inline NEXT_PUBLIC_* at build time: one variant per environment, same commit.
+    image                  = "${aws_ecr_repository.app[each.key].repository_url}:${var.image_tag}${contains(["web", "admin"], each.key) ? "-${var.environment}" : ""}"
     essential              = true
     portMappings           = try(local.services[each.key].port, null) == null ? [] : [{ containerPort = local.services[each.key].port, protocol = "tcp" }]
     environment            = [for k, v in(contains(["web", "admin"], each.key) ? { NODE_ENV = "production", API_INTERNAL_URL = "https://${local.hosts.api}" } : local.api_env) : { name = k, value = v }]

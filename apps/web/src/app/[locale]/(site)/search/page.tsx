@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Suspense } from 'react';
 import { SearchView } from '@/components/search-view';
 import { apiInternal } from '@/lib/env';
+import { paramsFrom } from '@/lib/search-params';
 import { serverApi } from '@/lib/server-api';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -11,10 +12,25 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('title'), robots: { index: false, follow: true } };
 }
 
-export default async function SearchPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function SearchPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const cities = (await serverApi.cities())?.items ?? [];
+  const sp = new URLSearchParams();
+  for (const [k, v] of Object.entries(await searchParams)) if (typeof v === 'string') sp.set(k, v);
+  const query = paramsFrom(sp);
+  const [citiesRes, initial] = await Promise.all([
+    serverApi.cities(),
+    serverApi
+      .search({ ...(query as Record<string, string | number | undefined>), limit: 20 })
+      .catch(() => null),
+  ]);
+  const cities = citiesRes?.items ?? [];
   const areasByCity: Record<string, { slug: string; nameAr: string; nameEn: string }[]> = {};
   await Promise.all(
     cities.map(async (c) => {
@@ -28,7 +44,7 @@ export default async function SearchPage({ params }: { params: Promise<{ locale:
   );
   return (
     <Suspense>
-      <SearchView cities={cities} areasByCity={areasByCity} />
+      <SearchView cities={cities} areasByCity={areasByCity} initial={initial} />
     </Suspense>
   );
 }
