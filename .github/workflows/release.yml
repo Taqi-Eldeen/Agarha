@@ -45,14 +45,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Log in to the staging registry (source)
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ secrets.AWS_STAGING_READ_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
       - id: src
         uses: aws-actions/amazon-ecr-login@v2
       - name: Log in to the production registry (destination)
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
@@ -86,7 +86,7 @@ jobs:
       TF_VAR_alert_emails: ${{ vars.ALERT_EMAILS }}
     steps:
       - uses: actions/checkout@v4
-      - uses: aws-actions/configure-aws-credentials@v4
+      - uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
@@ -126,7 +126,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: { ref: '${{ needs.prepare.outputs.previous_sha }}' }
-      - uses: aws-actions/configure-aws-credentials@v4
+      - uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
