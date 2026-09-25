@@ -6,6 +6,7 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 LOG_DIR="${LOG_DIR:-.e2e-logs}"
 mkdir -p "$LOG_DIR"
+LOG_DIR="$(cd "$LOG_DIR" && pwd)" # absolute: the services below start from their own directories
 
 [ -f apps/api/.env ] || cp apps/api/.env.example apps/api/.env
 [ -f apps/web/.env.local ] || cp apps/web/.env.example apps/web/.env.local
@@ -15,10 +16,10 @@ export NODE_ENV=production
 ( cd apps/api && node --env-file=.env dist/db/migrate.js && node --env-file-if-exists=.env -r @swc-node/register scripts/seed.ts ) >"$LOG_DIR/seed.log" 2>&1
 
 # The API and worker run with APP_ENV=local so dev-only endpoints (outbox, reset-limits) exist for tests.
-( cd apps/api && NODE_ENV=production nohup node --env-file=.env dist/main.js >"../../$LOG_DIR/api.log" 2>&1 & )
-( cd apps/api && NODE_ENV=production nohup node --env-file=.env dist/worker/main.js >"../../$LOG_DIR/worker.log" 2>&1 & )
-( cd apps/web && nohup npx next start -p 3000 >"../../$LOG_DIR/web.log" 2>&1 & )
-( cd apps/admin && nohup npx next start -p 3001 >"../../$LOG_DIR/admin.log" 2>&1 & )
+( cd apps/api && NODE_ENV=production nohup node --env-file=.env dist/main.js >"$LOG_DIR/api.log" 2>&1 & )
+( cd apps/api && NODE_ENV=production nohup node --env-file=.env dist/worker/main.js >"$LOG_DIR/worker.log" 2>&1 & )
+( cd apps/web && nohup npx next start -p 3000 >"$LOG_DIR/web.log" 2>&1 & )
+( cd apps/admin && nohup npx next start -p 3001 >"$LOG_DIR/admin.log" 2>&1 & )
 
 wait_for() {
   for _ in $(seq 1 60); do curl -sf -o /dev/null "$1" && return 0; sleep 2; done
