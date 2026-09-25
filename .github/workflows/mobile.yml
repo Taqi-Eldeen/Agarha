@@ -37,7 +37,7 @@ jobs:
     timeout-minutes: 90
     environment: mobile-production
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
       - uses: expo/expo-github-action@v8
         with:
@@ -61,7 +61,7 @@ jobs:
     timeout-minutes: 15
     environment: mobile-production
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ruby/setup-ruby@v1
         with: { ruby-version: '3.3' }
       - name: Promote the latest internal build to production at the requested fraction
@@ -78,7 +78,7 @@ jobs:
     timeout-minutes: 20
     environment: mobile-production
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
       - uses: expo/expo-github-action@v8
         with:
@@ -109,7 +109,7 @@ jobs:
         image: redis:7.4-alpine
         ports: ['6379:6379']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: '17' }

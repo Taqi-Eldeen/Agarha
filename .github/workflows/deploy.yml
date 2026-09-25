@@ -75,7 +75,7 @@ jobs:
               env: production,
             }
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
@@ -125,7 +125,7 @@ jobs:
       TF_VAR_admin_ip_allowlist: ${{ vars.ADMIN_IP_ALLOWLIST }}
       TF_VAR_alert_emails: ${{ vars.ALERT_EMAILS }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
@@ -147,7 +147,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
       - name: HTTP smoke
         run: scripts/ci/smoke.sh "${{ vars.STAGING_WEB_URL }}" "${{ vars.STAGING_API_URL }}"
