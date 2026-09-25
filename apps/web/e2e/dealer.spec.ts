@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 import { API, fillOtp, lastCode, randomMobile, stubTurnstile, totp } from './helpers';
 
@@ -94,7 +95,7 @@ test.describe('dealer: onboarding → verification → add car', () => {
     await admin.dispose();
   });
 
-  test('adds a car in the wizard with a photo and publishes it', async ({ page, request }) => {
+  test('adds a car in the wizard with a photo and publishes it', async ({ page }) => {
     await page.goto('/en/dealer/sign-in');
     await page.getByLabel('Mobile number').fill(phone.national);
     await page.getByLabel('Password').fill('e2e password 123');
@@ -115,13 +116,8 @@ test.describe('dealer: onboarding → verification → add car', () => {
     await page.getByLabel('Deposit (EGP)').fill('4000');
     await page.getByRole('button', { name: 'Next' }).click();
     await page.getByRole('button', { name: 'Next' }).click();
-    const jpeg = await (
-      await request.get(`${API}/v1/search?limit=1`)
-    )
-      .json()
-      .then(async (r: { items: { card: { photo: { url640: string } } }[] }) =>
-        (await request.get(r.items[0]!.card.photo.url640)).body(),
-      );
+    // Synthetic fixture (no real car or person in it), so the test doesn't depend on seeded media.
+    const jpeg = await readFile(new URL('./fixtures/car.jpg', import.meta.url));
     await page
       .locator('input[type="file"]')
       .setInputFiles({ name: 'car.webp', mimeType: 'image/webp', buffer: jpeg });
