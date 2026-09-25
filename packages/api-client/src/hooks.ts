@@ -61,7 +61,12 @@ export function useSearch(params: SearchParams, enabled = true, initial?: Search
     queryKey: keys.search(params),
     enabled,
     // Server-rendered first page (web): hydrates the cache so results are in the initial HTML.
-    ...(initial ? { initialData: { pages: [initial], pageParams: [undefined] }, initialDataUpdatedAt: Date.now() } : {}),
+    ...(initial
+      ? {
+          initialData: { pages: [initial], pageParams: [undefined] },
+          initialDataUpdatedAt: Date.now(),
+        }
+      : {}),
     initialPageParam: undefined as string | undefined,
     queryFn: async ({ pageParam, signal }) => {
       const { data } = await api.GET('/v1/search', {

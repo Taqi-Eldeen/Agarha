@@ -3,15 +3,8 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "dist-tools",
-    "types": [
-      "node"
-    ],
+    "types": ["node"],
     "noEmit": false
   },
-  "include": [
-    "scripts/seed.ts",
-    "scripts/seed-data.ts",
-    "scripts/seed-catalog.ts",
-    "src/**/*.d.ts"
-  ]
+  "include": ["scripts/seed.ts", "scripts/seed-data.ts", "scripts/seed-catalog.ts", "src/**/*.d.ts"]
 }
