@@ -2,7 +2,7 @@ import type { ListingCard as Card } from '@agarha/schemas';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Badge, Button, ChipGroup, ContactBar, EmptyState, FreshnessChip, hexToChannels, ListingCard, OTPField, PhoneField, PriceTag, RatingStars, RequirementList, themeVars, UiProvider } from '../index';
+import { AvailabilitySwitch, Badge, Button, ChipGroup, clusterPins, Combobox, ContactBar, EmptyState, FreshnessChip, hexToChannels, ListingCard, OTPField, PhoneField, PriceTag, RatingStars, RequirementList, Select, themeVars, UiProvider, zoomOf } from '../index';
 
 const metrics = { frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 47, left: 0, right: 0, bottom: 34 } };
 const wrap = (locale: 'ar' | 'en', scheme: 'light' | 'dark' = 'light') =>
@@ -156,5 +156,58 @@ describe('Other components', () => {
     expect(screen.getByText('Try another area')).toBeTruthy();
     await fireEvent.press(screen.getByRole('button', { name: 'WhatsApp' }));
     expect(onContact).toHaveBeenCalledWith('whatsapp');
+  });
+});
+
+describe('Map clustering', () => {
+  const region = { latitude: 30.05, longitude: 31.24, latitudeDelta: 0.4, longitudeDelta: 0.4 };
+  const pin = (id: string, lat: number, lng: number) => ({ id, lat, lng, price: 1000, featured: false });
+  it('groups nearby pins into a cluster that zooms in when expanded', () => {
+    const items = clusterPins([pin('a', 30.05, 31.24), pin('b', 30.0501, 31.2401), pin('c', 30.0502, 31.2402), pin('far', 30.2, 31.05)], region);
+    const cluster = items.find((i) => i.kind === 'cluster');
+    expect(cluster && cluster.kind === 'cluster' ? cluster.count : 0).toBe(3);
+    expect(cluster && cluster.kind === 'cluster' ? cluster.zoomTo.longitudeDelta : 1).toBeLessThan(region.longitudeDelta);
+    expect(items.filter((i) => i.kind === 'pin').map((i) => i.id)).toEqual(['far']);
+  });
+  it('shows single pins when zoomed in far enough', () => {
+    const items = clusterPins([pin('a', 30.05, 31.24), pin('b', 30.06, 31.25)], { ...region, latitudeDelta: 0.005, longitudeDelta: 0.005 });
+    expect(items.every((i) => i.kind === 'pin')).toBe(true);
+  });
+  it('derives zoom from the longitude span', () => {
+    expect(zoomOf({ ...region, longitudeDelta: 360 })).toBe(0);
+    expect(zoomOf({ ...region, longitudeDelta: 0.35 })).toBe(10);
+  });
+});
+
+describe('Select, Combobox and AvailabilitySwitch', () => {
+  const options = [{ value: 'cairo', label: 'القاهرة' }, { value: 'giza', label: 'الجيزة' }, { value: 'alex', label: 'الإسكندرية' }];
+  it('Select opens a sheet and picks an option', async () => {
+    const onValueChange = jest.fn();
+    await render(<Select label="City" options={options} value="cairo" onValueChange={onValueChange} />, { wrapper: wrap('ar') });
+    await fireEvent.press(screen.getByRole('combobox', { name: 'City' }));
+    await fireEvent.press(screen.getByRole('radio', { name: 'الجيزة' }));
+    expect(onValueChange).toHaveBeenCalledWith('giza');
+  });
+  it('Combobox filters with Arabic normalization (ا/إ/أ are the same letter)', async () => {
+    await render(<Combobox label="City" options={options} value={undefined} onValueChange={jest.fn()} />, { wrapper: wrap('ar') });
+    await fireEvent.press(screen.getByRole('combobox', { name: 'City' }));
+    await fireEvent.changeText(screen.getByLabelText('دوّر على موديل أو منطقة'), 'الاسكندريه');
+    expect(screen.getByText('الإسكندرية')).toBeTruthy();
+    expect(screen.queryByText('الجيزة')).toBeNull();
+  });
+  it('AvailabilitySwitch updates optimistically, offers undo and rolls back on failure', async () => {
+    const onChange = jest.fn(async () => undefined);
+    const onChanged = jest.fn();
+    await render(<AvailabilitySwitch label="Toyota" available onChange={onChange} onChanged={onChanged} />, { wrapper: wrap('en') });
+    await fireEvent(screen.getByLabelText('Toyota'), 'valueChange', false);
+    expect(onChange).toHaveBeenCalledWith(false);
+    expect(onChanged).toHaveBeenCalledWith(false, expect.any(Function));
+    expect(screen.getByText('Not available right now')).toBeTruthy();
+    const failing = jest.fn(async () => {
+      throw new Error('offline');
+    });
+    await render(<AvailabilitySwitch label="Kia" available onChange={failing} />, { wrapper: wrap('en') });
+    await fireEvent(screen.getByLabelText('Kia'), 'valueChange', false);
+    expect(screen.getByText('Available')).toBeTruthy();
   });
 });

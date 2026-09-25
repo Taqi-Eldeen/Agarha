@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1.7
 # One image, three entrypoints: API (default), worker and migrate. Build from the repo root:
 #   docker build -f apps/api/Dockerfile --target api    -t agarha-api .
 #   docker build -f apps/api/Dockerfile --target worker -t agarha-worker .

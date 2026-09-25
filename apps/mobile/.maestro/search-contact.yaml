@@ -6,6 +6,9 @@ name: Search → listing → WhatsApp contact (Arabic, no account)
     env: { API_URL: "${API_URL}" }
 - launchApp:
     clearState: true
+# First launch: onboarding (language, then optional location).
+- tapOn: "العربية"
+- tapOn: "مش دلوقتي"
 - assertVisible: "استكشف"
 - tapOn: "دوّر"
 - assertVisible:

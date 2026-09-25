@@ -3,7 +3,7 @@ import { Button, ChipGroup, EmptyState, InlineAlert, ListingCardSkeleton, Text }
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { View } from 'react-native';
+import { Switch, View } from 'react-native';
 import { useTranslations } from 'use-intl';
 import { FavoriteButton } from '@/components/favorite-button';
 import { Screen } from '@/components/screen';
@@ -14,6 +14,7 @@ interface SavedSearch {
   id: string;
   name: string;
   query: Record<string, string | number | boolean>;
+  alertsEnabled: boolean;
 }
 
 export default function Saved() {
@@ -49,8 +50,20 @@ export default function Saved() {
         <View className="gap-3">
           {searches.data && !searches.data.length ? <EmptyState body={t('web.saved.noSearches')} /> : null}
           {searches.data?.map((s) => (
-            <View key={s.id} className="flex-row items-center gap-2 rounded-md border border-border bg-card p-3">
-              <Text className="flex-1" weight="medium">{s.name}</Text>
+            <View key={s.id} className="gap-2 rounded-md border border-border bg-card p-3">
+              <View className="flex-row items-center justify-between gap-2">
+                <Text className="flex-1" weight="medium">{s.name}</Text>
+                <Text variant="caption" tone="secondary">{t('web.saved.alerts')}</Text>
+                <Switch
+                  accessibilityLabel={`${t('web.saved.alerts')}: ${s.name}`}
+                  value={s.alertsEnabled}
+                  onValueChange={async (v) => {
+                    await api.PATCH('/v1/me/saved-searches/{id}', { params: { path: { id: s.id } }, body: { alertsEnabled: v } });
+                    await qc.invalidateQueries({ queryKey: ['saved-searches'] });
+                  }}
+                />
+              </View>
+              <View className="flex-row justify-end gap-2">
               <Button size="sm" variant="secondary" onPress={() => router.push({ pathname: '/search', params: Object.fromEntries(Object.entries(s.query).map(([k, v]) => [k, String(v)])) })}>
                 {t('web.saved.open')}
               </Button>
@@ -64,6 +77,7 @@ export default function Saved() {
               >
                 {t('web.saved.delete')}
               </Button>
+              </View>
             </View>
           ))}
         </View>

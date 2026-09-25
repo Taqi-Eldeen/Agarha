@@ -11,7 +11,10 @@ const ar = {
     locationBody: 'بنستخدم موقعك بس لما تدوّر على عربيات قريبة. تقدر تغيّر ده في أي وقت.',
     allow: 'اسمح',
     notNow: 'مش دلوقتي',
+    continue: 'كمّل',
   },
+  auth: { apple: 'كمّل بحساب Apple', google: 'كمّل بحساب Google', or: 'أو', linkPhone: 'أكّد رقم موبايلك عشان نخلّص تسجيل الدخول.' },
+  availability: { from: 'من يوم', duration: 'لمدة كام يوم؟', days: '{count} يوم' },
   explore: { recent: 'آخر بحث', cities: 'المدن', featured: 'مميّزة', clearRecent: 'امسح' },
   map: { searchHere: 'دوّر في المنطقة دي', locate: 'موقعي', permissionDenied: 'مش قادرين نوصل لموقعك. فعّله من الإعدادات أو دوّر بالمدينة.' },
   account: {
@@ -49,7 +52,10 @@ const en: DeepString<typeof ar> = {
     locationBody: 'We only use your location when you search for nearby cars. You can change this any time.',
     allow: 'Allow',
     notNow: 'Not now',
+    continue: 'Continue',
   },
+  auth: { apple: 'Continue with Apple', google: 'Continue with Google', or: 'or', linkPhone: 'Confirm your mobile number to finish signing in.' },
+  availability: { from: 'Starting', duration: 'For how many days?', days: '{count} days' },
   explore: { recent: 'Recent searches', cities: 'Cities', featured: 'Featured', clearRecent: 'Clear' },
   map: { searchHere: 'Search this area', locate: 'My location', permissionDenied: 'We cannot access your location. Turn it on in Settings or search by city.' },
   account: {

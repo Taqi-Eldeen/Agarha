@@ -1,6 +1,6 @@
 import { useListing } from '@agarha/api-client';
 import type { PricePeriod } from '@agarha/schemas';
-import { Badge, ChipGroup, ContactBar, DealerCard, EmptyState, ErrorState, FreshnessChip, Gallery, IconButton, InlineAlert, ListingCardSkeleton, RequirementList, Text, useUi } from '@agarha/ui-native';
+import { Badge, Button, ChipGroup, ContactBar, DealerCard, EmptyState, ErrorState, FreshnessChip, Gallery, IconButton, InlineAlert, ListingCardSkeleton, RequirementList, Text, useUi } from '@agarha/ui-native';
 import { Link, Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Flag, Share2 } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
@@ -123,6 +123,9 @@ export default function ListingScreen() {
             />
           </View>
 
+          <Button variant="secondary" onPress={() => router.push(`/availability/${card.id}`)}>
+            {t('requestAvailability')}
+          </Button>
           <Text variant="caption" tone="secondary">{t('priceNote')}</Text>
           <Link href={`/report/${card.id}`} className="min-h-touch py-3" accessibilityRole="link">
             <View className="flex-row items-center gap-2">

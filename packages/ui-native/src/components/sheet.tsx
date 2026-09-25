@@ -14,8 +14,8 @@ interface SheetProps {
   footer?: ReactNode;
 }
 
-/** Bottom sheet (filters, report, date request). Same name and props as the web Drawer. */
-export function Drawer({ open, onOpenChange, title, children, footer }: SheetProps) {
+/** Bottom sheet (filters, report, date request). The web counterpart is Drawer, with the same props. */
+export function BottomSheet({ open, onOpenChange, title, children, footer }: SheetProps) {
   const { t, colors, dir } = useUi();
   const insets = useSafeAreaInsets();
   return (
@@ -50,3 +50,6 @@ export function Modal({ open, onOpenChange, title, children, footer }: SheetProp
     </RNModal>
   );
 }
+
+/** Alias so shared code can use the web name. */
+export const Drawer = BottomSheet;

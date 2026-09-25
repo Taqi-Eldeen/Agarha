@@ -1,3 +1,4 @@
+import { cairoDate } from '../dates';
 import { bboxOf } from '../geo';
 import { initialLocale } from '../i18n';
 import { listingShareUrl, webPathToAppPath } from '../links';
@@ -62,5 +63,13 @@ describe('token store (SecureStore)', () => {
     expect(await tokenStore.get()).toBeNull();
     off();
     expect(seen).toEqual([true, false]);
+  });
+});
+
+describe('availability request dates', () => {
+  it('uses the Cairo calendar day, not UTC', () => {
+    // 23:30 UTC on 14 Sep is already 15 Sep in Cairo (UTC+3 in summer).
+    expect(cairoDate(0, new Date('2026-09-14T23:30:00Z'))).toBe('2026-09-15');
+    expect(cairoDate(1, new Date('2026-09-14T10:00:00Z'))).toBe('2026-09-15');
   });
 });

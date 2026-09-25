@@ -2,7 +2,7 @@ import type { ListingCard as Card } from '@agarha/schemas';
 import type { Meta, StoryObj } from '@storybook/react-native';
 import type { ReactNode } from 'react';
 import { ScrollView, View } from 'react-native';
-import { Badge, Button, ChipGroup, ContactBar, DealerCard, EmptyState, ErrorState, InlineAlert, ListingCard, ListingCardSkeleton, OTPField, PhoneField, PriceTag, RatingStars, RequirementList, Text, UiProvider } from '../index';
+import { AvailabilitySwitch, Badge, Button, Cluster, Combobox, Pin, Select, ChipGroup, ContactBar, DealerCard, EmptyState, ErrorState, InlineAlert, ListingCard, ListingCardSkeleton, OTPField, PhoneField, PriceTag, RatingStars, RequirementList, Text, UiProvider } from '../index';
 
 /** Every story renders in Arabic/English × light/dark, like the web Storybook matrix. */
 function Matrix({ children }: { children: ReactNode }) {
@@ -127,6 +127,33 @@ export const Feedback: Story = {
         <EmptyState body="Try another area" />
         <ErrorState body="Could not load" onRetry={noop} requestId="req_123" />
         <RatingStars value={4} onChange={noop} />
+      </View>
+    ),
+  },
+};
+
+export const Pickers: Story = {
+  args: {
+    children: (
+      <View className="gap-3">
+        <Select label="City / المدينة" value="cairo" onValueChange={noop} options={[{ value: 'cairo', label: 'القاهرة' }, { value: 'giza', label: 'الجيزة' }]} />
+        <Combobox label="Model / الموديل" value={undefined} onValueChange={noop} options={[{ value: 'corolla', label: 'Corolla' }, { value: 'elantra', label: 'Elantra' }]} />
+      </View>
+    ),
+  },
+};
+
+export const Availability: Story = { args: { children: <AvailabilitySwitch label="Corolla 2024" available onChange={async () => undefined} /> } };
+
+export const MapMarkers: Story = {
+  args: {
+    children: (
+      <View className="flex-row items-center gap-3">
+        <Pin price={1200} featured={false} />
+        <Pin price={1800} featured />
+        <Pin price={950} featured={false} selected />
+        <Cluster count={7} />
+        <Cluster count={64} />
       </View>
     ),
   },

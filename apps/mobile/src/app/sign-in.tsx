@@ -2,6 +2,7 @@ import { ApiRequestError, useApi } from '@agarha/api-client';
 import { normalizeEgyptMobile } from '@agarha/schemas/phone';
 import { Button, InlineAlert, OTPField, PhoneField, Text } from '@agarha/ui-native';
 import { useRouter } from 'expo-router';
+import { SocialButtons } from '@/components/social-buttons';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { useTranslations } from 'use-intl';
@@ -28,6 +29,8 @@ export default function SignIn() {
   const [error, setError] = useState<string | undefined>();
   const [busy, setBusy] = useState(false);
   const [now, setNow] = useState(Date.now());
+  /** Set when Google/Apple sign-in needs the phone confirmed once (first use). */
+  const [linkToken, setLinkToken] = useState<string | null>(null);
   useEffect(() => {
     const i = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(i);
@@ -61,10 +64,11 @@ export default function SignIn() {
     setBusy(true);
     setError(undefined);
     try {
-      const { data } = await api.POST('/v1/auth/otp/verify', { body: { challengeId: step.challengeId, phone: step.e164, code: c, client: 'mobile' } });
+      const verifyBody = { challengeId: step.challengeId, phone: step.e164, code: c, client: 'mobile' as const };
+      const { data } = linkToken ? await api.POST('/v1/auth/social/link', { body: { ...verifyBody, linkToken } }) : await api.POST('/v1/auth/otp/verify', { body: verifyBody });
       const body = data as unknown as { user: { id: string }; tokens: { accessToken: string; refreshToken: string } };
       await completeSignIn(body.tokens, body.user.id);
-      track('signed_in', { method: 'otp' });
+      track('signed_in', { method: linkToken ? 'social_link' : 'otp' });
       void registerPush(locale).catch(() => undefined);
       router.back();
     } catch (e) {
@@ -81,6 +85,18 @@ export default function SignIn() {
         <Text variant="h2" accessibilityRole="header">{t('web.account.signInTitle')}</Text>
         <Text tone="secondary">{t('web.account.signInBody')}</Text>
       </View>
+      {step.k === 'phone' && !linkToken ? (
+        <SocialButtons
+          onSignedIn={async (tokens, userId) => {
+            await completeSignIn(tokens, userId);
+            void registerPush(locale).catch(() => undefined);
+            router.back();
+          }}
+          onPhoneRequired={setLinkToken}
+          onError={(m) => setError(m)}
+        />
+      ) : null}
+      {linkToken && step.k === 'phone' ? <InlineAlert tone="info">{t('app.auth.linkPhone')}</InlineAlert> : null}
       {step.k === 'phone' ? (
         <View className="gap-4">
           <PhoneField label={t('auth.phoneLabel')} hint={t('auth.phoneHint')} value={phone} onChangeText={setPhone} error={error} testID="phone-input" />

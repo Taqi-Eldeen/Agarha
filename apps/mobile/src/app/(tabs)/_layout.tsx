@@ -1,12 +1,18 @@
 import { useUi } from '@agarha/ui-native';
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Compass, Heart, Map, UserRound } from 'lucide-react-native';
 import { useTranslations } from 'use-intl';
+import { prefs } from '@/lib/storage';
 
 export default function TabsLayout() {
   const t = useTranslations('app.tabs');
   const { colors, locale } = useUi();
   const fontFamily = locale === 'ar' ? 'IBMPlexSansArabic_500Medium' : 'IBMPlexSans_500Medium';
+  const [onboarded, setOnboarded] = useState<boolean | null>(null);
+  useEffect(() => void prefs.get('onboarded', false).then(setOnboarded), []);
+  if (onboarded === null) return null;
+  if (!onboarded) return <Redirect href="/onboarding" />;
   return (
     <Tabs
       screenOptions={{

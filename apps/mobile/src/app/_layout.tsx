@@ -9,7 +9,8 @@ import { IBMPlexSansArabic_400Regular } from '@expo-google-fonts/ibm-plex-sans-a
 import { IBMPlexSansArabic_500Medium } from '@expo-google-fonts/ibm-plex-sans-arabic/500Medium';
 import { IBMPlexSansArabic_600SemiBold } from '@expo-google-fonts/ibm-plex-sans-arabic/600SemiBold';
 import { Rubik_600SemiBold } from '@expo-google-fonts/rubik/600SemiBold';
-import { focusManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { focusManager } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { useFonts } from 'expo-font';
 import { SplashScreen, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -20,28 +21,31 @@ import { useTranslations } from 'use-intl';
 import { OfflineBanner } from '@/components/offline-banner';
 import { api } from '@/lib/api';
 import { LocaleProvider, useLocale } from '@/lib/i18n';
+import { persistOptions, queryClient } from '@/lib/query';
+import { initSentry, wrapRoot } from '@/lib/sentry';
 import { usePushNavigation } from '@/lib/push';
 import { SessionProvider } from '@/lib/session';
 
 void SplashScreen.preventAutoHideAsync();
-
-const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30_000 } } });
+initSentry();
 
 // Refetch stale data when the app comes back to the foreground.
 AppState.addEventListener('change', (s) => focusManager.setFocused(s === 'active'));
 
-export default function RootLayout() {
+export default wrapRoot(RootLayout);
+
+function RootLayout() {
   const [fonts] = useFonts({ IBMPlexSansArabic_400Regular, IBMPlexSansArabic_500Medium, IBMPlexSansArabic_600SemiBold, IBMPlexSans_400Regular, IBMPlexSans_500Medium, IBMPlexSans_600SemiBold, Rubik_600SemiBold });
   if (!fonts) return null;
   return (
     <SafeAreaProvider>
-      <QueryClientProvider client={queryClient}>
+      <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
         <ApiProvider client={api}>
           <LocaleProvider>
             <Themed />
           </LocaleProvider>
         </ApiProvider>
-      </QueryClientProvider>
+      </PersistQueryClientProvider>
     </SafeAreaProvider>
   );
 }
@@ -84,6 +88,11 @@ function RootStack() {
       <Stack.Screen name="sign-in" options={{ presentation: 'modal', title: t('common.signIn') }} />
       <Stack.Screen name="report/[id]" options={{ presentation: 'modal', title: t('web.report.title') }} />
       <Stack.Screen name="legal/[doc]" options={{ title: '' }} />
+      <Stack.Screen name="help" options={{ title: t('web.help.title') }} />
+      <Stack.Screen name="onboarding" options={{ headerShown: false, gestureEnabled: false }} />
+      <Stack.Screen name="review/[leadId]" options={{ presentation: 'modal', title: t('web.review.rating') }} />
+      <Stack.Screen name="availability/[id]" options={{ presentation: 'modal', title: t('web.listing.requestAvailability') }} />
+      <Stack.Screen name="storybook" options={{ headerShown: false }} />
     </Stack>
   );
 }

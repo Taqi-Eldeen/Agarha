@@ -26,6 +26,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   locales: { ar: './store/locales/ar.json', en: './store/locales/en.json' },
   ios: {
     bundleIdentifier: ID,
+    usesAppleSignIn: true,
     buildNumber: '1',
     supportsTablet: false,
     associatedDomains: [`applinks:${WEB_HOST}`],
@@ -74,6 +75,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   plugins: [
     'expo-router',
     'expo-secure-store',
+    'expo-apple-authentication',
+    'expo-web-browser',
+    ...(process.env.SENTRY_ORG ? [['@sentry/react-native/expo', { organization: process.env.SENTRY_ORG, project: process.env.SENTRY_PROJECT ?? 'agarha-mobile' }] as [string, object]] : []),
     'expo-localization',
     'expo-font',
     ['expo-splash-screen', { image: './assets/splash-icon.png', imageWidth: 160, backgroundColor: '#F4F7F6', dark: { image: './assets/splash-icon.png', backgroundColor: '#0F1519' } }],

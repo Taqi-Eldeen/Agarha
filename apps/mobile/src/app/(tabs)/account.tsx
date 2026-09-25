@@ -1,4 +1,4 @@
-import { useApi, useMe } from '@agarha/api-client';
+import { useApi, useListing, useMe } from '@agarha/api-client';
 import { formatPhone } from '@agarha/i18n';
 import { Button, ChipGroup, InlineAlert, Modal, Text, useToast, useUi } from '@agarha/ui-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -12,7 +12,6 @@ import { useEffect, useState } from 'react';
 import { Linking, Pressable, Switch, View } from 'react-native';
 import { useTranslations } from 'use-intl';
 import { Screen } from '@/components/screen';
-import { webOrigin } from '@/lib/env';
 import { useLocale } from '@/lib/i18n';
 import { registerPush, type PushState } from '@/lib/push';
 import { useSession } from '@/lib/session';
@@ -47,12 +46,13 @@ export default function Account() {
         <Text variant="caption" tone="secondary">{t('app.account.languageRestart')}</Text>
       </View>
 
+      {signedIn ? <ReviewPrompts /> : null}
       {signedIn ? <Notifications /> : null}
 
       <View className="gap-1">
         <Row label={t('web.legal.terms')} onPress={() => router.push('/legal/terms')} color={colors.textSecondary} />
         <Row label={t('web.legal.privacy')} onPress={() => router.push('/legal/privacy')} color={colors.textSecondary} />
-        <Row label={t('web.nav.help')} onPress={() => void Linking.openURL(`${webOrigin()}/${locale}/help`)} color={colors.textSecondary} />
+        <Row label={t('web.nav.help')} onPress={() => router.push('/help')} color={colors.textSecondary} />
         <Row label={t('app.account.rate')} onPress={() => void StoreReview.requestReview()} color={colors.textSecondary} />
       </View>
 
@@ -178,5 +178,36 @@ function DataControls({ onSignOut }: { onSignOut: () => Promise<void> }) {
         <Text>{t('web.account.deleteConfirm')}</Text>
       </Modal>
     </View>
+  );
+}
+
+type Reviewable = { leadId: string; dealerId: string; listingId: string; createdAt: string };
+
+/** Enquiries this account can now review (lead-gated, ≥ 24h old). */
+function ReviewPrompts() {
+  const t = useTranslations('web.review');
+  const api = useApi();
+  const router = useRouter();
+  const q = useQuery({ queryKey: ['reviewable'], queryFn: async () => ((await api.GET('/v1/me/reviewable')).data as unknown as { items: Reviewable[] }).items });
+  if (!q.data?.length) return null;
+  return (
+    <View className="gap-2 rounded-lg border border-border bg-card p-4">
+      <Text weight="semibold">{t('pending')}</Text>
+      {q.data.slice(0, 3).map((r) => (
+        <ReviewPromptRow key={r.leadId} r={r} onPress={() => router.push({ pathname: '/review/[leadId]', params: { leadId: r.leadId, listingId: r.listingId } })} />
+      ))}
+    </View>
+  );
+}
+
+function ReviewPromptRow({ r, onPress }: { r: Reviewable; onPress: () => void }) {
+  const listing = useListing(r.listingId);
+  const { locale } = useUi();
+  const t = useTranslations('web.review');
+  const dealer = listing.data ? (locale === 'ar' ? listing.data.dealer.nameAr : listing.data.dealer.nameEn) : '…';
+  return (
+    <Button size="sm" variant="secondary" onPress={onPress}>
+      {t('title', { dealer })}
+    </Button>
   );
 }

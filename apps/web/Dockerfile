@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1.7
 # Next.js standalone build. From the repo root: docker build -f apps/web/Dockerfile -t agarha-web .
 # NEXT_PUBLIC_* values are inlined at build time, so pass them as build args per environment.
 FROM node:22-bookworm-slim AS base

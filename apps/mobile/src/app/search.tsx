@@ -1,10 +1,11 @@
 import { useApi, useSearch, type SearchParams } from '@agarha/api-client';
 import type { PricePeriod } from '@agarha/schemas';
-import { Button, ChipGroup, Drawer, EmptyState, ErrorState, FilterChip, ListingCardSkeleton, Text, TextField, useToast, useUi } from '@agarha/ui-native';
+import { Button, ChipGroup, BottomSheet, EmptyState, ErrorState, FilterChip, ListingCardSkeleton, Text, TextField, useToast, useUi } from '@agarha/ui-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { SlidersHorizontal } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
-import { FlatList, View } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
+import { View } from 'react-native';
 import { useTranslations } from 'use-intl';
 import { FavoriteButton } from '@/components/favorite-button';
 import { SearchResultCard } from '@/components/search-result-card';
@@ -73,10 +74,11 @@ export default function Search() {
   return (
     <View className="flex-1 bg-page">
       <Stack.Screen options={{ title: t('title') }} />
-      <FlatList
+      <FlashList
         data={items}
         keyExtractor={(i) => i.card.id}
-        contentContainerClassName="gap-4 p-4"
+        contentContainerStyle={{ padding: 16 }}
+        ItemSeparatorComponent={Gap}
         ListHeaderComponent={header}
         renderItem={({ item }) => <SearchResultCard card={item.card} period={period} source="search" favorite={<FavoriteButton listingId={item.card.id} card={item.card} />} />}
         onEndReachedThreshold={0.5}
@@ -97,7 +99,7 @@ export default function Search() {
         }
         ListFooterComponent={q.isFetchingNextPage ? <ListingCardSkeleton /> : null}
       />
-      <Drawer
+      <BottomSheet
         open={open}
         onOpenChange={setOpen}
         title={t('filters')}
@@ -124,7 +126,11 @@ export default function Search() {
         <ChipGroup label={t('seats')} single value={draft.seatsMin ? [String(draft.seatsMin)] : []} onChange={(v) => setDraft({ ...draft, seatsMin: v[0] ? Number(v[0]) : undefined })} options={['4', '5', '7'].map((n) => ({ value: n, label: t('seatsMin', { count: Number(n) }) }))} />
         <TextField label={`${t('price')} · ${t('priceMax')}`} keyboardType="number-pad" value={draft.priceMax ? String(draft.priceMax) : ''} onChangeText={(v) => setDraft({ ...draft, priceMax: Number(v.replace(/\D/g, '')) || undefined })} optional />
         <ChipGroup label={t('airport')} value={draft.airport ? ['yes'] : []} onChange={(v) => setDraft({ ...draft, airport: v.includes('yes') || undefined })} options={[{ value: 'yes', label: t('airport') }]} />
-      </Drawer>
+      </BottomSheet>
     </View>
   );
+}
+
+function Gap() {
+  return <View style={{ height: 16 }} />;
 }

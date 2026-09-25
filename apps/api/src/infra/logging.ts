@@ -46,8 +46,18 @@ export function loggerParams(env: Env): Params {
       serializers: {
         req: (req: { id: string; method: string; url: string }) => ({ id: req.id, method: req.method, url: req.url.replace(/([?&](sig|hmac|token)=)[^&]+/g, '$1[redacted]') }),
       },
-      ...(env.APP_ENV === 'local' && env.NODE_ENV === 'development' ? { transport: { target: 'pino-pretty', options: { singleLine: true } } } : {}),
+      ...(env.APP_ENV === 'local' && env.NODE_ENV === 'development' && hasPrettyPrinter() ? { transport: { target: 'pino-pretty', options: { singleLine: true } } } : {}),
       autoLogging: { ignore: (req: IncomingMessage) => (req.url ?? '').startsWith('/v1/health') },
     },
   };
+}
+
+/** pino-pretty is a dev dependency: production images don't ship it, so never ask pino for it there. */
+function hasPrettyPrinter(): boolean {
+  try {
+    require.resolve('pino-pretty');
+    return true;
+  } catch {
+    return false;
+  }
 }

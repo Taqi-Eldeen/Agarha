@@ -13,5 +13,6 @@
 .git
 .storage
 apps/mobile
-docs
+docs/*
+!docs/api
 **/dump.rdb

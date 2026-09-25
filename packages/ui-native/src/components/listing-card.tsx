@@ -13,7 +13,7 @@ import { WhatsAppIcon } from './whatsapp-icon';
 export interface ListingCardProps {
   card: Card;
   period?: PricePeriod;
-  variant?: 'list' | 'map-mini';
+  variant?: 'list' | 'grid' | 'map-mini';
   onPress: () => void;
   onContact?: (channel: 'whatsapp' | 'call') => void;
   contacting?: 'whatsapp' | 'call' | null;
@@ -36,6 +36,22 @@ export function ListingCard({ card, period = 'day', variant = 'list', onPress, o
         <View className="flex-1 justify-center">
           <Text weight="medium" numberOfLines={1}>{`${name} ${card.year}`}</Text>
           <PriceTag prices={card.prices} period={period} />
+          <Text variant="caption" tone="secondary" numberOfLines={1}>{card.area[locale]}</Text>
+        </View>
+      </Pressable>
+    );
+
+  if (variant === 'grid')
+    return (
+      <Pressable accessibilityRole="link" accessibilityLabel={`${name} ${card.year}`} onPress={onPress} className="flex-1 overflow-hidden rounded-lg border border-border bg-card">
+        <View className="aspect-[4/3] w-full bg-brand-subtle">
+          {photo}
+          {card.featured ? <View className="absolute top-2" style={{ start: 8 }}><Badge kind="featured" /></View> : null}
+        </View>
+        <View className="gap-1 p-3">
+          <Text weight="semibold" numberOfLines={1}>{`${name} ${card.year}`}</Text>
+          <PriceTag prices={card.prices} period={period} />
+          <FreshnessChip lastConfirmedAt={card.lastConfirmedAt} />
           <Text variant="caption" tone="secondary" numberOfLines={1}>{card.area[locale]}</Text>
         </View>
       </Pressable>
