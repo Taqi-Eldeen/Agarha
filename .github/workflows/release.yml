@@ -58,7 +58,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
       - id: dst
         uses: aws-actions/amazon-ecr-login@v2
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
       - name: Copy the exact images by digest (no rebuild)
         env:
           SHA: ${{ needs.prepare.outputs.sha }}
