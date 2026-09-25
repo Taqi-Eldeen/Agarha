@@ -27,7 +27,10 @@ export default async function SearchPage({
   const [citiesRes, initial] = await Promise.all([
     serverApi.cities(),
     serverApi
-      .search({ ...(query as Record<string, string | number | undefined>), limit: SEARCH_PAGE_SIZE })
+      .search({
+        ...(query as Record<string, string | number | undefined>),
+        limit: SEARCH_PAGE_SIZE,
+      })
       .catch(() => null),
   ]);
   const cities = citiesRes?.items ?? [];
