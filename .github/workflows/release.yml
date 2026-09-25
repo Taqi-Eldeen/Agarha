@@ -24,7 +24,7 @@ jobs:
       sha: ${{ steps.sha.outputs.sha }}
       previous_sha: ${{ steps.prev.outputs.sha }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: { fetch-depth: 0 }
       - id: sha
         run: echo "sha=$(git rev-list -n 1 "$GITHUB_REF_NAME")" >> "$GITHUB_OUTPUT"
@@ -43,7 +43,7 @@ jobs:
     timeout-minutes: 30
     environment: production # required reviewers = the manual approval gate
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Log in to the staging registry (source)
         uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
         with:
@@ -85,7 +85,7 @@ jobs:
       TF_VAR_admin_ip_allowlist: ${{ vars.ADMIN_IP_ALLOWLIST }}
       TF_VAR_alert_emails: ${{ vars.ALERT_EMAILS }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
@@ -107,7 +107,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: scripts/ci/smoke.sh "${{ vars.PRODUCTION_WEB_URL }}" "${{ vars.PRODUCTION_API_URL }}"
 
   rollback:
@@ -124,7 +124,7 @@ jobs:
       TF_VAR_admin_ip_allowlist: ${{ vars.ADMIN_IP_ALLOWLIST }}
       TF_VAR_alert_emails: ${{ vars.ALERT_EMAILS }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: { ref: '${{ needs.prepare.outputs.previous_sha }}' }
       - uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
         with:
