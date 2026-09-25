@@ -3052,7 +3052,7 @@
                   },
                   "taxCardNo": {
                     "type": "string",
-                    "pattern": "^[0-9\\-]{9,15}$"
+                    "pattern": "^[0-9-]{9,15}$"
                   },
                   "phone": {
                     "type": "string",

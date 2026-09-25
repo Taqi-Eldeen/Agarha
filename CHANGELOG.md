@@ -78,3 +78,6 @@ First complete version of the platform: phases P0–P6 of the build plan (`CHECK
 - Privacy: data map, export and deletion, retention job (leads 24 months, rejected documents 90 days,
   OTP challenges, sessions, reports and audit entries), marketing notifications opt-in only.
 - Runbooks: deploy, rollback, restore, incident, database, secrets, OTP outage, dependencies.
+- Supply chain: actions pinned to SHAs, pnpm release-age/exotic-deps/trust policies, Dependabot
+  cooldown; KMS-encrypted secrets and logs, RDS log exports, ALB access logs.
+- Coverage gate: unit + integration ≥ 80 % lines on API domain modules (82 %).

@@ -6,6 +6,11 @@
 - **CI gates** (`.github/workflows/security.yml` and `ci.yml`): gitleaks (secrets), Semgrep
   (`.semgrep.yml` plus the default rules), OSV-Scanner on `pnpm-lock.yaml`, Trivy for the filesystem,
   IaC and every image, and a ZAP baseline against staging. High and critical findings fail the build.
+- **Supply chain**: `pnpm-workspace.yaml` blocks git/tarball transitive dependencies
+  (`blockExoticSubdeps`), waits 7 days before installing a new release (`minimumReleaseAge`) and refuses
+  trust downgrades (`trustPolicy: no-downgrade`); Dependabot uses the same 7-day cooldown; GitHub
+  Actions are pinned to commit SHAs (Dependabot bumps them with the tag in a comment). A security fix
+  needed sooner: add the package to `minimumReleaseAgeExclude` in the same PR.
 - **Overrides** in `pnpm-workspace.yaml` pin patched transitive versions (`sharp`, `postcss`, `uuid`).
   Remove an override once the direct dependency ships the fix.
 

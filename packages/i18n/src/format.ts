@@ -63,7 +63,8 @@ export function formatPhone(e164: string): string {
     national.length === 11
       ? `${national.slice(0, 3)} ${national.slice(3, 7)} ${national.slice(7)}`
       : national;
-  return `⁦${grouped}⁩`;
+  // U+2066 LEFT-TO-RIGHT ISOLATE … U+2069 POP DIRECTIONAL ISOLATE
+  return `\u2066${grouped}\u2069`;
 }
 
 /** Tiny ICU-less interpolation for "{name}" placeholders. */

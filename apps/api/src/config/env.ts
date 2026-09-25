@@ -9,6 +9,7 @@ const csv = z.string().transform((s) =>
 );
 
 /** Cloudflare's documented always-pass test secret. Rejected in production below. */
+// nosemgrep: generic.secrets.security.detected-generic-secret.detected-generic-secret -- public test value
 export const TURNSTILE_TEST_SECRET = '1x0000000000000000000000000000000AA';
 
 /** Placeholder secrets from apps/api/.env.example (published in the repo, local use only). */

@@ -40,6 +40,11 @@ export const base = tseslint.config(
   {
     ignores: [
       '**/dist/**',
+      '**/dist-tools/**',
+      '**/coverage-integration/**',
+      '**/storybook-static/**',
+      '**/playwright-report/**',
+      '**/test-results/**',
       '**/.next/**',
       '**/.expo/**',
       '**/build/**',

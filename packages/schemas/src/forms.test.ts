@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { branchInputSchema, businessSchema, inviteSchema, profileSchema } from './dealer';
-import { priceFor } from './price';
-import { availabilityRequestInputSchema, reportInputSchema } from './requests';
+import { branchInputSchema, businessSchema, inviteSchema, profileSchema } from './dealer.js';
+import { priceFor } from './price.js';
+import { availabilityRequestInputSchema, reportInputSchema } from './requests.js';
 
 const LISTING = '00000000-0000-4000-8000-000000000001';
 

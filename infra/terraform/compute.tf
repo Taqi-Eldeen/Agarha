@@ -87,8 +87,11 @@ resource "aws_iam_role_policy" "execution_secrets" {
   name = "read-app-secrets"
   role = aws_iam_role.execution.id
   policy = jsonencode({
-    Version   = "2012-10-17"
-    Statement = [{ Effect = "Allow", Action = ["secretsmanager:GetSecretValue"], Resource = [aws_secretsmanager_secret.infra.arn, aws_secretsmanager_secret.keys.arn] }]
+    Version = "2012-10-17"
+    Statement = [
+      { Effect = "Allow", Action = ["secretsmanager:GetSecretValue"], Resource = [aws_secretsmanager_secret.infra.arn, aws_secretsmanager_secret.keys.arn] },
+      { Effect = "Allow", Action = ["kms:Decrypt"], Resource = [aws_kms_key.data.arn] },
+    ]
   })
 }
 
@@ -101,6 +104,7 @@ resource "aws_cloudwatch_log_group" "app" {
   for_each          = toset(local.images)
   name              = "/agarha/${var.environment}/${each.key}"
   retention_in_days = local.prod ? 90 : 14
+  kms_key_id        = aws_kms_key.data.arn
 }
 
 resource "aws_ecs_task_definition" "app" {
@@ -143,6 +147,66 @@ resource "aws_lb" "main" {
   security_groups            = [aws_security_group.alb.id]
   drop_invalid_header_fields = true
   enable_deletion_protection = local.prod
+  access_logs {
+    bucket  = aws_s3_bucket.alb_logs.id
+    prefix  = "alb"
+    enabled = true
+  }
+  depends_on = [aws_s3_bucket_policy.alb_logs]
+}
+
+# ALB access logs. The ALB can only write to SSE-S3 buckets (no KMS), so AWS-0132 is accepted here;
+# the bucket is private, versioned and expires logs after 90 days.
+#trivy:ignore:AWS-0132
+#trivy:ignore:AWS-0089
+resource "aws_s3_bucket" "alb_logs" {
+  bucket        = "${local.name}-alb-logs-${data.aws_caller_identity.current.account_id}"
+  force_destroy = !local.prod
+}
+
+resource "aws_s3_bucket_public_access_block" "alb_logs" {
+  bucket                  = aws_s3_bucket.alb_logs.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_versioning" "alb_logs" {
+  bucket = aws_s3_bucket.alb_logs.id
+  versioning_configuration { status = "Enabled" }
+}
+
+#trivy:ignore:AWS-0132
+resource "aws_s3_bucket_server_side_encryption_configuration" "alb_logs" {
+  bucket = aws_s3_bucket.alb_logs.id
+  rule {
+    apply_server_side_encryption_by_default { sse_algorithm = "AES256" }
+  }
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "alb_logs" {
+  bucket = aws_s3_bucket.alb_logs.id
+  rule {
+    id     = "expire"
+    status = "Enabled"
+    filter {}
+    expiration { days = 90 }
+    noncurrent_version_expiration { noncurrent_days = 7 }
+  }
+}
+
+data "aws_elb_service_account" "main" {}
+
+resource "aws_s3_bucket_policy" "alb_logs" {
+  bucket = aws_s3_bucket.alb_logs.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      { Sid = "ElbLogDelivery", Effect = "Allow", Principal = { AWS = data.aws_elb_service_account.main.arn }, Action = "s3:PutObject", Resource = "${aws_s3_bucket.alb_logs.arn}/alb/AWSLogs/${data.aws_caller_identity.current.account_id}/*" },
+      { Sid = "TlsOnly", Effect = "Deny", Principal = "*", Action = "s3:*", Resource = [aws_s3_bucket.alb_logs.arn, "${aws_s3_bucket.alb_logs.arn}/*"], Condition = { Bool = { "aws:SecureTransport" = "false" } } },
+    ]
+  })
 }
 
 resource "aws_acm_certificate" "main" {

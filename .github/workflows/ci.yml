@@ -24,13 +24,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: ./.github/actions/setup
       - run: pnpm format:check
       - run: pnpm turbo run lint typecheck
       - name: Unit + component tests (coverage thresholds enforced per package)
         run: pnpm turbo run test
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
           name: coverage
@@ -55,17 +55,18 @@ jobs:
       TEST_DATABASE_URL: postgres://agarha:agarha@localhost:5432/agarha_test
       TEST_REDIS_URL: redis://localhost:6379
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: ./.github/actions/setup
       - run: pnpm turbo run build --filter=@agarha/api^...
-      - run: pnpm --filter @agarha/api test:integration --coverage --coverageDirectory=coverage-integration
+      - name: Unit + integration, >= 80% line coverage on domain modules
+        run: pnpm --filter @agarha/api test:coverage
 
   contract:
     name: OpenAPI contract
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with: { fetch-depth: 0 }
       - uses: ./.github/actions/setup
       - run: pnpm turbo run build --filter=@agarha/api^...
@@ -102,7 +103,7 @@ jobs:
         ports: ['6379:6379']
         options: --health-cmd "redis-cli ping" --health-interval 5s --health-retries 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: ./.github/actions/setup
       - name: Env files from the examples (NEXT_PUBLIC_* are inlined at build time)
         run: |
@@ -126,7 +127,7 @@ jobs:
           CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")"
           export CHROME_PATH
           npx --yes @lhci/cli@0.15.x autorun --config=lighthouserc.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: failure()
         with:
           name: e2e-reports
@@ -141,7 +142,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: ./.github/actions/setup
       - run: pnpm turbo run build --filter=@agarha/mobile^...
       - name: Metro bundles for both platforms (catches native-module and import errors)
@@ -156,14 +157,14 @@ jobs:
       contents: read
       security-events: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with: { fetch-depth: 0 }
       - name: Secrets (gitleaks, full history)
         run: docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest git /repo --no-banner --redact --config /repo/.gitleaks.toml
       - name: SAST (Semgrep project rules + registry packs)
         run: |
           docker run --rm -v "$PWD:/src" semgrep/semgrep semgrep scan --error --metrics=off --quiet \
-            --config /src/.semgrep.yml --config p/typescript --config p/nodejs --config p/react --config p/secrets \
+            --config /src/.semgrep.yml --config p/default --config p/typescript --config p/nodejs --config p/react --config p/secrets \
             --exclude node_modules --exclude '*.test.ts' --exclude '*.test.tsx' --exclude e2e /src
       - name: Dependencies (OSV, fail on high/critical)
         run: |
@@ -172,7 +173,7 @@ jobs:
       - name: Dependencies + IaC + Dockerfiles (Trivy)
         run: |
           docker run --rm -v "$PWD:/repo" aquasec/trivy:latest fs --scanners vuln --severity HIGH,CRITICAL --exit-code 1 /repo/pnpm-lock.yaml
-          docker run --rm -v "$PWD:/repo" aquasec/trivy:latest config --severity HIGH,CRITICAL --exit-code 1 --skip-dirs /repo/node_modules /repo
+          docker run --rm -v "$PWD:/repo" aquasec/trivy:latest config --severity HIGH,CRITICAL --exit-code 1 --skip-dirs '**/node_modules' --skip-dirs '**/.terraform' /repo
 
   terraform:
     name: Terraform
@@ -182,8 +183,8 @@ jobs:
       run:
         working-directory: infra/terraform
     steps:
-      - uses: actions/checkout@v4
-      - uses: hashicorp/setup-terraform@v3
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
         with: { terraform_version: 1.16.4 }
       - run: terraform fmt -check -recursive
       - run: terraform init -backend=false -input=false
