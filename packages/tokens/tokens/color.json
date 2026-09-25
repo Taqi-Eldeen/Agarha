@@ -2,33 +2,130 @@
   "color": {
     "$type": "color",
     "brand": {
-      "primary": { "$value": "#0F6E68", "$extensions": { "agarha": { "dark": "#4CC0B5" } } },
-      "pressed": { "$value": "#0A524E", "$extensions": { "agarha": { "dark": "#8FDAD2" } } },
-      "subtle": { "$value": "#E2F1EF", "$extensions": { "agarha": { "dark": "#123330" } } }
+      "primary": {
+        "$value": "#0F6E68",
+        "$extensions": {
+          "agarha": {
+            "dark": "#4CC0B5"
+          }
+        }
+      },
+      "pressed": {
+        "$value": "#0A524E",
+        "$extensions": {
+          "agarha": {
+            "dark": "#8FDAD2"
+          }
+        }
+      },
+      "subtle": {
+        "$value": "#E2F1EF",
+        "$extensions": {
+          "agarha": {
+            "dark": "#123330"
+          }
+        }
+      }
     },
     "accent": {
       "featured": {
         "$value": "#F2A900",
         "$description": "Featured only. Text on it is always text/primary.",
-        "$extensions": { "agarha": { "dark": "#F5B82E" } }
+        "$extensions": {
+          "agarha": {
+            "dark": "#F5B82E"
+          }
+        }
+      },
+      "on-featured": {
+        "$value": "#16202B",
+        "$description": "Text on accent/featured. Stays dark in both themes (ADR-012).",
+        "$extensions": {
+          "agarha": {
+            "dark": "#16202B"
+          }
+        }
       }
     },
     "text": {
-      "primary": { "$value": "#16202B", "$extensions": { "agarha": { "dark": "#E6ECEA" } } },
-      "secondary": { "$value": "#55636F", "$extensions": { "agarha": { "dark": "#9AA9A6" } } }
+      "primary": {
+        "$value": "#16202B",
+        "$extensions": {
+          "agarha": {
+            "dark": "#E6ECEA"
+          }
+        }
+      },
+      "secondary": {
+        "$value": "#55636F",
+        "$extensions": {
+          "agarha": {
+            "dark": "#9AA9A6"
+          }
+        }
+      }
     },
     "border": {
-      "default": { "$value": "#D8E0DE", "$extensions": { "agarha": { "dark": "#29363D" } } }
+      "default": {
+        "$value": "#D8E0DE",
+        "$extensions": {
+          "agarha": {
+            "dark": "#29363D"
+          }
+        }
+      }
     },
     "surface": {
-      "page": { "$value": "#F4F7F6", "$extensions": { "agarha": { "dark": "#0F1519" } } },
-      "card": { "$value": "#FFFFFF", "$extensions": { "agarha": { "dark": "#161E23" } } }
+      "page": {
+        "$value": "#F4F7F6",
+        "$extensions": {
+          "agarha": {
+            "dark": "#0F1519"
+          }
+        }
+      },
+      "card": {
+        "$value": "#FFFFFF",
+        "$extensions": {
+          "agarha": {
+            "dark": "#161E23"
+          }
+        }
+      }
     },
     "status": {
-      "available": { "$value": "#1E7F4B", "$extensions": { "agarha": { "dark": "#4ACB85" } } },
-      "stale": { "$value": "#B7791F", "$extensions": { "agarha": { "dark": "#F5B82E" } } },
-      "danger": { "$value": "#B42318", "$extensions": { "agarha": { "dark": "#F97066" } } },
-      "info": { "$value": "#1D5FBF", "$extensions": { "agarha": { "dark": "#7EB0F7" } } }
+      "available": {
+        "$value": "#1E7F4B",
+        "$extensions": {
+          "agarha": {
+            "dark": "#4ACB85"
+          }
+        }
+      },
+      "stale": {
+        "$value": "#B7791F",
+        "$extensions": {
+          "agarha": {
+            "dark": "#F5B82E"
+          }
+        }
+      },
+      "danger": {
+        "$value": "#B42318",
+        "$extensions": {
+          "agarha": {
+            "dark": "#F97066"
+          }
+        }
+      },
+      "info": {
+        "$value": "#1D5FBF",
+        "$extensions": {
+          "agarha": {
+            "dark": "#7EB0F7"
+          }
+        }
+      }
     }
   }
 }

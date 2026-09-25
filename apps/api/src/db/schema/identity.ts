@@ -1,8 +1,8 @@
 // Owned by the identity module.
 import { sql } from 'drizzle-orm';
-import { check, index, pgTable, primaryKey, smallint, text, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { check, index, integer, pgTable, primaryKey, smallint, text, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 import { createdAt, id, tstz, updatedAt } from './_columns';
-import { localeEnum, otpChannelEnum, otpPurposeEnum, roleEnum, userStatusEnum } from './enums';
+import { localeEnum, otpChannelEnum, otpPurposeEnum, roleEnum, sessionScopeEnum, socialProviderEnum, userStatusEnum } from './enums';
 
 export const users = pgTable(
   'users',
@@ -70,6 +70,10 @@ export const refreshTokens = pgTable(
     tokenHash: text('token_hash').notNull(),
     expiresAt: tstz('expires_at').notNull(),
     familyExpiresAt: tstz('family_expires_at').notNull(),
+    /** customer | dealer | admin: which surface the session belongs to. */
+    scope: sessionScopeEnum('scope').notNull(),
+    /** Active dealer for dealer-scope sessions. */
+    dealerId: uuid('dealer_id'),
     rotatedAt: tstz('rotated_at'),
     revokedAt: tstz('revoked_at'),
     revokedReason: text('revoked_reason'),
@@ -82,4 +86,37 @@ export const refreshTokens = pgTable(
     index('refresh_tokens_family_idx').on(t.familyId),
     index('refresh_tokens_user_idx').on(t.userId),
   ],
+);
+
+/** Password (dealers) and TOTP (dealer owners, admins). */
+export const userCredentials = pgTable('user_credentials', {
+  userId: uuid('user_id')
+    .primaryKey()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  /** argon2id hash. */
+  passwordHash: text('password_hash'),
+  /** AES-256-GCM encrypted TOTP secret (iv:tag:ciphertext, base64url). */
+  totpSecretEnc: text('totp_secret_enc'),
+  totpEnabledAt: tstz('totp_enabled_at'),
+  /** Last accepted TOTP time-step, to block replay inside the window. */
+  totpLastStep: integer('totp_last_step'),
+  failedPasswordAttempts: smallint('failed_password_attempts').notNull().default(0),
+  lockedUntil: tstz('locked_until'),
+  updatedAt: updatedAt(),
+});
+
+/** Google / Apple sign-in (customers) and Google Workspace SSO (admins). */
+export const userIdentities = pgTable(
+  'user_identities',
+  {
+    id: id(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    provider: socialProviderEnum('provider').notNull(),
+    subject: text('subject').notNull(),
+    email: text('email'),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('user_identities_provider_subject_key').on(t.provider, t.subject)],
 );

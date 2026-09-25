@@ -14,3 +14,4 @@ infra/terraform/.terraform/
 infra/terraform/*.tfstate*
 apps/mobile/ios/
 apps/mobile/android/
+.storage/

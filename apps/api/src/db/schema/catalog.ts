@@ -75,3 +75,18 @@ export const carModels = pgTable(
     index('car_models_search_trgm_idx').using('gin', t.searchText.op('gin_trgm_ops')),
   ],
 );
+
+export const carTrims = pgTable(
+  'car_trims',
+  {
+    id: id(),
+    modelId: uuid('model_id')
+      .notNull()
+      .references(() => carModels.id, { onDelete: 'cascade' }),
+    slug: text('slug').notNull(),
+    nameAr: text('name_ar').notNull(),
+    nameEn: text('name_en').notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('car_trims_model_slug_key').on(t.modelId, t.slug)],
+);

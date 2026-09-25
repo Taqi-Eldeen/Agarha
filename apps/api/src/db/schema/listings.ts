@@ -15,7 +15,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { createdAt, id, tstz, updatedAt } from './_columns';
-import { carModels } from './catalog';
+import { carModels, carTrims } from './catalog';
 import { users } from './identity';
 import { branches, dealers } from './dealers';
 import {
@@ -26,6 +26,7 @@ import {
   mediaStatusEnum,
   requiredDocEnum,
   transmissionEnum,
+  importStatusEnum,
 } from './enums';
 
 export const listings = pgTable(
@@ -36,6 +37,9 @@ export const listings = pgTable(
     dealerId: uuid('dealer_id').notNull().references(() => dealers.id),
     branchId: uuid('branch_id').notNull(),
     carModelId: uuid('car_model_id').notNull().references(() => carModels.id),
+    trimId: uuid('trim_id').references(() => carTrims.id),
+    /** Set when a moderator has reviewed a listing that went live without pre-approval. */
+    reviewedAt: tstz('reviewed_at'),
     slug: text('slug').notNull(),
     status: listingStatusEnum('status').notNull().default('draft'),
     available: boolean('available').notNull().default(true),
@@ -120,7 +124,8 @@ export const listingPhotos = pgTable(
     createdAt: createdAt(),
   },
   (t) => [
-    uniqueIndex('listing_photos_listing_position_key').on(t.listingId, t.position),
+    // Unique (listing_id, position) is a DEFERRABLE constraint added in migration 0004 (drizzle can't express it).
+    index('listing_photos_listing_idx').on(t.listingId, t.position),
     check('listing_photos_max_12', sql`${t.position} between 0 and 11`),
   ],
 );
@@ -134,3 +139,21 @@ export const favorites = pgTable(
   },
   (t) => [primaryKey({ columns: [t.userId, t.listingId] })],
 );
+
+/** Phase 6: CSV fleet import. Rows are validated first, then applied in one transaction. */
+export const listingImports = pgTable('listing_imports', {
+  id: id(),
+  dealerId: uuid('dealer_id')
+    .notNull()
+    .references(() => dealers.id),
+  createdBy: uuid('created_by')
+    .notNull()
+    .references(() => users.id),
+  status: importStatusEnum('status').notNull().default('validating'),
+  rowCount: integer('row_count').notNull().default(0),
+  errors: jsonb('errors').$type<{ row: number; field: string; code: string }[]>(),
+  /** Validated rows, applied as drafts in one go. Stored so any API instance can apply. */
+  rows: jsonb('rows').$type<unknown[]>(),
+  appliedAt: tstz('applied_at'),
+  createdAt: createdAt(),
+});

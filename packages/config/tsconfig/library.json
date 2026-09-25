@@ -3,8 +3,6 @@
   "extends": "./base.json",
   "compilerOptions": {
     "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "outDir": "${configDir}/dist",
-    "rootDir": "${configDir}/src"
+    "moduleResolution": "NodeNext"
   }
 }

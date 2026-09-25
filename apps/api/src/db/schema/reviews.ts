@@ -12,7 +12,8 @@ export const reviews = pgTable(
   {
     id: id(),
     dealerId: uuid('dealer_id').notNull().references(() => dealers.id),
-    leadId: uuid('lead_id').notNull().references(() => leads.id),
+    /** Nulled when the lead is purged after 24 months; the review stays. */
+    leadId: uuid('lead_id').references(() => leads.id, { onDelete: 'set null' }),
     userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
     rating: smallint('rating').notNull(),
     body: text('body'),

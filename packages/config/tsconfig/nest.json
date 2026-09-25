@@ -6,7 +6,6 @@
     "moduleResolution": "Node10",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "declaration": false,
-    "outDir": "${configDir}/dist"
+    "declaration": false
   }
 }

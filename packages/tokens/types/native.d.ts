@@ -1,5 +1,5 @@
 type ColorKey =
-  | 'brandPrimary' | 'brandPressed' | 'brandSubtle' | 'accentFeatured'
+  | 'brandPrimary' | 'brandPressed' | 'brandSubtle' | 'accentFeatured' | 'accentOnFeatured'
   | 'textPrimary' | 'textSecondary' | 'borderDefault' | 'surfacePage' | 'surfaceCard'
   | 'statusAvailable' | 'statusStale' | 'statusDanger' | 'statusInfo';
 

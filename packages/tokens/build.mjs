@@ -18,6 +18,7 @@ const TAILWIND_COLOR_KEYS = {
   'brand.pressed': ['brand', 'pressed'],
   'brand.subtle': ['brand', 'subtle'],
   'accent.featured': ['featured', 'DEFAULT'],
+  'accent.on-featured': ['featured', 'fg'],
   'text.primary': ['fg', 'DEFAULT'],
   'text.secondary': ['fg', 'secondary'],
   'border.default': ['border', 'DEFAULT'],
@@ -155,7 +156,7 @@ StyleDictionary.registerFormat({
 function nativeTheme(all) {
   const colors = { light: {}, dark: {} };
   for (const t of byGroup(all, 'color')) {
-    const key = t.path.slice(1).map((p, i) => (i ? p[0].toUpperCase() + p.slice(1) : p)).join('');
+    const key = t.path.slice(1).join('-').replace(/-(\w)/g, (_, c) => c.toUpperCase());
     colors.light[key] = t.$value;
     colors.dark[key] = dark(t);
   }

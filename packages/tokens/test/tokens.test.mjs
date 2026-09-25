@@ -48,6 +48,6 @@ for (const scheme of ['light', 'dark']) {
         assert.ok(ratio >= 4.5, `${fg} on ${bg} = ${ratio.toFixed(2)}`);
       }
     }
-    assert.ok(contrast(c.textPrimary, c.accentFeatured) >= 4.5, 'text on featured');
+    assert.ok(contrast(c.accentOnFeatured, c.accentFeatured) >= 4.5, 'text on featured');
   });
 }

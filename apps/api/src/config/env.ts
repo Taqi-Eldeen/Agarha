@@ -38,7 +38,8 @@ export const envSchema = z
     OTP_RESEND_AFTER_SECONDS: z.coerce.number().int().default(60),
     /** Ordered failover list for SMS OTP. `console` logs the code and is local/test only. */
     SMS_PROVIDERS: csv.pipe(z.array(z.enum(['twilio', 'vonage', 'console'])).min(1)).default(['console']),
-    WHATSAPP_OTP_ENABLED: bool.default(false),
+    /** WhatsApp as the OTP fallback channel (uses WHATSAPP_PROVIDER). */
+    WHATSAPP_OTP_ENABLED: bool.default(true),
 
     TWILIO_ACCOUNT_SID: z.string().optional(),
     TWILIO_AUTH_TOKEN: z.string().optional(),
@@ -50,6 +51,73 @@ export const envSchema = z
     WHATSAPP_ACCESS_TOKEN: z.string().optional(),
     WHATSAPP_OTP_TEMPLATE: z.string().default('agarha_otp'),
     WHATSAPP_GRAPH_VERSION: z.string().default('v21.0'),
+    /** Meta app secret, for X-Hub-Signature-256 on WhatsApp status webhooks. */
+    WHATSAPP_APP_SECRET: z.string().optional(),
+    WHATSAPP_WEBHOOK_VERIFY_TOKEN: z.string().optional(),
+    /** Dealer lead alerts + nudges. `console` records messages instead of sending. */
+    WHATSAPP_PROVIDER: z.enum(['meta', 'console']).default('console'),
+    WHATSAPP_LEAD_TEMPLATE: z.string().default('agarha_lead_alert'),
+    WHATSAPP_NUDGE_TEMPLATE: z.string().default('agarha_availability_nudge'),
+    TWILIO_STATUS_WEBHOOK_URL: z.string().optional(),
+    VONAGE_SIGNATURE_SECRET: z.string().optional(),
+
+    PUSH_PROVIDER: z.enum(['expo', 'console']).default('console'),
+    EXPO_ACCESS_TOKEN: z.string().optional(),
+    EMAIL_PROVIDER: z.enum(['resend', 'console']).default('console'),
+    RESEND_API_KEY: z.string().optional(),
+    EMAIL_FROM: z.string().default('Agarha <no-reply@agarha.com>'),
+
+    /** `s3` for R2/S3/MinIO; `local` = signed local-disk mock (local/test only). */
+    STORAGE_DRIVER: z.enum(['s3', 'local']).default('local'),
+    LOCAL_STORAGE_DIR: z.string().default('.storage'),
+    /** Public base URL of this API (used for local storage URLs and webhooks). */
+    API_PUBLIC_URL: z.string().default('http://localhost:4000'),
+    /** S3-compatible storage (Cloudflare R2, AWS S3 or local MinIO). */
+    STORAGE_ENDPOINT: z.string().optional(),
+    STORAGE_REGION: z.string().default('auto'),
+    STORAGE_ACCESS_KEY_ID: z.string().default('minio'),
+    STORAGE_SECRET_ACCESS_KEY: z.string().default('minio-secret'),
+    STORAGE_FORCE_PATH_STYLE: bool.default(false),
+    STORAGE_PUBLIC_BUCKET: z.string().default('public-media'),
+    STORAGE_PRIVATE_BUCKET: z.string().default('private-docs'),
+    /** Public CDN base for public-media, e.g. https://media.agarha.com */
+    MEDIA_PUBLIC_BASE_URL: z.string().default('http://localhost:9000/public-media'),
+
+    MAPS_PROVIDER: z.enum(['google', 'mapbox', 'mock']).default('mock'),
+    GOOGLE_MAPS_API_KEY: z.string().optional(),
+    MAPBOX_ACCESS_TOKEN: z.string().optional(),
+
+    PAYMENT_GATEWAY: z.enum(['paymob', 'mock']).default('mock'),
+    PAYMOB_SECRET_KEY: z.string().optional(),
+    PAYMOB_PUBLIC_KEY: z.string().optional(),
+    PAYMOB_HMAC_SECRET: z.string().optional(),
+    PAYMOB_INTEGRATION_IDS: csv.default([]),
+    FEATURED_PRICE_PER_DAY_EGP: z.coerce.number().int().min(1).default(50),
+    MOCK_PAYMENT_WEBHOOK_SECRET: z.string().default('mock-webhook-secret-local-only'),
+
+    /** P6 search engine (used when the search_engine_meilisearch flag is on). */
+    MEILI_HOST: z.string().optional(),
+    MEILI_API_KEY: z.string().optional(),
+    POSTHOG_API_KEY: z.string().optional(),
+    POSTHOG_HOST: z.string().default('https://eu.i.posthog.com'),
+    SENTRY_DSN: z.string().optional(),
+    OTEL_EXPORTER_OTLP_ENDPOINT: z.string().optional(),
+
+    /** Social sign-in audiences (client ids). */
+    GOOGLE_CLIENT_IDS: csv.default([]),
+    APPLE_CLIENT_IDS: csv.default([]),
+    /** Admin SSO */
+    GOOGLE_WORKSPACE_DOMAIN: z.string().default('agarha.com'),
+    ADMIN_GOOGLE_CLIENT_ID: z.string().optional(),
+    /** CIDR list; empty = allow all (local only, refused in production). */
+    ADMIN_IP_ALLOWLIST: csv.default([]),
+    /** Local/test only: POST /v1/admin-auth/dev-login stands in for Google SSO. */
+    ADMIN_DEV_LOGIN: bool.default(false),
+    /** AES-256-GCM key (base64, 32 bytes) for TOTP secrets at rest. */
+    TOTP_ENCRYPTION_KEY: z.string().min(40),
+    PUBLIC_WEB_URL: z.string().default('http://localhost:3000'),
+    /** Feature flags that can be forced from env (PostHog decides otherwise). */
+    FLAGS: csv.default([]),
   })
   .superRefine((env, ctx) => {
     const need = (cond: boolean, keys: (keyof typeof env)[], why: string) => {
@@ -59,7 +127,12 @@ export const envSchema = z
     };
     need(env.SMS_PROVIDERS.includes('twilio'), ['TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_MESSAGING_SERVICE_SID'], 'SMS_PROVIDERS includes twilio');
     need(env.SMS_PROVIDERS.includes('vonage'), ['VONAGE_API_KEY', 'VONAGE_API_SECRET'], 'SMS_PROVIDERS includes vonage');
-    need(env.WHATSAPP_OTP_ENABLED, ['WHATSAPP_PHONE_NUMBER_ID', 'WHATSAPP_ACCESS_TOKEN'], 'WHATSAPP_OTP_ENABLED');
+    need(env.WHATSAPP_PROVIDER === 'meta', ['WHATSAPP_PHONE_NUMBER_ID', 'WHATSAPP_ACCESS_TOKEN', 'WHATSAPP_APP_SECRET'], 'WHATSAPP_PROVIDER=meta');
+    need(env.PUSH_PROVIDER === 'expo', ['EXPO_ACCESS_TOKEN'], 'PUSH_PROVIDER=expo');
+    need(env.EMAIL_PROVIDER === 'resend', ['RESEND_API_KEY'], 'EMAIL_PROVIDER=resend');
+    need(env.MAPS_PROVIDER === 'google', ['GOOGLE_MAPS_API_KEY'], 'MAPS_PROVIDER=google');
+    need(env.MAPS_PROVIDER === 'mapbox', ['MAPBOX_ACCESS_TOKEN'], 'MAPS_PROVIDER=mapbox');
+    need(env.PAYMENT_GATEWAY === 'paymob', ['PAYMOB_SECRET_KEY', 'PAYMOB_PUBLIC_KEY', 'PAYMOB_HMAC_SECRET'], 'PAYMENT_GATEWAY=paymob');
 
     if (env.APP_ENV === 'production') {
       if (env.SMS_PROVIDERS.includes('console'))
@@ -68,6 +141,15 @@ export const envSchema = z
         ctx.addIssue({ code: 'custom', path: ['SMS_PROVIDERS'], message: 'production needs two SMS providers for failover' });
       if (env.TURNSTILE_SECRET_KEY === TURNSTILE_TEST_SECRET)
         ctx.addIssue({ code: 'custom', path: ['TURNSTILE_SECRET_KEY'], message: 'test secret is not allowed in production' });
+      if (env.ADMIN_DEV_LOGIN)
+        ctx.addIssue({ code: 'custom', path: ['ADMIN_DEV_LOGIN'], message: 'not allowed in production' });
+      if (env.ADMIN_IP_ALLOWLIST.length === 0)
+        ctx.addIssue({ code: 'custom', path: ['ADMIN_IP_ALLOWLIST'], message: 'required in production' });
+      if (env.STORAGE_DRIVER === 'local')
+        ctx.addIssue({ code: 'custom', path: ['STORAGE_DRIVER'], message: 'local storage is not allowed in production' });
+      for (const [k, v] of [['WHATSAPP_PROVIDER', env.WHATSAPP_PROVIDER], ['PUSH_PROVIDER', env.PUSH_PROVIDER], ['EMAIL_PROVIDER', env.EMAIL_PROVIDER], ['PAYMENT_GATEWAY', env.PAYMENT_GATEWAY], ['MAPS_PROVIDER', env.MAPS_PROVIDER]] as const)
+        if (v === 'console' || v === 'mock')
+          ctx.addIssue({ code: 'custom', path: [k], message: 'mock adapters are not allowed in production' });
       if (!env.COOKIE_SECURE)
         ctx.addIssue({ code: 'custom', path: ['COOKIE_SECURE'], message: 'must be true in production' });
     }
