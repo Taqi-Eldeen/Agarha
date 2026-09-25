@@ -98,8 +98,8 @@ Verification pass: 2026-09-25 (see "Final verification" at the end).
 
 ## 11. Quality and security targets
 
-- ✅ Web: listing JS 165 KB < 170 KB; lab LCP 1.6–2.0 s, CLS ≤ 0.004 (`docs/performance.md`)
-- ⚠️ TBT (lab proxy for INP) 120–300 ms: hard gate 350 ms, 200 ms target not met on card-heavy pages; fix planned (server-rendered card bodies)
+- ✅ Web: listing JS 165 KB < 170 KB; lab LCP 1.7–2.0 s, CLS ≤ 0.06 (`docs/performance.md`)
+- ⚠️ TBT (lab proxy for INP) medians 132–345 ms: passes the 350 ms gate, but the 200 ms target is not met on card-heavy pages (city landing 345 ms); fix planned: server-rendered card bodies
 - ⚠️ Mobile cold start, 60 fps, download size — measured on a device per release; JS bundle 8.5 MB (Hermes), store size needs a signed build — Owner
 - ✅ API p95: 16 ms at 50 req/s (k6)
 - ✅ Reliability design: Multi-AZ, PITR (RPO 5 min < 1 h), RTO 4 h runbook, quarterly restore drill procedure

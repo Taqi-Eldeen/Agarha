@@ -21,4 +21,12 @@ module.exports = {
   globalSetup: '<rootDir>/test/global-setup.ts',
   globalTeardown: '<rootDir>/test/global-teardown.ts',
   testTimeout: 60000,
+  // Section 11: >= 80% line coverage on domain modules (enforced in CI with --coverage).
+  collectCoverageFrom: [
+    '<rootDir>/src/modules/**/*.ts',
+    '!<rootDir>/src/**/*.module.ts',
+    '!<rootDir>/src/**/index.ts',
+    '!<rootDir>/src/**/*.test.ts',
+  ],
+  coverageReporters: ['text-summary', 'json-summary'],
 };

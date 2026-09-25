@@ -26,12 +26,12 @@ buttons.
 
 ## Results (2026-09-25, production build, synthetic seed)
 
-| Page                    | LCP       | CLS   | TBT        |
-| ----------------------- | --------- | ----- | ---------- |
-| `/ar`                   | 1.7 s     | 0.00  | ~200 ms    |
-| `/en/search?city=cairo` | 1.6–2.0 s | 0.004 | 155–230 ms |
-| `/ar/cairo`             | 1.7 s     | 0.00  | 230–300 ms |
-| `/ar/for-dealers`       | 1.6 s     | 0.00  | ~120 ms    |
+| Page (median of 3, LHCI) | LCP    | CLS   | TBT                        |
+| ------------------------ | ------ | ----- | -------------------------- |
+| `/ar`                    | 1.71 s | 0.059 | 155 ms                     |
+| `/en/search?city=cairo`  | 1.98 s | 0.003 | 244 ms                     |
+| `/ar/cairo`              | 1.75 s | 0.028 | 345 ms (close to the gate) |
+| `/ar/for-dealers`        | 1.67 s | 0.006 | 132 ms                     |
 
 Route JS (gzipped first load): listing 165.3 KB, home 163.8 KB, search 180.9 KB, city 161.8 KB.
 k6 at 50 req/s for 5 minutes: p95 16 ms, 0 errors (single API instance on the build machine).
