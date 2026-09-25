@@ -17,6 +17,8 @@ export interface MapViewProps {
   pins: MapPinData[];
   /** Map style URL from the chosen provider (Mapbox / MapTiler / Google via MapLibre). */
   styleUrl: string;
+  /** Where the app serves maplibre's module worker (apps/web/scripts/copy-vendor.mjs). */
+  workerUrl?: string;
   center?: { lat: number; lng: number };
   zoom?: number;
   selectedId?: string | null;
@@ -34,6 +36,7 @@ export interface MapViewProps {
 export default function MapView({
   pins,
   styleUrl,
+  workerUrl = '/vendor/maplibre/maplibre-gl-worker.mjs',
   center = { lat: 30.0444, lng: 31.2357 },
   zoom = 11,
   selectedId,
@@ -44,11 +47,15 @@ export default function MapView({
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   const { t, locale } = useUi();
+  // Latest pins for the 'load' handler: pins usually arrive before the style finishes loading.
+  const latest = useRef({ pins, selectedId });
+  latest.current = { pins, selectedId };
 
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const maplibre = (await import('maplibre-gl')).default;
+      const maplibre = await import('maplibre-gl');
+      maplibre.setWorkerUrl(workerUrl);
       if (cancelled || !el.current) return;
       const m = new maplibre.Map({
         container: el.current,
@@ -59,14 +66,30 @@ export default function MapView({
         locale: { 'NavigationControl.ZoomIn': t.zoomIn, 'NavigationControl.ZoomOut': t.zoomOut },
       });
       map.current = m;
+      // If the basemap style can't be fetched (offline, provider outage), fall back to a plain style
+      // so the price pins still render; they are the point of the map.
+      let styled = false;
+      const fallback = () => {
+        if (!styled && !cancelled) m.setStyle(FALLBACK_STYLE);
+        styled = true;
+      };
+      m.once('style.load', () => void (styled = true));
+      m.on('error', (e) => {
+        // Tile errors carry a sourceId; a style/network failure before the style loads does not.
+        if (!('sourceId' in e)) fallback();
+      });
+      setTimeout(fallback, 10_000);
       m.addControl(
         new maplibre.NavigationControl({ showCompass: false }),
         locale === 'ar' ? 'top-left' : 'top-right',
       );
-      m.on('load', () => {
+      // Pins go in as soon as the style is parsed ('style.load'), not after every basemap tile has
+      // loaded ('load'): on a slow connection the prices show up before the streets do.
+      m.on('style.load', () => {
+        if (m.getSource('pins')) return;
         m.addSource('pins', {
           type: 'geojson',
-          data: toGeoJson(pins),
+          data: toGeoJson(latest.current.pins, latest.current.selectedId),
           cluster: true,
           clusterRadius: 48,
           clusterMaxZoom: 14,
@@ -155,6 +178,14 @@ export default function MapView({
     />
   );
 }
+
+const FALLBACK_STYLE = {
+  version: 8 as const,
+  sources: {},
+  layers: [
+    { id: 'background', type: 'background' as const, paint: { 'background-color': '#E2F1EF' } },
+  ],
+};
 
 function toGeoJson(pins: MapPinData[], selectedId?: string | null): FeatureCollection {
   return {

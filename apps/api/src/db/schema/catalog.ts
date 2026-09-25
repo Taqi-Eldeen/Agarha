@@ -14,7 +14,9 @@ import { createdAt, id } from './_columns';
 import { carBodyTypeEnum } from './enums';
 
 /** ag_normalize_ar() is defined in migration 0000_extensions.sql. */
+// Column names are compile-time constants from this file (never input); a generated column needs raw SQL.
 const searchText = (...cols: string[]) =>
+  // nosemgrep: agarha-no-sql-raw-interpolation
   sql.raw(`ag_normalize_ar(${cols.map((c) => `coalesce(${c}, '')`).join(` || ' ' || `)})`);
 
 export const cities = pgTable(

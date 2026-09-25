@@ -30,3 +30,4 @@ apps/*/test-results
 *.tfstate.*
 *.tfplan
 crash.log
+apps/web/public/vendor/

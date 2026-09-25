@@ -27,7 +27,8 @@ async function cli() {
       logger: ['error', 'warn'],
     });
     const result = await app.get(Processors, { strict: false }).runScheduled(job as never);
-    console.log(JSON.stringify(result));
+    // CLI output for runbooks (`node dist/worker/main.js run <job>`), not a service log.
+    console.log(JSON.stringify(result)); // nosemgrep: agarha-no-console-in-api
     await app.close();
     return;
   }

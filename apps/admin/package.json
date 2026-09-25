@@ -19,7 +19,7 @@
     "@agarha/ui-web": "workspace:*",
     "@tanstack/react-query": "^5.90.2",
     "lucide-react": "^0.544.0",
-    "next": "15.5.4",
+    "next": "15.5.26",
     "react": "19.1.0",
     "react-dom": "19.1.0"
   },

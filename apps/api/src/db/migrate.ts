@@ -17,9 +17,9 @@ if (require.main === module) {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error('DATABASE_URL is required');
   runMigrations(url)
-    .then(() => console.log('migrations applied'))
+    .then(() => console.log('migrations applied')) // nosemgrep: agarha-no-console-in-api
     .catch((e: unknown) => {
-      console.error(e);
+      console.error(e); // nosemgrep: agarha-no-console-in-api
       process.exit(1);
     });
 }

@@ -33,6 +33,8 @@ export function currentTotp(secret: string): string {
   return authenticator.generate(secret);
 }
 
+const TAG_BYTES = 16;
+
 const key = (b64: string) => {
   const k = Buffer.from(b64, 'base64');
   if (k.length !== 32) throw new Error('TOTP_ENCRYPTION_KEY must be 32 bytes base64');
@@ -41,15 +43,17 @@ const key = (b64: string) => {
 
 export function encryptSecret(plain: string, keyB64: string): string {
   const iv = randomBytes(12);
-  const c = createCipheriv('aes-256-gcm', key(keyB64), iv);
+  const c = createCipheriv('aes-256-gcm', key(keyB64), iv, { authTagLength: TAG_BYTES });
   const enc = Buffer.concat([c.update(plain, 'utf8'), c.final()]);
   return [iv, c.getAuthTag(), enc].map((b) => b.toString('base64url')).join(':');
 }
 
 export function decryptSecret(payload: string, keyB64: string): string {
   const [iv, tag, enc] = payload.split(':').map((p) => Buffer.from(p, 'base64url'));
-  if (!iv || !tag || !enc) throw new Error('bad ciphertext');
-  const d = createDecipheriv('aes-256-gcm', key(keyB64), iv);
+  // A truncated tag would weaken GCM's integrity check: require the full 16 bytes.
+  if (!iv || iv.length !== 12 || !tag || tag.length !== TAG_BYTES || !enc)
+    throw new Error('bad ciphertext');
+  const d = createDecipheriv('aes-256-gcm', key(keyB64), iv, { authTagLength: TAG_BYTES });
   d.setAuthTag(tag);
   return Buffer.concat([d.update(enc), d.final()]).toString('utf8');
 }

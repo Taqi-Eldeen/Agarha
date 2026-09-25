@@ -11,6 +11,13 @@ const csv = z.string().transform((s) =>
 /** Cloudflare's documented always-pass test secret. Rejected in production below. */
 export const TURNSTILE_TEST_SECRET = '1x0000000000000000000000000000000AA';
 
+/** Placeholder secrets from apps/api/.env.example (published in the repo, local use only). */
+export const DEV_PLACEHOLDER_SECRETS = new Set([
+  'local-dev-only-jwt-secret-change-me-0000000000',
+  'local-dev-only-hash-pepper-change-me-000000000',
+  'bG9jYWwtZGV2LW9ubHktdG90cC1rZXktMzJieXRlcyE=',
+]);
+
 export const envSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -154,6 +161,16 @@ export const envSchema = z
       ['PAYMOB_SECRET_KEY', 'PAYMOB_PUBLIC_KEY', 'PAYMOB_HMAC_SECRET'],
       'PAYMENT_GATEWAY=paymob',
     );
+
+    // The .env.example placeholders are public: refuse them anywhere but local/test.
+    if (env.APP_ENV !== 'local' && env.NODE_ENV !== 'test')
+      for (const k of ['JWT_SECRET', 'HASH_PEPPER', 'TOTP_ENCRYPTION_KEY'] as const)
+        if (DEV_PLACEHOLDER_SECRETS.has(env[k]))
+          ctx.addIssue({
+            code: 'custom',
+            path: [k],
+            message: 'the local-development placeholder is not allowed outside local',
+          });
 
     if (env.APP_ENV === 'production') {
       if (env.SMS_PROVIDERS.includes('console'))

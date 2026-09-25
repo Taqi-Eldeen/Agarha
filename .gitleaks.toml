@@ -1,0 +1,23 @@
+# Secret scanning (CI: gitleaks on every PR and push, full history on main).
+# Only published, intentionally fake values are allowlisted; the API refuses each of them outside
+# local/test (apps/api/src/config/env.ts DEV_PLACEHOLDER_SECRETS, TURNSTILE_TEST_SECRET).
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Local-development placeholders and Cloudflare/RFC test values"
+regexTarget = "match"
+regexes = [
+  '''local-dev-only-jwt-secret-change-me-0+''',
+  '''local-dev-only-hash-pepper-change-me-0+''',
+  '''bG9jYWwtZGV2LW9ubHktdG90cC1rZXktMzJieXRlcyE=''',
+  '''1x0000000000000000000000000000000AA''',
+  '''1x00000000000000000000AA''',
+  '''JBSWY3DPEHPK3PXP(JBSWY3DPEHPK3PXP)?''',
+  '''mock-webhook-secret-local-only''',
+  '''minio-secret''',
+]
+paths = [
+  '''(^|/)pnpm-lock\.yaml$''',
+  '''(^|/)docs/api/openapi\.json$''',
+]

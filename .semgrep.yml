@@ -1,0 +1,42 @@
+# Project rules (CI also runs the registry packs p/typescript, p/nodejs, p/react, p/secrets).
+rules:
+  - id: agarha-no-raw-html
+    message: dangerouslySetInnerHTML is only allowed in JsonLdScript (escaped JSON-LD). Render text instead.
+    languages: [typescript]
+    severity: ERROR
+    pattern: <$EL dangerouslySetInnerHTML={...} />
+    paths:
+      exclude: [apps/web/src/lib/seo.tsx]
+
+  - id: agarha-no-sql-raw-interpolation
+    message: Use drizzle's sql`` tag (parameterised) — never build SQL strings by concatenation.
+    languages: [typescript]
+    severity: ERROR
+    pattern-either:
+      - pattern: sql.raw(`...${$X}...`)
+      - pattern: $DB.execute(`...${$X}...`)
+
+  - id: agarha-no-console-in-api
+    message: Use the Nest/pino logger (structured, redacted) instead of console.* in the API.
+    languages: [typescript]
+    severity: WARNING
+    pattern-either:
+      - pattern: console.log(...)
+      - pattern: console.error(...)
+    paths:
+      include: [apps/api/src/]
+      exclude: [apps/api/src/**/*.test.ts]
+
+  - id: agarha-no-math-random-for-secrets
+    message: Tokens, codes and ids must come from node:crypto (randomInt / randomBytes / randomUUID).
+    languages: [typescript]
+    severity: ERROR
+    pattern: Math.random()
+    paths:
+      include: [apps/api/src/]
+
+  - id: agarha-no-national-id-text
+    message: Never store national ID numbers as text (section 6). Store the document in private-docs only.
+    languages: [typescript]
+    severity: ERROR
+    pattern-regex: (?i)national_?id_?(number|no)\s*[:=]\s*(text|varchar)\(

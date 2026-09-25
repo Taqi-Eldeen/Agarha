@@ -32,7 +32,7 @@ describe('SEO', () => {
         'x-default': 'https://agarha.test/ar/cairo',
       },
     });
-    expect(alternates('ar', '/').canonical).toBe('https://agarha.test/ar');
+    expect(alternates('ar', '/')?.canonical).toBe('https://agarha.test/ar');
   });
 
   it('describes a listing as Product + Offer in EGP per day, with availability', () => {

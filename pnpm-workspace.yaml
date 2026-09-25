@@ -14,3 +14,8 @@ peerDependencyRules:
   allowedVersions:
     react-native-safe-area-context: '5.7'
     '@types/react': '19.2'
+
+# Security floor for transitive dependencies (Trivy/OSV findings; see docs/runbooks/dependencies.md).
+overrides:
+  sharp@<0.35.4: ^0.35.4
+  postcss@<8.5.18: ^8.5.18
