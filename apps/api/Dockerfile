@@ -1,7 +1,7 @@
 # One image, three entrypoints: API (default), worker and migrate. Build from the repo root:
 #   docker build -f apps/api/Dockerfile --target api    -t agarha-api .
 #   docker build -f apps/api/Dockerfile --target worker -t agarha-worker .
-FROM node:22-bookworm-slim AS base
+FROM node:25-bookworm-slim AS base
 ENV PNPM_HOME=/pnpm PATH=/pnpm:$PATH CI=1
 RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
 WORKDIR /repo
@@ -13,7 +13,7 @@ RUN pnpm --filter "@agarha/api..." build
 # Self-contained production tree: dist + drizzle migrations + prod node_modules (workspace deps included).
 RUN pnpm --filter @agarha/api deploy --prod --legacy /out
 
-FROM node:22-bookworm-slim AS runtime
+FROM node:25-bookworm-slim AS runtime
 ENV NODE_ENV=production NODE_OPTIONS=--enable-source-maps
 WORKDIR /app
 COPY --from=build --chown=node:node /out ./
