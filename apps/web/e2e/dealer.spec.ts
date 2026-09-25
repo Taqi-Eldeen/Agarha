@@ -1,11 +1,12 @@
 import { expect, test } from '@playwright/test';
-import { API, fillOtp, lastCode, randomMobile, totp } from './helpers';
+import { API, fillOtp, lastCode, randomMobile, stubTurnstile, totp } from './helpers';
 
 test.describe.configure({ mode: 'serial' });
 
 test.describe('dealer: onboarding → verification → add car', () => {
   const phone = randomMobile();
   let totpSecret = '';
+  test.beforeEach(({ context }) => stubTurnstile(context));
 
   test('signs up with OTP, password and TOTP, then completes onboarding', async ({ page, request }) => {
     await page.goto('/en/dealer/sign-up');
@@ -40,8 +41,13 @@ test.describe('dealer: onboarding → verification → add car', () => {
     await page.getByRole('button', { name: 'Documents' }).click();
     // Documents
     const pdf = { name: 'doc.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\n% e2e\n') };
-    for (const input of await page.locator('input[type="file"]').all()) await input.setInputFiles(pdf);
-    await expect(page.getByText('Uploaded, waiting for review')).toHaveCount(3, { timeout: 20_000 });
+    await expect(page.getByRole('heading', { name: 'Upload documents' })).toBeVisible();
+    const inputs = page.locator('input[type="file"]');
+    await expect(inputs).toHaveCount(3);
+    for (let i = 0; i < 3; i++) {
+      await inputs.nth(i).setInputFiles(pdf);
+      await expect(page.getByText('Uploaded, waiting for review')).toHaveCount(i + 1, { timeout: 20_000 });
+    }
     await page.getByRole('button', { name: 'Send for review' }).click();
     await expect(page.getByText('Your company is under review')).toBeVisible();
   });

@@ -1,4 +1,4 @@
-import type { APIRequestContext, Page } from '@playwright/test';
+import type { APIRequestContext, BrowserContext, Page } from '@playwright/test';
 import { authenticator } from 'otplib';
 
 export const API = process.env.API_URL ?? 'http://localhost:4000';
@@ -30,4 +30,17 @@ export async function fillOtp(page: Page, code: string) {
 /** Waits for the Turnstile test widget to issue a token (the submit button enables). */
 export async function waitForCaptcha(page: Page, buttonName: RegExp) {
   await page.getByRole('button', { name: buttonName }).and(page.locator(':not([disabled])')).waitFor({ timeout: 30_000 });
+}
+
+/**
+ * Replaces the Turnstile script with a stub that issues Cloudflare's dummy token at once, so E2E
+ * never depends on challenges.cloudflare.com. The API accepts it only with the test secret.
+ */
+export async function stubTurnstile(context: BrowserContext) {
+  await context.route(/challenges\.cloudflare\.com\/turnstile\/.*/, (route) =>
+    route.fulfill({
+      contentType: 'application/javascript',
+      body: `window.turnstile={render:function(el,o){setTimeout(function(){o.callback('XXXX.DUMMY.TOKEN.XXXX')},50);return 'stub'},remove:function(){},reset:function(){}};`,
+    }),
+  );
 }

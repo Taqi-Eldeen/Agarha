@@ -5,16 +5,18 @@
   "description": "Agarha HTTP API (NestJS modular monolith)",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "dev": "node --watch -r @swc-node/register src/main.ts",
+    "dev": "node --env-file-if-exists=.env --watch -r @swc-node/register src/main.ts",
+    "dev:worker": "node --env-file-if-exists=.env --watch -r @swc-node/register src/worker/main.ts",
     "start": "node dist/main.js",
+    "start:worker": "node dist/worker/main.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "jest --config jest.config.js",
     "test:integration": "jest --config jest.integration.config.js --runInBand",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "node -r @swc-node/register scripts/migrate.ts",
-    "db:seed": "node -r @swc-node/register scripts/seed.ts",
-    "openapi": "node -r @swc-node/register scripts/openapi.ts"
+    "db:migrate": "node --env-file-if-exists=.env -r @swc-node/register scripts/migrate.ts",
+    "db:seed": "node --env-file-if-exists=.env -r @swc-node/register scripts/seed.ts",
+    "openapi": "node --env-file-if-exists=.env -r @swc-node/register scripts/openapi.ts"
   },
   "dependencies": {
     "@agarha/i18n": "workspace:*",

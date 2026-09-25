@@ -9,8 +9,9 @@ for (const locale of ['ar', 'en']) {
       test(`visual ${locale} ${scheme} ${path}`, async ({ page }) => {
         await page.emulateMedia({ colorScheme: scheme, reducedMotion: 'reduce' });
         await page.goto(`/${locale}${path === '/' ? '' : path}`);
-        await page.waitForLoadState('networkidle').catch(() => undefined);
-        await expect(page).toHaveScreenshot(`${locale}-${scheme}${path.replace(/\//g, '_') || '_home'}.png`, { fullPage: false, mask: [page.getByRole('article'), page.locator('img')] });
+        await page.locator('main').first().waitFor();
+        await page.waitForTimeout(800);
+        await expect(page).toHaveScreenshot(`${locale}-${scheme}-${path === '/' ? 'home' : path.slice(1)}.png`, { fullPage: false, mask: [page.getByRole('article'), page.locator('img')] });
       });
     }
   }

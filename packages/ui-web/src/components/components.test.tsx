@@ -43,9 +43,9 @@ describe.each(['ar', 'en'] as const)('components in %s', (locale) => {
   it('FreshnessChip: green < 48h, amber 2–7 days, hidden after', () => {
     const h = (n: number) => new Date(Date.now() - n * 3_600_000).toISOString();
     const { rerender, container } = renderUi(<FreshnessChip lastConfirmedAt={h(5)} />, locale);
-    expect(container.firstChild).toHaveClass('text-available');
+    expect(container.firstChild).toHaveClass('bg-available/15');
     rerender(<FreshnessChip lastConfirmedAt={h(72)} />);
-    expect(container.firstChild).toHaveClass('text-stale');
+    expect(container.firstChild).toHaveClass('bg-stale/15');
     rerender(<FreshnessChip lastConfirmedAt={h(24 * 8)} />);
     expect(container.firstChild).toBeNull();
   });
