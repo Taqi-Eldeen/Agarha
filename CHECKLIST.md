@@ -161,4 +161,36 @@ Verification pass: 2026-09-25 (see "Final verification" at the end).
 
 ## 14. Final verification
 
-See the verification log at the end of this file.
+Clean clone → `pnpm install --frozen-lockfile` → every check, looped until a full pass found nothing to
+fix. Four loops; loops 1–3 found and fixed: schema-test import extensions (typecheck on a clean clone),
+stale `openapi.json`, lint picking up build output, Turbo dropping proxy/CA variables and not caching
+`dist-tools`, `e2e-stack.sh` with an absolute log dir, an E2E test depending on seeded media, domain
+coverage below 80 %, and 24 Semgrep `p/default` findings (workflow shell injection, unpinned actions,
+curl | bash, pnpm supply-chain settings, Dependabot cooldown, CMK for secrets and logs, RDS log exports,
+ALB access logs).
+
+**Loop 4 (commit `98bc69e`, fresh clone): all green.**
+
+| Check                                                                                         | Result                                                                              |
+| --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Prettier                                                                                      | ✅                                                                                  |
+| ESLint + TypeScript, 26 tasks, uncached                                                       | ✅                                                                                  |
+| Unit tests (all packages and apps, incl. ui-web and ui-native component tests, i18n, schemas) | ✅                                                                                  |
+| Build (all apps)                                                                              | ✅                                                                                  |
+| API unit + integration (Testcontainers PostGIS + Redis), coverage gate                        | ✅ 90 tests, 82.2 % lines on domain modules                                         |
+| OpenAPI up to date · no breaking `/v1` change · generated client matches                      | ✅                                                                                  |
+| Route JS budgets                                                                              | ✅ listing 165 KB < 170 KB                                                          |
+| E2E web (Playwright): customer, dealer, visual ar/en × light/dark × desktop/mobile, axe       | ✅ 49/49                                                                            |
+| E2E admin (Playwright + axe)                                                                  | ✅                                                                                  |
+| Mobile: jest-expo tests; iOS + Android bundles (`expo export`)                                | ✅                                                                                  |
+| Terraform fmt, validate, `terraform test`                                                     | ✅ 4/4                                                                              |
+| gitleaks (full history) · Semgrep (project + p/default, typescript, nodejs, react, secrets)   | ✅ 0 findings                                                                       |
+| Trivy config (IaC, Dockerfiles) · Trivy + OSV dependencies                                    | ✅ 0 high/critical (6 medium, accepted in `docs/runbooks/dependencies.md`)          |
+| ZAP baseline (web)                                                                            | ✅ 0 fail, 1 warning (CSP `unsafe-inline`, ADR-0017)                                |
+| Lighthouse CI (4 pages, 3 runs)                                                               | ✅ LCP 1.7–2.0 s, CLS ≤ 0.06, TBT ≤ 345 ms                                          |
+| k6 at 50 req/s                                                                                | ✅ p95 16 ms, 0 errors                                                              |
+| Both languages and both themes                                                                | ✅ visual snapshots and Storybook matrices in ar/en × light/dark; RTL/LTR lint rule |
+| Working tree clean, no secrets committed                                                      | ✅                                                                                  |
+
+Not runnable on the build machine (see the ⚠️ items above): Maestro flows on an emulator/simulator (no
+KVM), deployments to staging/production (no accounts), manual screen-reader pass, external pen test.
